@@ -1,123 +1,138 @@
 erDiagram
-    USER ||--o{ USER_ROLE : has
-    ROLE ||--o{ USER_ROLE : assigned_to
-    ROLE ||--o{ ROLE_PERMISSION : holds
-    PERMISSION ||--o{ ROLE_PERMISSION : defines
-
+    USER ||--o{ USER_PREFERRED_SPORT : prefers
+    USER ||--o{ USER_LOCATION : sets
     USER ||--o{ EVENT : organizes
-    USER ||--o{ ATTENDANCE : participates
+    USER ||--o{ EVENT_PARTICIPANT : joins
+    USER ||--o{ EVENT_INTERESTED : marks_interest
     USER ||--o{ COMMENT : writes
-    USER ||--o{ REACTION : gives
     USER ||--o{ NOTIFICATION : receives
-    USER ||--o{ REVIEW : writes_review
-    USER ||--o{ MEDIA : uploads
+    USER ||--o{ REPORT : submits
+    USER ||--o{ REPORT : resolves
 
-    EVENT ||--o{ ATTENDANCE : has_participants
+    SPORT ||--o{ EVENT : categorizes
+    LOCATION ||--o{ EVENT : hosts
+    LOCATION ||--o{ USER_LOCATION : referenced_by
+
+    EVENT ||--o{ EVENT_PARTICIPANT : has_participants
+    EVENT ||--o{ EVENT_INTERESTED : has_interested_users
     EVENT ||--o{ COMMENT : has_comments
-    EVENT ||--o{ REACTION : has_likes
-    EVENT ||--o{ MEDIA : has_gallery
-    EVENT }o--|| SPORT_TYPE : categorized_as
-    EVENT }o--|| LOCATION : takes_place_at
+    EVENT ||--o{ NOTIFICATION : triggers
+
+    COMMENT ||--o{ COMMENT : has_replies
 
     USER {
         uuid id PK
+        string oauth_provider
+        string oauth_id
         string email
-        string password_hash
-        string full_name
+        string name
+        string profile_picture_url
         text bio
+        string role
+        boolean is_banned
+        datetime banned_until
+        text banned_reason
+        datetime created_at
+        datetime updated_at
+    }
+
+    SPORT ||--o{ USER_PREFERRED_SPORT : preferred_by
+
+    USER_PREFERRED_SPORT {
+        uuid user_id PK,FK
+        uuid sport_id PK,FK
+    }
+
+    USER_LOCATION {
+        uuid id PK
+        uuid user_id FK
+        uuid location_id FK
+        int radius
+        string label
+        boolean is_primary
         datetime created_at
     }
 
-    ROLE {
-        int id PK
+    SPORT {
+        uuid id PK
         string name
+        string icon
+        text description
     }
 
-    PERMISSION {
-        int id PK
-        string name
-    }
-
-    USER_ROLE {
-        uuid user_id FK
-        int role_id FK
-    }
-
-    ROLE_PERMISSION {
-        int role_id FK
-        int permission_id FK
+    LOCATION {
+        uuid id PK
+        string address
+        string city
+        string country
+        float latitude
+        float longitude
     }
 
     EVENT {
         uuid id PK
         uuid organizer_id FK
-        int sport_type_id FK
-        int location_id FK
-        string title
+        uuid location_id FK
+        string sport_type
+        string name
         text description
+        string skill_level
         datetime start_time
+        int duration
         int capacity
-        decimal price
+        int current_participants
+        boolean is_public
+        string cover_image_url
+        datetime cancelled_at
+        text cancellation_reason
+        datetime created_at
+        datetime updated_at
     }
 
-    SPORT_TYPE {
-        int id PK
-        string name
-        string icon_slug
+    EVENT_PARTICIPANT {
+        uuid event_id PK,FK
+        uuid user_id PK,FK
     }
 
-    LOCATION {
-        int id PK
-        string name
-        string address
-        float lat
-        float lng
-    }
-
-    ATTENDANCE {
-        uuid user_id FK
-        uuid event_id FK
-        string status
-        datetime joined_at
+    EVENT_INTERESTED {
+        uuid event_id PK,FK
+        uuid user_id PK,FK
     }
 
     COMMENT {
         uuid id PK
-        uuid user_id FK
         uuid event_id FK
+        uuid user_id FK
+        uuid parent_comment_id FK
         text content
+        boolean is_deleted
+        string deleted_by
+        text deletion_reason
         datetime created_at
-    }
-
-    REACTION {
-        uuid id PK
-        uuid user_id FK
-        uuid event_id FK
-        string type
-    }
-
-    REVIEW {
-        uuid id PK
-        uuid reviewer_id FK
-        uuid target_user_id FK
-        uuid event_id FK
-        int rating
-        text text
+        datetime updated_at
     }
 
     NOTIFICATION {
         uuid id PK
         uuid user_id FK
         string type
+        string title
         text message
+        uuid event_id FK
+        uuid related_user_id FK
         boolean is_read
-        datetime sent_at
+        datetime read_at
+        datetime created_at
     }
 
-    MEDIA {
+    REPORT {
         uuid id PK
-        uuid event_id FK
-        uuid user_id FK
-        string url
-        string media_type
+        uuid reporter_id FK
+        string report_type
+        uuid target_id
+        string reason
+        string status
+        uuid resolved_by FK
+        text resolution
+        datetime created_at
     }
