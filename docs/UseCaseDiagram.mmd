@@ -1,0 +1,29 @@
+graph LR
+    subgraph FitBond_Platform ["FitBond Platform"]
+        UC1((Sign up))
+        UC2((Sign in))
+        UC3((Manage Own Events<br/>Create, Edit, Delete))
+        UC4((Join Event))
+        UC5((Comment on Event))
+        UC6((Like Event))
+        UC7((Search Activities<br/>Sport, Time, Location))
+        UC8((Report Post))
+        
+        UC9((Ban Users))
+        UC10((Moderate Posts<br/>Edit/Delete))
+    end
+
+    User((User))
+    Admin((Admin))
+
+    User --- UC1
+    User --- UC2
+    User --- UC3
+    User --- UC4
+    User --- UC5
+    User --- UC6
+    User --- UC7
+    User --- UC8
+
+    Admin --- UC9
+    Admin --- UC10
