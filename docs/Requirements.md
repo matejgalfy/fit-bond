@@ -4,17 +4,14 @@
 
 FitBond is a social sports application that helps people find others to exercise with, create sport events, and build a local activity community. The app should reduce the friction of organizing sports meetups by making it easy to discover activities, join them, communicate with other participants, and keep the environment safe through moderation.
 
-The main value of the product is practical coordination. Users should be able to move from "I want to do a sport activity" to "I found a relevant event and joined it" in a short and clear flow.
-
 ## 2. Product Goals
 
-The application should satisfy these business and user goals:
+The application should satisfy these user goals:
 
 - Help users discover sport activities that fit their interests, time, and location.
 - Allow users to organize their own events without needing external tools.
 - Encourage interaction between participants through comments and lightweight engagement.
 - Support trust and safety through reporting and moderation.
-- Maintain a clear separation between regular user actions and administrative moderation actions.
 
 ## 3. Target Users
 
@@ -50,7 +47,7 @@ The first complete version of FitBond should include:
 - event joining and leaving,
 - comments on events,
 - interest marking on events,
-- reporting of posts or harmful content,
+- reporting posts or users,
 - administrative moderation,
 - user notifications about important activity.
 
@@ -59,7 +56,7 @@ The first complete version of FitBond should include:
 The expected basic flow of the app is:
 
 1. A new user creates an account or signs in.
-2. The user sets basic profile information and preferred sports or preferred location.
+2. The user sets basic profile information, preferred sports and preferred location.
 3. The user browses or searches available sport events.
 4. The user opens event detail, checks the description, time, location, skill level, and current participation.
 5. The user either joins the event, marks interest, or continues searching.
@@ -185,10 +182,6 @@ The application should follow these core rules:
 
 ## 8. High-Level Technical Requirements
 
-This section intentionally stays at a product level and avoids implementation detail.
-
-Requirements:
-
 - The application must work reliably on modern desktop and mobile browsers.
 - The interface must support responsive behavior so users can discover and join activities from a phone.
 - User authentication and account handling must protect user identity and session security.
@@ -196,10 +189,11 @@ Requirements:
 - The system should support role-based access so administrative features are available only to administrators.
 - The app should provide acceptable performance for common tasks such as sign-in, search, event detail loading, and joining an event.
 - The application should be designed so additional social features can be added later without rewriting the whole product concept.
+- Enable user to change between light and dark mode
 
 ## 9. Out of Scope for Now
 
-The following items are not required unless the project team decides to expand the scope:
+The following items will be implemented if project team decides to expand the scope:
 
 - direct private messaging between users,
 - payment processing,
@@ -212,13 +206,13 @@ The following items are not required unless the project team decides to expand t
 
 The core functional requirements for the complete version of FitBond are:
 
-- a new user can register, sign in, and find a relevant sport activity,
-- a user can create an event and manage it without external tools,
-- another user can discover that event, join it, and leave it if plans change,
-- participants can communicate on the event page,
-- inappropriate content can be reported and handled by an administrator,
+- a new user can register, sign in, and find a relevant sport activity.
+- a user can create, join or leave an event.
+- another user can discover that event, join it, and leave it if plans change.
+- participants can communicate on the event page.
+- inappropriate content can be reported and handled by an administrator.
 - the app remains clear and usable on both desktop and mobile devices.
-- Event visibility supports only public and private modes.
-- Comments are limited to users who joined the event.
-- The app includes interest marking as a lightweight engagement option.
-- Bans are permanent
+- event visibility supports public and private modes.
+- comments are limited to users who joined the event.
+- the app includes interest marking as a lightweight engagement option.
+- bans are permanent
