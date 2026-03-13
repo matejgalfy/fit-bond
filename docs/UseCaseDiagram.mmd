@@ -1,16 +1,31 @@
 graph LR
     subgraph FitBond_Platform ["FitBond Platform"]
-        UC1((Sign up))
-        UC2((Sign in))
-        UC3((Manage Own Events<br/>Create, Edit, Delete))
-        UC4((Join Event))
-        UC5((Comment on Event))
-        UC6((Like Event))
-        UC7((Search Activities<br/>Sport, Time, Location))
-        UC8((Report Post))
+        UC1((Register))
+        UC2((Log in))
+        UC3((Log Out))
+        UC4((Edit Profile))
+        UC5((Set Preffered Location))
+        UC6((Pick Preffered Sports))
+        UC7((Join Event))
+        UC8((Create Public Event))
+        UC9((Create Private Event))
+        UC10((Invite Players To A Private Event))
+        UC11((Set Event Time And Location))
+        UC12((Set Event Skill Level))
+        UC13((Set Event Sport Type))
+        UC14((Set Event Capacity))
+        UC15((Comment on Event))
+        UC16((Set Interest in Event))
+        UC17((Edit Event))
+        UC18((Delete Event))
+        UC19((Recieve Remaiders Of Upcoming Events))
+        UC20((Search Activities<br/>Sport, Time, Location))
+        UC21((Report Profile))
+        UC22((Report Post))
         
-        UC9((Ban Users))
-        UC10((Moderate Posts<br/>Edit/Delete))
+        UC23((Ban Users))
+        UC24((Moderate Posts<br/>Edit/Delete))
+        UC25((Edit Any User Profile))
     end
 
     User((User))
@@ -24,6 +39,21 @@ graph LR
     User --- UC6
     User --- UC7
     User --- UC8
+    User --- UC9
+    User --- UC10
+    User --- UC11
+    User --- UC12
+    User --- UC13
+    User --- UC14
+    User --- UC15
+    User --- UC16
+    User --- UC17
+    User --- UC18
+    User --- UC19
+    User --- UC20
+    User --- UC21
+    User --- UC22
 
-    Admin --- UC9
-    Admin --- UC10
+    Admin --- UC23
+    Admin --- UC24
+    Admin --- UC25
