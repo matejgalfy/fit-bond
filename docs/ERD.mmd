@@ -1,0 +1,123 @@
+erDiagram
+    USER ||--o{ USER_ROLE : has
+    ROLE ||--o{ USER_ROLE : assigned_to
+    ROLE ||--o{ ROLE_PERMISSION : holds
+    PERMISSION ||--o{ ROLE_PERMISSION : defines
+
+    USER ||--o{ EVENT : organizes
+    USER ||--o{ ATTENDANCE : participates
+    USER ||--o{ COMMENT : writes
+    USER ||--o{ REACTION : gives
+    USER ||--o{ NOTIFICATION : receives
+    USER ||--o{ REVIEW : writes_review
+    USER ||--o{ MEDIA : uploads
+
+    EVENT ||--o{ ATTENDANCE : has_participants
+    EVENT ||--o{ COMMENT : has_comments
+    EVENT ||--o{ REACTION : has_likes
+    EVENT ||--o{ MEDIA : has_gallery
+    EVENT }o--|| SPORT_TYPE : categorized_as
+    EVENT }o--|| LOCATION : takes_place_at
+
+    USER {
+        uuid id PK
+        string email
+        string password_hash
+        string full_name
+        text bio
+        datetime created_at
+    }
+
+    ROLE {
+        int id PK
+        string name
+    }
+
+    PERMISSION {
+        int id PK
+        string name
+    }
+
+    USER_ROLE {
+        uuid user_id FK
+        int role_id FK
+    }
+
+    ROLE_PERMISSION {
+        int role_id FK
+        int permission_id FK
+    }
+
+    EVENT {
+        uuid id PK
+        uuid organizer_id FK
+        int sport_type_id FK
+        int location_id FK
+        string title
+        text description
+        datetime start_time
+        int capacity
+        decimal price
+    }
+
+    SPORT_TYPE {
+        int id PK
+        string name
+        string icon_slug
+    }
+
+    LOCATION {
+        int id PK
+        string name
+        string address
+        float lat
+        float lng
+    }
+
+    ATTENDANCE {
+        uuid user_id FK
+        uuid event_id FK
+        string status
+        datetime joined_at
+    }
+
+    COMMENT {
+        uuid id PK
+        uuid user_id FK
+        uuid event_id FK
+        text content
+        datetime created_at
+    }
+
+    REACTION {
+        uuid id PK
+        uuid user_id FK
+        uuid event_id FK
+        string type
+    }
+
+    REVIEW {
+        uuid id PK
+        uuid reviewer_id FK
+        uuid target_user_id FK
+        uuid event_id FK
+        int rating
+        text text
+    }
+
+    NOTIFICATION {
+        uuid id PK
+        uuid user_id FK
+        string type
+        text message
+        boolean is_read
+        datetime sent_at
+    }
+
+    MEDIA {
+        uuid id PK
+        uuid event_id FK
+        uuid user_id FK
+        string url
+        string media_type
+    }
