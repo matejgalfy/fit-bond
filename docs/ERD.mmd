@@ -34,6 +34,7 @@ erDiagram
         text banned_reason
         datetime created_at
         datetime updated_at
+        datetime deleted_at
     }
 
     SPORT ||--o{ USER_PREFERRED_SPORT : preferred_by
@@ -58,6 +59,7 @@ erDiagram
         string name
         string icon
         text description
+        datetime deleted_at
     }
 
     LOCATION {
@@ -67,6 +69,7 @@ erDiagram
         string country
         float latitude
         float longitude
+        datetime deleted_at
     }
 
     EVENT {
@@ -87,6 +90,7 @@ erDiagram
         text cancellation_reason
         datetime created_at
         datetime updated_at
+        datetime deleted_at
     }
 
     EVENT_PARTICIPANT {
@@ -105,11 +109,11 @@ erDiagram
         uuid user_id FK
         uuid parent_comment_id FK
         text content
-        boolean is_deleted
         string deleted_by
         text deletion_reason
         datetime created_at
         datetime updated_at
+        datetime deleted_at
     }
 
     NOTIFICATION {
