@@ -1,6 +1,6 @@
 import { treaty } from '@elysiajs/eden';
 import type { App } from '../../backend/src/index'; // Import the Backend type
-import {useState } from 'react';
+import { useState } from 'react';
 
 // Initialize the client with the Backend's type
 const client = treaty<App>('localhost:3000');

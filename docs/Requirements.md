@@ -64,7 +64,6 @@ The expected basic flow of the app is:
 7. Participants interact on the event page through comments.
 8. If problematic content appears, a user reports it and an administrator reviews it.
 
-
 ## 6. Functional Requirements
 
 ### 6.1 Registration and Authentication
