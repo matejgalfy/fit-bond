@@ -7,9 +7,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "eslint .",
-    "preview": "vite preview",
-    "test": "vitest run",
-    "test:watch": "vitest"
+    "test": "bun test"
   },
   "dependencies": {
     "@elysiajs/eden": "^1.4.8",
