@@ -5,11 +5,11 @@ import App from './App.tsx';
 
 const rootElement = document.getElementById('root');
 if (rootElement) {
-  createRoot(rootElement).render(
-    <StrictMode>
-      <App />
-    </StrictMode>
-  );
+    createRoot(rootElement).render(
+        <StrictMode>
+            <App />
+        </StrictMode>
+    );
 } else {
-  throw new Error('Root element not found');
+    throw new Error('Root element not found');
 }
