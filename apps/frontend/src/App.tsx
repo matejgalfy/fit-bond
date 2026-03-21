@@ -16,7 +16,13 @@ function App() {
   return (
     <div>
       <h1>Fullstack Bun</h1>
-      <button onClick={() => { void fetchGreet(); }}>Fetch Data</button>
+      <button
+        onClick={() => {
+          void fetchGreet();
+        }}
+      >
+        Fetch Data
+      </button>
       <p>Response: {message}</p>
     </div>
   );
