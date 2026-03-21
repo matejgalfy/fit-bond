@@ -1,5 +1,8 @@
-tags:
-  - shared-fi
+image: oven/bun:latest
+
+default:
+  tags:
+    - shared-fi
 
 stages:
   - test
@@ -19,9 +22,6 @@ cache:
     - .bun/
 
 before_script:
-  - curl https://bun.sh/install | bash -s "bun-v${BUN_VERSION}"
-  - export PATH="$HOME/.bun/bin:$PATH"
-  - bun --version
   - bun install
 
 # Test Jobs
