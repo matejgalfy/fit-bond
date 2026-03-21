@@ -205,7 +205,7 @@ The following items will be implemented if project team decides to expand the sc
 
 The core functional requirements for the complete version of FitBond are:
 
-- a new user can register, sign in, and find a relevant sport activity.
+- an unregistered user can only create a new account.
 - a user can create, join or leave an event.
 - another user can discover that event, join it, and leave it if plans change.
 - participants can communicate on the event page.
