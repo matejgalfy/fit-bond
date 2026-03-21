@@ -3,7 +3,10 @@
   "version": "1.0.50",
   "scripts": {
     "test": "bun test",
-    "dev": "bun run --watch src/index.ts"
+    "dev": "bun run --watch src/index.ts",
+    "lint": "eslint --config ../../eslint.config.js .",
+    "lint:fix": "eslint --config ../../eslint.config.js --fix .",
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@elysiajs/cors": "^1.4.1",
@@ -11,7 +14,12 @@
     "elysia": "latest"
   },
   "devDependencies": {
-    "bun-types": "latest"
+    "@eslint/js": "^9.39.4",
+    "bun-types": "latest",
+    "eslint": "^9.39.4",
+    "globals": "^17.4.0",
+    "prettier": "^3.4.2",
+    "typescript-eslint": "^8.56.1"
   },
   "module": "src/index.js"
 }
