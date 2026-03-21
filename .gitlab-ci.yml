@@ -1,13 +1,13 @@
 image: oven/bun:latest
 
 default:
+  interruptible: true
   tags:
     - shared-fi
 
 stages:
   - test
   - lint
-  - format
 
 variables:
   FF_USE_FASTZIP: 'true'
@@ -22,7 +22,7 @@ cache:
     - .bun/
 
 before_script:
-  - bun install
+  - bun install --frozen-lockfile
 
 # Test Jobs
 test:backend:
@@ -73,8 +73,8 @@ lint:frontend:
     - develop
 
 # Format Check Job
-format:check:
-  stage: format
+lint:format:
+  stage: lint
   script:
     - bun run format:check
   allow_failure: false
