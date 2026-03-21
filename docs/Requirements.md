@@ -78,7 +78,7 @@ The expected basic flow of the app is:
 ### 6.2 User Profile
 
 - The application should maintain a basic user profile that helps others understand who is organizing or joining activities.
-- A user profile must include at least a name and optional personal details such as profile picture or bio.
+- A user profile must include a first name and last name, and optional personal details such as profile picture or bio.
 - A user should be able to set preferred sports.
 - A user should be able to define a preferred location and an activity radius.
 - A user should be identifiable as the organizer of events they create.

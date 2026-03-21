@@ -24,8 +24,9 @@ erDiagram
         uuid id PK
         string oauth_provider
         string oauth_id
+        string first_name
+        string last_name
         string email
-        string name
         string profile_picture_url
         text bio
         string role
@@ -76,7 +77,7 @@ erDiagram
         uuid id PK
         uuid organizer_id FK
         uuid location_id FK
-        string sport_type
+        uuid sport_id FK
         string name
         text description
         string skill_level
