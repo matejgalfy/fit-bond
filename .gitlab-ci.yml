@@ -1,0 +1,84 @@
+image: oven/bun:latest
+
+default:
+  tags:
+    - shared-fi
+
+stages:
+  - test
+  - lint
+  - format
+
+variables:
+  FF_USE_FASTZIP: 'true'
+  CACHE_COMPRESSION_LEVEL: 'fastest'
+  BUN_VERSION: '1.3.9'
+
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - node_modules/
+    - apps/*/node_modules/
+    - .bun/
+
+before_script:
+  - bun install
+
+# Test Jobs
+test:backend:
+  stage: test
+  script:
+    - bun run test:backend
+  artifacts:
+    reports:
+      junit: test-results.xml
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+test:frontend:
+  stage: test
+  script:
+    - bun run test:frontend
+  artifacts:
+    reports:
+      junit: test-results.xml
+    expire_in: 1 week
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Lint Jobs
+lint:backend:
+  stage: lint
+  script:
+    - cd apps/backend && bun run lint
+  allow_failure: false
+  only:
+    - merge_requests
+    - main
+    - develop
+
+lint:frontend:
+  stage: lint
+  script:
+    - cd apps/frontend && bun run lint
+  allow_failure: false
+  only:
+    - merge_requests
+    - main
+    - develop
+
+# Format Check Job
+format:check:
+  stage: format
+  script:
+    - bun run format:check
+  allow_failure: false
+  only:
+    - merge_requests
+    - main
+    - develop
