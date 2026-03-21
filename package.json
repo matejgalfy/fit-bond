@@ -1,6 +1,8 @@
 {
   "name": "pb138-project",
   "module": "index.ts",
+  "type": "module",
+  "private": true,
   "devDependencies": {
     "@eslint/js": "^9.39.4",
     "@types/bun": "latest",
@@ -16,7 +18,9 @@
   "peerDependencies": {
     "typescript": "^5"
   },
-  "private": true,
+  "workspaces": [
+    "apps/*"
+  ],
   "scripts": {
     "dev:backend": "bun --filter backend dev",
     "dev:frontend": "bun --filter frontend dev",
