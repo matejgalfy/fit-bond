@@ -1,29 +1,34 @@
 import { db } from './index';
 import * as schema from './schema';
-import { seed } from 'drizzle-seed';
+import { seed, reset } from 'drizzle-seed';
 
 async function main() {
     console.log('🌱 Seeding database with realistic data...');
+    await reset(db, schema);
 
-    await seed(db, schema, { seed: 69 }).refine((f) => ({
+    await seed(db, schema).refine((f) => ({
         sports: {
             count: 5,
             columns: {
-                name: [
-                    'Football',
-                    'Basketball',
-                    'Tennis',
-                    'Volleyball',
-                    'Running',
-                ],
-                description: f.loremIpsum( {sentencesCount: 2} ),
-                iconUrl: [
-                    'https://cdn-icons-png.flaticon.com/512/197/197484.png',
-                    'https://cdn-icons-png.flaticon.com/512/197/197567.png',
-                    'https://cdn-icons-png.flaticon.com/512/197/197386.png',
-                    'https://cdn-icons-png.flaticon.com/512/197/197408.png',
-                    'https://cdn-icons-png.flaticon.com/512/197/197374.png',
-                ],
+                name: f.valuesFromArray({
+                    values: [
+                        'Football',
+                        'Basketball',
+                        'Tennis',
+                        'Volleyball',
+                        'Running',
+                    ],
+                }),
+                description: f.loremIpsum({ sentencesCount: 2 }),
+                iconUrl: f.valuesFromArray({
+                    values: [
+                        'https://cdn-icons-png.flaticon.com/512/197/197484.png',
+                        'https://cdn-icons-png.flaticon.com/512/197/197567.png',
+                        'https://cdn-icons-png.flaticon.com/512/197/197386.png',
+                        'https://cdn-icons-png.flaticon.com/512/197/197408.png',
+                        'https://cdn-icons-png.flaticon.com/512/197/197374.png',
+                    ],
+                }),
             },
         },
         locations: {
@@ -32,38 +37,34 @@ async function main() {
                 address: f.streetAddress(),
                 city: f.city(),
                 country: f.country(),
-                lat: f.number({ 
-                    minValue: -90, 
-                    maxValue: 90, 
-                    precision: 1000000 // To get 6 decimal places
+                lat: f.number({
+                    minValue: -90,
+                    maxValue: 90,
+                    precision: 1000000,
                 }),
-                // Longitude: -180 to 180
-                lng: f.number({ 
-                    minValue: -180, 
-                    maxValue: 180, 
-                    precision: 1000000 
+                lng: f.number({
+                    minValue: -180,
+                    maxValue: 180,
+                    precision: 1000000,
                 }),
             },
         },
         users: {
-            count: 15,
+            count: 30,
             columns: {
+                id: f.uuid(),
                 firstName: f.firstName(),
                 lastName: f.lastName(),
                 email: f.email(),
-                // TODO: Add some randomnes
-                profilePictureUrl: "https://picsum.photos/seed/2/400/300",
+                profilePictureUrl: f.default({
+                    defaultValue: 'https://picsum.photos/seed/2/400/300',
+                }),
                 bio: f.loremIpsum(),
-                role: ['user', 'admin'],
-                isBanned: false,
+                role: f.valuesFromArray({ values: ['user', 'admin'] }),
+                isBanned: f.default({ defaultValue: false }),
             },
             with: {
-                preferredSports: {
-                    count: { min: 1, max: 3 },
-                },
-                locations: {
-                    count: 1,
-                },
+                userPreferredSports: 1,
             },
         },
         events: {
@@ -71,26 +72,21 @@ async function main() {
             columns: {
                 name: f.jobTitle(),
                 description: f.loremIpsum({ sentencesCount: 3 }),
-                skillLevel: ['beginner', 'intermediate', 'advanced'],
-                startTime: f.datetime(),
+                skillLevel: f.valuesFromArray({
+                    values: ['beginner', 'intermediate', 'advanced'],
+                }),
+                startTime: f.date(),
                 duration: f.int({ minValue: 30, maxValue: 180 }),
                 capacity: f.int({ minValue: 5, maxValue: 30 }),
-                isPublic: f.boolean(), // 70% true, 30% false
-                coverImageUrl: "https://picsum.photos/seed/2/400/300",
+                isPublic: f.boolean(),
+                coverImageUrl: f.default({
+                    defaultValue: 'https://picsum.photos/seed/2/400/300',
+                }),
             },
             with: {
-                participants: {
-                    count: { min: 2, max: 8 },
-                },
-                comments: {
-                    count: { min: 0, max: 5 },
-                },
-            },
-        },
-        comments: {
-            count: 20,
-            columns: {
-                content: f.loremIpsum({ sentencesCount: 4 }),
+                eventParticipants: 2,
+                eventInterested: 2,
+                comments: 2,
             },
         },
     }));

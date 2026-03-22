@@ -17,6 +17,7 @@ FitBond is a social sports application that helps people find others to exercise
 - **Git** - For version control
 
 Verify installations:
+
 ```bash
 bun --version
 docker --version
@@ -37,20 +38,23 @@ bun install
 ### 2. Start the Development Database
 
 ```bash
-docker compose up -d
+bun run db:setup
 ```
 
 This starts a PostgreSQL database at `localhost:5432` with:
+
 - **Username**: `dev_user`
 - **Password**: `password`
 - **Database**: `fitbound`
 
 Verify the database is running:
+
 ```bash
 docker compose ps
 ```
 
 To stop the database:
+
 ```bash
 docker compose down
 ```
@@ -71,7 +75,7 @@ Run migrations and seed the database with realistic test data:
 
 ```bash
 # Run pending migrations
-bun --filter backend run drizzle:migrate
+bun --filter backend run db:migrate
 
 # Seed database with test data
 bun --filter backend run db:seed
@@ -80,6 +84,7 @@ bun --filter backend run db:seed
 ### 5. Start Development Servers
 
 **Start both frontend and backend:**
+
 ```bash
 bun run dev
 ```
@@ -87,11 +92,13 @@ bun run dev
 **Or start them individually:**
 
 Start backend only (runs on `http://localhost:3000`):
+
 ```bash
 bun run dev:backend
 ```
 
 Start frontend only (runs on `http://localhost:5173`):
+
 ```bash
 bun run dev:frontend
 ```
@@ -115,9 +122,9 @@ cd apps/backend
 
 bun run dev                    # Start backend with hot-reload
 bun run db:seed              # Seed database with test data
-bun run drizzle:migrate      # Run pending migrations
-bun run drizzle:push         # Push schema to database
-bun run drizzle:studio       # Open Drizzle Studio DB GUI
+bun run db:migrate           # Run pending migrations
+bun run db:push              # Push schema to database
+bun run db:studio            # Open Drizzle Studio DB GUI
 bun test                     # Run backend tests
 ```
 
@@ -167,7 +174,6 @@ pb138-project/
 │   └── UseCaseDiagram.mmd     # Use cases diagram
 │
 ├── .env                        # Environment variables (dev defaults)
-├── docker-compose.yml          # PostgreSQL setup
 ├── package.json                # Root workspace package.json
 ├── tsconfig.json               # Root TypeScript config
 ├── eslint.config.js            # ESLint configuration
@@ -179,6 +185,7 @@ pb138-project/
 ### Schema
 
 The database schema includes:
+
 - **users** - User accounts with roles (user, admin)
 - **sports** - Available sports with icons
 - **locations** - Geographic locations for events
@@ -194,9 +201,10 @@ View the schema at [apps/backend/src/db/schema.ts](apps/backend/src/db/schema.ts
 ### Drizzle Studio
 
 Explore your database with a GUI:
+
 ```bash
 cd apps/backend
-bun run drizzle:studio
+bun run db:studio
 ```
 
 Opens at `http://local.drizzle.studio`
@@ -209,6 +217,7 @@ The backend API uses **Elysia** and **@elysiajs/eden** for end-to-end type safet
 - The frontend imports type-safe API client from the backend's `App` type
 
 Example Elysia endpoint in backend:
+
 ```typescript
 app.post('/events', ({ body }) => {
     // Handle event creation
@@ -217,8 +226,11 @@ app.post('/events', ({ body }) => {
 ```
 
 Frontend usage with full type safety:
+
 ```typescript
-const response = await api.events.post({ /* validated types */ });
+const response = await api.events.post({
+    /* validated types */
+});
 ```
 
 ## Frontend Development
@@ -233,6 +245,7 @@ const response = await api.events.post({ /* validated types */ });
 ### Database Connection Issues
 
 **Error: "connect ECONNREFUSED 127.0.0.1:5432"**
+
 - Ensure Docker is running: `docker compose up -d`
 - Check database container: `docker compose ps`
 - View logs: `docker compose logs db`
@@ -240,6 +253,7 @@ const response = await api.events.post({ /* validated types */ });
 ### Port Already in Use
 
 **Backend (3000) or Frontend (5173) port in use:**
+
 ```bash
 # Kill process on port 3000
 lsof -ti :3000 | xargs kill -9
@@ -251,6 +265,7 @@ lsof -ti :5173 | xargs kill -9
 ### Module Resolution Issues
 
 **TypeScript can't find modules:**
+
 ```bash
 # Clear and reinstall dependencies
 rm -rf node_modules bun.lock
@@ -260,9 +275,10 @@ bun install
 ### Database Migrations
 
 **Pending migrations:**
+
 ```bash
 cd apps/backend
-bun run drizzle:migrate
+bun run db:migrate
 ```
 
 ## Contributing
@@ -273,6 +289,7 @@ bun run drizzle:migrate
 4. Write meaningful commit messages
 
 Run formatting before committing:
+
 ```bash
 bun format
 ```
@@ -287,7 +304,3 @@ bun format
 - [Drizzle ORM Documentation](https://orm.drizzle.team)
 - [React Documentation](https://react.dev)
 - [TypeScript Documentation](https://www.typescriptlang.org/docs)
-
-## Questions?
-
-Check the project guidelines in [copilot-instructions.md](.github/copilot-instructions.md) for additional context on architecture boundaries and coding conventions.

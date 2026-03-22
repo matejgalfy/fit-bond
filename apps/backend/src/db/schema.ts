@@ -4,11 +4,11 @@ import {
     text,
     integer,
     timestamp,
-    unique,
     boolean,
     pgEnum,
     AnyPgColumn,
     decimal,
+    primaryKey,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 
@@ -71,8 +71,8 @@ export const locations = pgTable('locations', {
     address: text('address').notNull(),
     city: text('city').notNull(),
     country: text('country').notNull(),
-    lat: decimal("lat", { precision: 8, scale: 6 }).notNull(),
-    lng: decimal("lng", { precision: 9, scale: 6 }).notNull(),
+    lat: decimal('lat', { precision: 8, scale: 6 }).notNull(),
+    lng: decimal('lng', { precision: 9, scale: 6 }).notNull(),
     deletedAt: timestamp('deleted_at'),
 });
 
@@ -81,12 +81,12 @@ export const userPreferredSports = pgTable(
     {
         userId: uuid('user_id')
             .notNull()
-            .references(() => users.id),
+            .references(() => users.id, { onDelete: 'cascade' }),
         sportId: uuid('sport_id')
             .notNull()
-            .references(() => sports.id),
+            .references(() => sports.id, { onDelete: 'cascade' }),
     },
-    (table) => [unique().on(table.userId, table.sportId)]
+    (table) => [primaryKey({ columns: [table.userId, table.sportId] })]
 );
 
 export const userLocations = pgTable('user_locations', {
@@ -140,7 +140,7 @@ export const eventParticipants = pgTable(
             .notNull()
             .references(() => users.id),
     },
-    (table) => [unique().on(table.eventId, table.userId)]
+    (table) => [primaryKey({ columns: [table.userId, table.eventId] })]
 );
 
 export const eventInterested = pgTable(
@@ -153,7 +153,7 @@ export const eventInterested = pgTable(
             .notNull()
             .references(() => users.id),
     },
-    (table) => [unique().on(table.eventId, table.userId)]
+    (table) => [primaryKey({ columns: [table.userId, table.eventId] })]
 );
 
 export const comments = pgTable('comments', () => ({
