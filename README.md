@@ -1,103 +1,306 @@
-# pb138 Project
+# FitBond - Developer Guide
 
-## Getting started
+FitBond is a social sports application that helps people find others to exercise with, create sport events, and build a local activity community.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## Tech Stack
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+- **Runtime**: [Bun](https://bun.sh)
+- **Backend**: [Elysia](https://elysiajs.com) on Bun
+- **Frontend**: React + TypeScript with Vite
+- **Database**: PostgreSQL with Drizzle ORM
+- **Monorepo**: Bun workspaces
 
-## Add your files
+## Prerequisites
 
-- [Create](https://docs.gitlab.com/user/project/repository/web_editor/#create-a-file) or [upload](https://docs.gitlab.com/user/project/repository/web_editor/#upload-a-file) files
-- [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
+- **Bun** (v1.0 or later) - [Install Bun](https://bun.sh)
+- **Docker & Docker Compose** - For running PostgreSQL database
+- **Git** - For version control
+
+Verify installations:
+
+```bash
+bun --version
+docker --version
+docker compose --version
+git --version
+```
+
+## Getting Started
+
+### 1. Clone and Install Dependencies
+
+```bash
+git clone <repository-url>
+cd pb138-project
+bun install
+```
+
+### 2. Start the Development Database
+
+```bash
+bun run db:setup
+```
+
+This starts a PostgreSQL database at `localhost:5432` with:
+
+- **Username**: `dev_user`
+- **Password**: `password`
+- **Database**: `fitbound`
+
+Verify the database is running:
+
+```bash
+docker compose ps
+```
+
+To stop the database:
+
+```bash
+docker compose down
+```
+
+### 3. Set Up Environment Variables
+
+Create a `.env` file in the project root (or use the existing one). The default values are already configured for local development:
+
+```env
+# Local Docker PostgreSQL
+# Connection string for Drizzle ORM
+DATABASE_URL=postgres://dev_user:password@localhost:5432/fitbound
+```
+
+### 4. Initialize the Database
+
+Run migrations and seed the database with realistic test data:
+
+```bash
+# Run pending migrations
+bun --filter backend run db:migrate
+
+# Seed database with test data
+bun --filter backend run db:seed
+```
+
+### 5. Start Development Servers
+
+**Start both frontend and backend:**
+
+```bash
+bun run dev
+```
+
+**Or start them individually:**
+
+Start backend only (runs on `http://localhost:3000`):
+
+```bash
+bun run dev:backend
+```
+
+Start frontend only (runs on `http://localhost:5173`):
+
+```bash
+bun run dev:frontend
+```
+
+## Available Commands
+
+### Root Level (Monorepo)
+
+```bash
+bun install               # Install all dependencies
+bun run dev              # Start both frontend and backend
+bun run dev:backend      # Start backend server
+bun run dev:frontend     # Start frontend development server
+bun format               # Format code with Prettier
+```
+
+### Backend Commands
+
+```bash
+cd apps/backend
+
+bun run dev                    # Start backend with hot-reload
+bun run db:seed              # Seed database with test data
+bun run db:migrate           # Run pending migrations
+bun run db:push              # Push schema to database
+bun run db:studio            # Open Drizzle Studio DB GUI
+bun test                     # Run backend tests
+```
+
+### Frontend Commands
+
+```bash
+cd apps/frontend
+
+bun run dev                  # Start Vite dev server
+bun run build               # Build for production
+bun run lint                # Run ESLint
+bun run preview             # Preview production build locally
+```
+
+## Project Structure
 
 ```
-cd existing_repo
-git remote add origin https://gitlab.fi.muni.cz/xburger2/pb138-project.git
-git branch -M main
-git push -uf origin main
+pb138-project/
+├── apps/
+│   ├── backend/                # Elysia backend API
+│   │   ├── src/
+│   │   │   ├── index.ts        # Main server entry point
+│   │   │   ├── index.test.ts   # Backend tests
+│   │   │   └── db/
+│   │   │       ├── index.ts    # Database client
+│   │   │       ├── schema.ts   # Drizzle ORM schema
+│   │   │       └── seed.ts     # Database seeder
+│   │   ├── package.json
+│   │   └── tsconfig.json
+│   │
+│   └── frontend/               # React frontend app
+│       ├── src/
+│       │   ├── main.tsx        # Entry point
+│       │   ├── App.tsx         # Main component
+│       │   ├── App.css
+│       │   ├── index.css
+│       │   ├── app.test.tsx
+│       │   └── assets/
+│       ├── index.html
+│       ├── vite.config.ts
+│       ├── package.json
+│       └── tsconfig*.json
+│
+├── docs/
+│   ├── Requirements.md         # Product requirements
+│   ├── ERD.mmd                # Database Entity Relationship Diagram
+│   └── UseCaseDiagram.mmd     # Use cases diagram
+│
+├── .env                        # Environment variables (dev defaults)
+├── package.json                # Root workspace package.json
+├── tsconfig.json               # Root TypeScript config
+├── eslint.config.js            # ESLint configuration
+└── README.md                   # This file
 ```
 
-## Integrate with your tools
+## Database
 
-- [Set up project integrations](https://gitlab.fi.muni.cz/xburger2/pb138-project/-/settings/integrations)
+### Schema
 
-## Collaborate with your team
+The database schema includes:
 
-- [Invite team members and collaborators](https://docs.gitlab.com/user/project/members/)
-- [Create a new merge request](https://docs.gitlab.com/user/project/merge_requests/creating_merge_requests/)
-- [Automatically close issues from merge requests](https://docs.gitlab.com/user/project/issues/managing_issues/#closing-issues-automatically)
-- [Enable merge request approvals](https://docs.gitlab.com/user/project/merge_requests/approvals/)
-- [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
+- **users** - User accounts with roles (user, admin)
+- **sports** - Available sports with icons
+- **locations** - Geographic locations for events
+- **events** - Sports events organized by users
+- **event_participants** - Users participating in events
+- **event_interested** - Users interested in events
+- **comments** - Comments on events
+- **notifications** - User notifications
+- **reports** - User and content reports for moderation
 
-## Test and Deploy
+View the schema at [apps/backend/src/db/schema.ts](apps/backend/src/db/schema.ts)
 
-Use the built-in continuous integration in GitLab.
+### Drizzle Studio
 
-- [Get started with GitLab CI/CD](https://docs.gitlab.com/ci/quick_start/)
-- [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/user/application_security/sast/)
-- [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/topics/autodevops/requirements/)
-- [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/user/clusters/agent/)
-- [Set up protected environments](https://docs.gitlab.com/ci/environments/protected_environments/)
+Explore your database with a GUI:
 
----
+```bash
+cd apps/backend
+bun run db:studio
+```
 
-# Editing this README
+Opens at `http://local.drizzle.studio`
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+## API Development
 
-## Suggestions for a good README
+The backend API uses **Elysia** and **@elysiajs/eden** for end-to-end type safety.
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+- Backend entry point: [apps/backend/src/index.ts](apps/backend/src/index.ts)
+- The frontend imports type-safe API client from the backend's `App` type
 
-## Name
+Example Elysia endpoint in backend:
 
-Choose a self-explaining name for your project.
+```typescript
+app.post('/events', ({ body }) => {
+    // Handle event creation
+    return event;
+});
+```
 
-## Description
+Frontend usage with full type safety:
 
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+```typescript
+const response = await api.events.post({
+    /* validated types */
+});
+```
 
-## Badges
+## Frontend Development
 
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- **Framework**: React with TypeScript
+- **Build tool**: Vite
+- **Styling**: CSS (see [App.css](apps/frontend/src/App.css))
+- **Testing**: included test setup
 
-## Visuals
+## Troubleshooting
 
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+### Database Connection Issues
 
-## Installation
+**Error: "connect ECONNREFUSED 127.0.0.1:5432"**
 
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- Ensure Docker is running: `docker compose up -d`
+- Check database container: `docker compose ps`
+- View logs: `docker compose logs db`
 
-## Usage
+### Port Already in Use
 
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+**Backend (3000) or Frontend (5173) port in use:**
 
-## Support
+```bash
+# Kill process on port 3000
+lsof -ti :3000 | xargs kill -9
 
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+# Kill process on port 5173
+lsof -ti :5173 | xargs kill -9
+```
 
-## Roadmap
+### Module Resolution Issues
 
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+**TypeScript can't find modules:**
+
+```bash
+# Clear and reinstall dependencies
+rm -rf node_modules bun.lock
+bun install
+```
+
+### Database Migrations
+
+**Pending migrations:**
+
+```bash
+cd apps/backend
+bun run db:migrate
+```
 
 ## Contributing
 
-State if you are open to contributions and what your requirements are for accepting them.
+1. Follow the existing code style (enforced by ESLint and Prettier)
+2. Keep changes focused and minimal
+3. Test your changes before committing
+4. Write meaningful commit messages
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+Run formatting before committing:
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
+```bash
+bun format
+```
 
-## Authors and acknowledgment
+## Useful Resources
 
-Show your appreciation to those who have contributed to the project.
-
-## License
-
-For open source projects, say how it is licensed.
-
-## Project status
-
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+- [FitBond Requirements](docs/Requirements.md)
+- [Database ERD](docs/ERD.mmd)
+- [Use Cases](docs/UseCaseDiagram.mmd)
+- [Bun Documentation](https://bun.sh/docs)
+- [Elysia Documentation](https://elysiajs.com/guides)
+- [Drizzle ORM Documentation](https://orm.drizzle.team)
+- [React Documentation](https://react.dev)
+- [TypeScript Documentation](https://www.typescriptlang.org/docs)
