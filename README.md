@@ -61,7 +61,7 @@ docker compose down
 
 ### 3. Set Up Environment Variables
 
-Create a `.env` file in the project root (or use the existing one). The default values are already configured for local development:
+Create a `.env` file in the backend root (or use the existing one). The default values are already configured for local development:
 
 ```env
 # Local Docker PostgreSQL
