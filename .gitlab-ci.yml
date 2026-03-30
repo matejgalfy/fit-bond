@@ -73,7 +73,7 @@ lint:frontend:
         - develop
 
 # Format Check Job
-lint:format:
+format:
     stage: lint
     script:
         - bun run format:check
