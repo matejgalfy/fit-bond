@@ -29,6 +29,7 @@ async function main() {
                         'https://cdn-icons-png.flaticon.com/512/197/197374.png',
                     ],
                 }),
+                deletedAt: f.default({ defaultValue: null }),
             },
         },
         locations: {
@@ -47,6 +48,7 @@ async function main() {
                     maxValue: 180,
                     precision: 1000000,
                 }),
+                deletedAt: f.default({ defaultValue: null }),
             },
         },
         users: {
@@ -62,6 +64,7 @@ async function main() {
                 bio: f.loremIpsum(),
                 role: f.valuesFromArray({ values: ['user', 'admin'] }),
                 isBanned: f.default({ defaultValue: false }),
+                deletedAt: f.default({ defaultValue: null }),
             },
             with: {
                 userPreferredSports: 1,
@@ -82,6 +85,7 @@ async function main() {
                 coverImageUrl: f.default({
                     defaultValue: 'https://picsum.photos/seed/2/400/300',
                 }),
+                deletedAt: f.default({ defaultValue: null }),
             },
             with: {
                 eventParticipants: 2,
