@@ -99,7 +99,7 @@ export default function EventFeed() {
     const filteredSports = allSports.filter(
         (s) =>
             s.toLowerCase().includes(sportSearch.toLowerCase()) &&
-            !selectedSports.includes(s),
+            !selectedSports.includes(s)
     );
     const bg = dark ? '#0F172A' : '#F0F4FA';
     const cardBg = dark ? '#1E293B' : '#FFFFFF';
@@ -156,7 +156,8 @@ export default function EventFeed() {
                             width: 28,
                             height: 28,
                             borderRadius: 8,
-                            background: 'linear-gradient(135deg, #0080FF, #0060CC)',
+                            background:
+                                'linear-gradient(135deg, #0080FF, #0060CC)',
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
@@ -172,7 +173,9 @@ export default function EventFeed() {
                 <div style={{ flex: 1 }} />
                 <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
                     <button
-                        onClick={() => { setDark(!dark); }}
+                        onClick={() => {
+                            setDark(!dark);
+                        }}
                         style={{
                             width: 36,
                             height: 36,
@@ -219,7 +222,9 @@ export default function EventFeed() {
                             return (
                                 <button
                                     key={item.id}
-                                    onClick={() => { setActiveNav(item.id); }}
+                                    onClick={() => {
+                                        setActiveNav(item.id);
+                                    }}
                                     style={{
                                         display: 'flex',
                                         alignItems: 'center',
@@ -308,7 +313,8 @@ export default function EventFeed() {
                         <div style={{ marginBottom: 20 }}>
                             <h1
                                 style={{
-                                    fontFamily: "'Plus Jakarta Sans', sans-serif",
+                                    fontFamily:
+                                        "'Plus Jakarta Sans', sans-serif",
                                     fontSize: 24,
                                     fontWeight: 700,
                                     margin: 0,
@@ -317,7 +323,13 @@ export default function EventFeed() {
                             >
                                 Discover Events
                             </h1>
-                            <p style={{ fontSize: 14, color: muted, marginTop: 4 }}>
+                            <p
+                                style={{
+                                    fontSize: 14,
+                                    color: muted,
+                                    marginTop: 4,
+                                }}
+                            >
                                 Find sport activities that match your interests
                             </p>
                         </div>
@@ -341,7 +353,12 @@ export default function EventFeed() {
                                 }}
                             >
                                 {/* Sport search */}
-                                <div style={{ flex: '1 1 200px', position: 'relative' }}>
+                                <div
+                                    style={{
+                                        flex: '1 1 200px',
+                                        position: 'relative',
+                                    }}
+                                >
                                     <label
                                         style={{
                                             fontSize: 12,
@@ -370,19 +387,24 @@ export default function EventFeed() {
                                                 setSportSearch(e.target.value);
                                                 setShowSportSuggestions(true);
                                             }}
-                                            onFocus={() => { setShowSportSuggestions(true); }}
+                                            onFocus={() => {
+                                                setShowSportSuggestions(true);
+                                            }}
                                             placeholder="Search sport..."
                                             style={{
                                                 width: '100%',
                                                 height: 36,
                                                 borderRadius: 8,
                                                 border: `1px solid ${border}`,
-                                                background: dark ? '#0F172A' : '#F0F4FA',
+                                                background: dark
+                                                    ? '#0F172A'
+                                                    : '#F0F4FA',
                                                 padding: '0 10px 0 32px',
                                                 fontSize: 13,
                                                 color: text,
                                                 outline: 'none',
-                                                fontFamily: "'DM Sans', sans-serif",
+                                                fontFamily:
+                                                    "'DM Sans', sans-serif",
                                             }}
                                         />
                                         {showSportSuggestions &&
@@ -398,38 +420,54 @@ export default function EventFeed() {
                                                         background: cardBg,
                                                         border: `1px solid ${border}`,
                                                         borderRadius: 8,
-                                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                                                        boxShadow:
+                                                            '0 4px 12px rgba(0,0,0,0.1)',
                                                     }}
                                                 >
-                                                    {filteredSports.slice(0, 5).map((sport) => (
-                                                        <div
-                                                            key={sport}
-                                                            onClick={() => {
-                                                                setSelectedSports([
-                                                                    ...selectedSports,
-                                                                    sport,
-                                                                ]);
-                                                                setSportSearch('');
-                                                                setShowSportSuggestions(false);
-                                                            }}
-                                                            style={{
-                                                                padding: '8px 12px',
-                                                                fontSize: 13,
-                                                                cursor: 'pointer',
-                                                                color: text,
-                                                            }}
-                                                            onMouseEnter={(e) =>
-                                                                (e.currentTarget.style.background =
-                                                                    dark ? '#334155' : '#F0F4FA')
-                                                            }
-                                                            onMouseLeave={(e) =>
-                                                                (e.currentTarget.style.background =
-                                                                    'transparent')
-                                                            }
-                                                        >
-                                                            {sport}
-                                                        </div>
-                                                    ))}
+                                                    {filteredSports
+                                                        .slice(0, 5)
+                                                        .map((sport) => (
+                                                            <div
+                                                                key={sport}
+                                                                onClick={() => {
+                                                                    setSelectedSports(
+                                                                        [
+                                                                            ...selectedSports,
+                                                                            sport,
+                                                                        ]
+                                                                    );
+                                                                    setSportSearch(
+                                                                        ''
+                                                                    );
+                                                                    setShowSportSuggestions(
+                                                                        false
+                                                                    );
+                                                                }}
+                                                                style={{
+                                                                    padding:
+                                                                        '8px 12px',
+                                                                    fontSize: 13,
+                                                                    cursor: 'pointer',
+                                                                    color: text,
+                                                                }}
+                                                                onMouseEnter={(
+                                                                    e
+                                                                ) =>
+                                                                    (e.currentTarget.style.background =
+                                                                        dark
+                                                                            ? '#334155'
+                                                                            : '#F0F4FA')
+                                                                }
+                                                                onMouseLeave={(
+                                                                    e
+                                                                ) =>
+                                                                    (e.currentTarget.style.background =
+                                                                        'transparent')
+                                                                }
+                                                            >
+                                                                {sport}
+                                                            </div>
+                                                        ))}
                                                 </div>
                                             )}
                                     </div>
@@ -446,11 +484,13 @@ export default function EventFeed() {
                                                 <Chip
                                                     key={s}
                                                     label={s}
-                                                    onRemove={() =>
-                                                        { setSelectedSports(
-                                                            selectedSports.filter((x) => x !== s),
-                                                        ); }
-                                                    }
+                                                    onRemove={() => {
+                                                        setSelectedSports(
+                                                            selectedSports.filter(
+                                                                (x) => x !== s
+                                                            )
+                                                        );
+                                                    }}
                                                 />
                                             ))}
                                         </div>
@@ -477,7 +517,9 @@ export default function EventFeed() {
                                             height: 36,
                                             borderRadius: 8,
                                             border: `1px solid ${border}`,
-                                            background: dark ? '#0F172A' : '#F0F4FA',
+                                            background: dark
+                                                ? '#0F172A'
+                                                : '#F0F4FA',
                                             padding: '0 10px',
                                             fontSize: 13,
                                             color: text,
@@ -518,12 +560,15 @@ export default function EventFeed() {
                                                 height: 36,
                                                 borderRadius: 8,
                                                 border: `1px solid ${border}`,
-                                                background: dark ? '#0F172A' : '#F0F4FA',
+                                                background: dark
+                                                    ? '#0F172A'
+                                                    : '#F0F4FA',
                                                 padding: '0 10px 0 32px',
                                                 fontSize: 13,
                                                 color: text,
                                                 outline: 'none',
-                                                fontFamily: "'DM Sans', sans-serif",
+                                                fontFamily:
+                                                    "'DM Sans', sans-serif",
                                             }}
                                         />
                                     </div>
@@ -546,7 +591,9 @@ export default function EventFeed() {
                                         {SKILL_OPTIONS.map((skill) => (
                                             <button
                                                 key={skill}
-                                                onClick={() => { setSkillFilter(skill); }}
+                                                onClick={() => {
+                                                    setSkillFilter(skill);
+                                                }}
                                                 style={{
                                                     height: 36,
                                                     padding: '0 12px',
@@ -559,9 +606,12 @@ export default function EventFeed() {
                                                             ? '#0080FF'
                                                             : 'transparent',
                                                     color:
-                                                        skillFilter === skill ? '#fff' : muted,
+                                                        skillFilter === skill
+                                                            ? '#fff'
+                                                            : muted,
                                                     cursor: 'pointer',
-                                                    fontFamily: "'DM Sans', sans-serif",
+                                                    fontFamily:
+                                                        "'DM Sans', sans-serif",
                                                 }}
                                             >
                                                 {skill}
@@ -583,9 +633,19 @@ export default function EventFeed() {
                         </div>
 
                         {/* EVENT LIST */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                        <div
+                            style={{
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: 16,
+                            }}
+                        >
                             {MOCK_EVENTS.map((event) => (
-                                <EventCard key={event.id} event={event} dark={dark} />
+                                <EventCard
+                                    key={event.id}
+                                    event={event}
+                                    dark={dark}
+                                />
                             ))}
                         </div>
                     </div>

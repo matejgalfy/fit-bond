@@ -28,7 +28,8 @@ export function EventCard({ event, dark }: EventCardProps) {
             onMouseEnter={(e) => {
                 if (!isCancelled) {
                     e.currentTarget.style.transform = 'translateY(-2px)';
-                    e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.08)';
+                    e.currentTarget.style.boxShadow =
+                        '0 8px 24px rgba(0,0,0,0.08)';
                 }
             }}
             onMouseLeave={(e) => {
@@ -149,9 +150,15 @@ export function EventCard({ event, dark }: EventCardProps) {
                     }}
                 >
                     <span
-                        style={{ color: muted, display: 'flex', alignItems: 'center', gap: 4 }}
+                        style={{
+                            color: muted,
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: 4,
+                        }}
                     >
-                        <Users size={13} /> {event.participants}/{event.capacity} joined
+                        <Users size={13} /> {event.participants}/
+                        {event.capacity} joined
                     </span>
                     <span
                         style={{
@@ -175,7 +182,9 @@ export function EventCard({ event, dark }: EventCardProps) {
                     }}
                 >
                     <Avatar name={event.organizer} size={24} />
-                    <span style={{ fontSize: 12, color: muted }}>{event.organizer}</span>
+                    <span style={{ fontSize: 12, color: muted }}>
+                        {event.organizer}
+                    </span>
                     <span
                         style={{
                             marginLeft: 'auto',
