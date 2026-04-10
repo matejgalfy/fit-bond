@@ -6,7 +6,7 @@ FitBond is a social sports application for discovering, creating, and joining lo
 
 - **Monorepo**: Bun workspaces (`apps/backend`, `apps/frontend`)
 - **Backend**: Elysia on Bun, PostgreSQL with Drizzle ORM, Zod validation
-- **Frontend**: React 19 + TypeScript + Vite, `@elysiajs/eden` treaty client, TanStack Start (SPA mode), TanStack Query (React Query), Shadcn/ui, Tailwind CSS
+- **Frontend**: React 19 + TypeScript + Vite, `@elysiajs/eden` treaty client
 - **Package manager**: Bun only — do not use npm, yarn, or pnpm
 
 ## Commands
@@ -123,10 +123,7 @@ Use `expect.assertions(n)` with try/catch for error-throwing tests (avoids ESLin
 - After every change ensure `bun test` and `bun lint` passes with no errors
 - Use `import type { X }` for type-only imports
 - Do not weaken tsconfig strict settings
-- Frontend uses TanStack Start in SPA mode with Vite as the bundler
-- Use TanStack Query (React Query) for all server state fetching and caching — do not use `useEffect` + `fetch` directly
-- Use Shadcn/ui components for UI elements — prefer Shadcn primitives over custom HTML
-- Use Tailwind CSS for styling — do not use plain CSS or CSS modules
+- Frontend uses Vite
 - Do not introduce Express, ws, pg, better-sqlite3, ioredis, or dotenv
 - Run `bun format` before committing
 - Soft deletes use `deletedAt` timestamp fields
