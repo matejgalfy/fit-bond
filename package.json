@@ -25,7 +25,7 @@
         "dev:backend": "bun --filter backend dev",
         "dev:frontend": "bun --filter frontend dev",
         "dev": "bun run dev:backend & bun run dev:frontend",
-        "db:setup": "bun --filter backend run db:setup",
+        "db:setup": "bun --filter backend db:setup",
         "lint:backend": "cd apps/backend && bun run lint",
         "lint:frontend": "cd apps/frontend && bun run lint",
         "lint": "bun run lint:backend && bun run lint:frontend",
