@@ -7,11 +7,18 @@ FitBond is a social sports application for discovering, creating, and joining lo
 - **Monorepo**: Bun workspaces (`apps/backend`, `apps/frontend`)
 - **Backend**: Elysia on Bun, PostgreSQL with Drizzle ORM, Zod validation
 - **Frontend**: React 19 + TypeScript + Vite, `@elysiajs/eden` treaty client
+- **Routing**: TanStack Start in SPA mode — file-based routing under `src/routes/`
+- **Server state**: React Query (`@tanstack/react-query`) — all API calls go through query/mutation hooks
+- **UI components**: Shadcn/ui — components live in `src/components/ui/`, generated via `bunx --bun shadcn@latest add <component>`
+- **Styling**: Tailwind CSS — utility classes only, no custom CSS except in `src/index.css` for global tokens
 - **Package manager**: Bun only — do not use npm, yarn, or pnpm
 
 ## Commands
 
 ```bash
+# Frontend (from apps/frontend/)
+bunx --bun shadcn@latest add <component>   # Add a Shadcn component
+
 # Root level
 bun install                  # Install all dependencies
 bun run dev                  # Start backend (3000) + frontend (5173)
@@ -37,6 +44,34 @@ bun run lint                 # ESLint
 ```
 
 ## Architecture
+
+### Frontend Architecture
+
+#### Routing (TanStack Start — SPA mode)
+- File-based routes in `src/routes/`
+- Root layout: `src/routes/__root.tsx`
+- Index route: `src/routes/index.tsx`
+- Nested routes: `src/routes/<segment>/route.tsx` (layout) + `src/routes/<segment>/index.tsx`
+- Use `createFileRoute` / `createRootRoute` from `@tanstack/react-router`
+- SPA mode only — no SSR, no server functions; data loading via React Query in route `loader` or component
+
+#### Data Fetching (React Query)
+- All backend calls go through React Query hooks (`useQuery`, `useMutation`, `useInfiniteQuery`)
+- Query keys follow the pattern `['resource', { filters }]` — e.g. `['events', { sportId }]`
+- API client (`treaty`) is a singleton exported from `src/lib/api.ts`
+- Keep query/mutation hooks co-located with the feature they serve (e.g. `src/features/events/hooks.ts`)
+
+#### Component Library (Shadcn + shared components)
+- `src/components/ui/` — Shadcn-generated primitives (Button, Card, Input, …); **do not edit these manually**, re-generate if needed
+- `src/components/` — shared composite components built on top of Shadcn primitives
+- Feature-specific components live in `src/features/<name>/components/`
+
+#### Styling (Tailwind CSS)
+- Use Tailwind utility classes directly in JSX; avoid writing new CSS files
+- Design tokens (colors, spacing) configured in `tailwind.config.ts`, reflected as CSS variables in `src/index.css`
+- Use `cn()` from `src/lib/utils.ts` (Shadcn-provided) for conditional/merged class names
+
+---
 
 ### End-to-End Type Safety
 
@@ -120,6 +155,11 @@ const service = createEventsService(mockModel as unknown as EventsModel);
 Use `expect.assertions(n)` with try/catch for error-throwing tests (avoids ESLint `await-thenable` issues with `rejects.toThrow`).
 
 ## Conventions
+- Do not write raw CSS for components — use Tailwind classes
+- Use `cn()` from `src/lib/utils.ts` for conditional/merged class names
+- Shadcn components in `src/components/ui/` are auto-generated — do not edit them manually; re-generate if needed
+- All backend data fetching must go through React Query hooks, never direct `await client.xxx.get()` in components
+- Route params and search params must be validated with Zod using `zodValidator` from TanStack Router
 - After every change ensure `bun test` and `bun lint` passes with no errors
 - Use `import type { X }` for type-only imports
 - Do not weaken tsconfig strict settings
