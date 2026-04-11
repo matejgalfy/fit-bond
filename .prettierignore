@@ -9,3 +9,4 @@ coverage
 *.lock
 drizzle
 .github
+apps/frontend/src/routeTree.gen.ts
