@@ -1,13 +1,18 @@
+import type { ChangeEventHandler } from 'react';
 import { useState } from 'react';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
 
 interface PasswordInputProps {
     placeholder?: string;
+    value?: string;
+    onChange?: ChangeEventHandler<HTMLInputElement>;
 }
 
 export function PasswordInput({
     placeholder = 'Password',
+    value,
+    onChange,
 }: PasswordInputProps) {
     const [show, setShow] = useState(false);
 
@@ -22,6 +27,8 @@ export function PasswordInput({
                 type={show ? 'text' : 'password'}
                 placeholder={placeholder}
                 className="pl-9 pr-10"
+                value={value}
+                onChange={onChange}
             />
 
             <button
