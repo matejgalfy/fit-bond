@@ -52,7 +52,7 @@ async function main() {
             },
         },
         users: {
-            count: 30,
+            count: 10,
             columns: {
                 id: f.uuid(),
                 firstName: f.firstName(),
@@ -69,6 +69,9 @@ async function main() {
             with: {
                 userPreferredSports: 1,
             },
+        },
+        userPreferredSports: {
+            count: 0,
         },
         events: {
             count: 12,
@@ -88,9 +91,9 @@ async function main() {
                 deletedAt: f.default({ defaultValue: null }),
             },
             with: {
-                eventParticipants: 2,
-                eventInterested: 2,
-                comments: 2,
+                eventParticipants: 1,
+                eventInterested: 1,
+                comments: 3,
             },
         },
     }));

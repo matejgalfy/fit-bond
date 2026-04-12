@@ -1,27 +1,41 @@
 {
-    "version": "7",
-    "dialect": "postgresql",
-    "entries": [
-        {
-            "idx": 0,
-            "version": "7",
-            "when": 1774175269601,
-            "tag": "0000_groovy_warlock",
-            "breakpoints": true
-        },
-        {
-            "idx": 1,
-            "version": "7",
-            "when": 1774187509034,
-            "tag": "0001_slippery_tomorrow_man",
-            "breakpoints": true
-        },
-        {
-            "idx": 2,
-            "version": "7",
-            "when": 1774191486957,
-            "tag": "0002_numerous_yellow_claw",
-            "breakpoints": true
-        }
-    ]
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1774175269601,
+      "tag": "0000_groovy_warlock",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1774187509034,
+      "tag": "0001_slippery_tomorrow_man",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1774191486957,
+      "tag": "0002_numerous_yellow_claw",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1775921075646,
+      "tag": "0003_youthful_epoch",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1775936160264,
+      "tag": "0004_next_ultragirl",
+      "breakpoints": true
+    }
+  ]
 }

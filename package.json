@@ -1,8 +1,6 @@
 {
     "name": "pb138-project",
     "module": "index.ts",
-    "type": "module",
-    "private": true,
     "devDependencies": {
         "@eslint/js": "^9.39.4",
         "@types/bun": "latest",
@@ -18,9 +16,7 @@
     "peerDependencies": {
         "typescript": "^5"
     },
-    "workspaces": [
-        "apps/*"
-    ],
+    "private": true,
     "scripts": {
         "dev:backend": "bun --filter backend dev",
         "dev:frontend": "bun --filter frontend dev",
@@ -35,5 +31,9 @@
         "test:backend": "bun --filter backend test",
         "test:frontend": "bun --filter frontend test",
         "test": "bun run test:backend && bun run test:frontend"
-    }
+    },
+    "type": "module",
+    "workspaces": [
+        "apps/*"
+    ]
 }

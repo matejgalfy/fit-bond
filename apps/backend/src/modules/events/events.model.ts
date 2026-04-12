@@ -1,6 +1,6 @@
 import { eq, and, ilike, gte, lte, isNull, desc } from 'drizzle-orm';
 import type { Database } from '../../db';
-import { events, users, locations, sports } from '../../db/schema';
+import { events, user, locations, sports } from '../../db/schema';
 import type {
     EventFilters,
     CreateEventInput,
@@ -51,10 +51,10 @@ export const eventsModel = {
                 cancelledAt: events.cancelledAt,
                 createdAt: events.createdAt,
                 organizer: {
-                    id: users.id,
-                    firstName: users.firstName,
-                    lastName: users.lastName,
-                    profilePictureUrl: users.profilePictureUrl,
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    profilePictureUrl: user.profilePictureUrl,
                 },
                 location: {
                     id: locations.id,
@@ -68,7 +68,7 @@ export const eventsModel = {
                 },
             })
             .from(events)
-            .innerJoin(users, eq(events.organizerId, users.id))
+            .innerJoin(user, eq(events.organizerId, user.id))
             .innerJoin(locations, eq(events.locationId, locations.id))
             .innerJoin(sports, eq(events.sportId, sports.id))
             .where(and(...conditions))
@@ -96,10 +96,10 @@ export const eventsModel = {
                 createdAt: events.createdAt,
                 updatedAt: events.updatedAt,
                 organizer: {
-                    id: users.id,
-                    firstName: users.firstName,
-                    lastName: users.lastName,
-                    profilePictureUrl: users.profilePictureUrl,
+                    id: user.id,
+                    firstName: user.firstName,
+                    lastName: user.lastName,
+                    profilePictureUrl: user.profilePictureUrl,
                 },
                 location: {
                     id: locations.id,
@@ -116,7 +116,7 @@ export const eventsModel = {
                 },
             })
             .from(events)
-            .innerJoin(users, eq(events.organizerId, users.id))
+            .innerJoin(user, eq(events.organizerId, user.id))
             .innerJoin(locations, eq(events.locationId, locations.id))
             .innerJoin(sports, eq(events.sportId, sports.id))
             .where(and(eq(events.id, id), isNull(events.deletedAt)));
