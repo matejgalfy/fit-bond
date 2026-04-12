@@ -9,9 +9,9 @@ import {
     AnyPgColumn,
     decimal,
     primaryKey,
+    index,
 } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
-
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);
 export const skillLevelEnum = pgEnum('skill_level', [
@@ -39,24 +39,102 @@ export const reportStatusEnum = pgEnum('report_status', [
 ]);
 
 // Tables
-export const users = pgTable('users', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    oauthProvider: text('oauth_provider'),
-    oauthId: text('oauth_id').unique(),
-    email: text('email').notNull().unique(),
-    passwordHash: text('password_hash'),
-    firstName: text('first_name').notNull(),
-    lastName: text('last_name').notNull(),
-    profilePictureUrl: text('profile_picture_url'),
+
+export const user = pgTable('user', {
+    id: text('id').primaryKey(), // Use text for compatibility with better-auth's default ID generation
+    name: text('name').notNull(),
     bio: text('bio'),
+    image: text('image'),
     role: userRoleEnum('role').default('user').notNull(),
-    isBanned: boolean('is_banned').default(false).notNull(),
-    bannedUntil: timestamp('banned_until'),
+    email: text('email').notNull().unique(),
+    emailVerified: boolean('email_verified').default(false).notNull(),
+    profilePictureUrl: text('profile_picture_url'),
     bannedReason: text('banned_reason'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
-    updatedAt: timestamp('updated_at').defaultNow().notNull(),
+    updatedAt: timestamp('updated_at')
+        .defaultNow()
+        .$onUpdate(() => /* @__PURE__ */ new Date())
+        .notNull(),
     deletedAt: timestamp('deleted_at'),
 });
+
+export const session = pgTable(
+    'session',
+    {
+        id: text('id').primaryKey(),
+        expiresAt: timestamp('expires_at').notNull(),
+        token: text('token').notNull().unique(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .$onUpdate(() => /* @__PURE__ */ new Date())
+            .notNull(),
+        ipAddress: text('ip_address'),
+        userAgent: text('user_agent'),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+    },
+    (table) => [index('session_userId_idx').on(table.userId)]
+);
+
+export const account = pgTable(
+    'account',
+    {
+        id: text('id').primaryKey(),
+        accountId: text('account_id').notNull(),
+        providerId: text('provider_id').notNull(),
+        userId: text('user_id')
+            .notNull()
+            .references(() => user.id, { onDelete: 'cascade' }),
+        accessToken: text('access_token'),
+        refreshToken: text('refresh_token'),
+        idToken: text('id_token'),
+        accessTokenExpiresAt: timestamp('access_token_expires_at'),
+        refreshTokenExpiresAt: timestamp('refresh_token_expires_at'),
+        scope: text('scope'),
+        password: text('password'),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .$onUpdate(() => /* @__PURE__ */ new Date())
+            .notNull(),
+    },
+    (table) => [index('account_userId_idx').on(table.userId)]
+);
+
+export const verification = pgTable(
+    'verification',
+    {
+        id: text('id').primaryKey(),
+        identifier: text('identifier').notNull(),
+        value: text('value').notNull(),
+        expiresAt: timestamp('expires_at').notNull(),
+        createdAt: timestamp('created_at').defaultNow().notNull(),
+        updatedAt: timestamp('updated_at')
+            .defaultNow()
+            .$onUpdate(() => /* @__PURE__ */ new Date())
+            .notNull(),
+    },
+    (table) => [index('verification_identifier_idx').on(table.identifier)]
+);
+
+export const userRelations = relations(user, ({ many }) => ({
+    sessions: many(session),
+    accounts: many(account),
+}));
+
+export const sessionRelations = relations(session, ({ one }) => ({
+    user: one(user, {
+        fields: [session.userId],
+        references: [user.id],
+    }),
+}));
+
+export const accountRelations = relations(account, ({ one }) => ({
+    user: one(user, {
+        fields: [account.userId],
+        references: [user.id],
+    }),
+}));
 
 export const sports = pgTable('sports', {
     id: uuid('id').primaryKey().defaultRandom(),
@@ -79,9 +157,9 @@ export const locations = pgTable('locations', {
 export const userPreferredSports = pgTable(
     'user_preferred_sports',
     {
-        userId: uuid('user_id')
+        userId: text('user_id')
             .notNull()
-            .references(() => users.id, { onDelete: 'cascade' }),
+            .references(() => user.id, { onDelete: 'cascade' }),
         sportId: uuid('sport_id')
             .notNull()
             .references(() => sports.id, { onDelete: 'cascade' }),
@@ -91,9 +169,9 @@ export const userPreferredSports = pgTable(
 
 export const userLocations = pgTable('user_locations', {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id')
+    userId: text('user_id')
         .notNull()
-        .references(() => users.id),
+        .references(() => user.id),
     locationId: uuid('location_id')
         .notNull()
         .references(() => locations.id),
@@ -105,9 +183,9 @@ export const userLocations = pgTable('user_locations', {
 
 export const events = pgTable('events', {
     id: uuid('id').primaryKey().defaultRandom(),
-    organizerId: uuid('organizer_id')
+    organizerId: text('organizer_id')
         .notNull()
-        .references(() => users.id),
+        .references(() => user.id),
     locationId: uuid('location_id')
         .notNull()
         .references(() => locations.id),
@@ -136,9 +214,9 @@ export const eventParticipants = pgTable(
         eventId: uuid('event_id')
             .notNull()
             .references(() => events.id),
-        userId: uuid('user_id')
+        userId: text('user_id')
             .notNull()
-            .references(() => users.id),
+            .references(() => user.id),
     },
     (table) => [primaryKey({ columns: [table.userId, table.eventId] })]
 );
@@ -149,9 +227,9 @@ export const eventInterested = pgTable(
         eventId: uuid('event_id')
             .notNull()
             .references(() => events.id),
-        userId: uuid('user_id')
+        userId: text('user_id')
             .notNull()
-            .references(() => users.id),
+            .references(() => user.id),
     },
     (table) => [primaryKey({ columns: [table.userId, table.eventId] })]
 );
@@ -161,9 +239,9 @@ export const comments = pgTable('comments', () => ({
     eventId: uuid('event_id')
         .notNull()
         .references(() => events.id),
-    userId: uuid('user_id')
+    userId: text('user_id')
         .notNull()
-        .references(() => users.id),
+        .references(() => user.id),
     parentCommentId: uuid('parent_comment_id').references(
         (): AnyPgColumn => comments.id
     ),
@@ -177,14 +255,14 @@ export const comments = pgTable('comments', () => ({
 
 export const notifications = pgTable('notifications', {
     id: uuid('id').primaryKey().defaultRandom(),
-    userId: uuid('user_id')
+    userId: text('user_id')
         .notNull()
-        .references(() => users.id),
+        .references(() => user.id),
     type: notificationTypeEnum('type').notNull(),
     title: text('title').notNull(),
     message: text('message').notNull(),
     eventId: uuid('event_id').references(() => events.id),
-    relatedUserId: uuid('related_user_id').references(() => users.id),
+    relatedUserId: text('related_user_id').references(() => user.id),
     isRead: boolean('is_read').default(false).notNull(),
     readAt: timestamp('read_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -192,27 +270,30 @@ export const notifications = pgTable('notifications', {
 
 export const reports = pgTable('reports', {
     id: uuid('id').primaryKey().defaultRandom(),
-    reporterId: uuid('reporter_id')
+    reporterId: text('reporter_id')
         .notNull()
-        .references(() => users.id),
+        .references(() => user.id),
     reportType: reportTypeEnum('report_type').notNull(),
     targetId: uuid('target_id').notNull(),
     reason: text('reason').notNull(),
     status: reportStatusEnum('status').default('pending').notNull(),
-    resolvedBy: uuid('resolved_by').references(() => users.id),
+    resolvedBy: text('resolved_by').references(() => user.id),
     resolution: text('resolution'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
 });
 
 // Relations
-export const usersRelations = relations(users, ({ many }) => ({
+export const usersRelations = relations(user, ({ many }) => ({
     preferredSports: many(userPreferredSports),
     locations: many(userLocations),
     organizedEvents: many(events, { relationName: 'organizer' }),
     participatingEvents: many(eventParticipants),
     interestedEvents: many(eventInterested),
     comments: many(comments),
-    notifications: many(notifications),
+    receivedNotifications: many(notifications, { relationName: 'user' }),
+    mentionedNotifications: many(notifications, {
+        relationName: 'notificationsRelatedUser',
+    }),
     submittedReports: many(reports, { relationName: 'reporter' }),
     resolvedReports: many(reports, { relationName: 'resolver' }),
 }));
@@ -227,14 +308,18 @@ export const locationsRelations = relations(locations, ({ many }) => ({
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
-    organizer: one(users, {
+    organizer: one(user, {
         fields: [events.organizerId],
-        references: [users.id],
+        references: [user.id],
         relationName: 'organizer',
     }),
     location: one(locations, {
         fields: [events.locationId],
         references: [locations.id],
+    }),
+    sport: one(sports, {
+        fields: [events.sportId],
+        references: [sports.id],
     }),
     participants: many(eventParticipants),
     interestedUsers: many(eventInterested),
@@ -242,13 +327,96 @@ export const eventsRelations = relations(events, ({ one, many }) => ({
     notifications: many(notifications),
 }));
 
+export const userPreferredSportsRelations = relations(
+    userPreferredSports,
+    ({ one }) => ({
+        user: one(user, {
+            fields: [userPreferredSports.userId],
+            references: [user.id],
+        }),
+        sport: one(sports, {
+            fields: [userPreferredSports.sportId],
+            references: [sports.id],
+        }),
+    })
+);
+
+export const userLocationsRelations = relations(userLocations, ({ one }) => ({
+    user: one(user, {
+        fields: [userLocations.userId],
+        references: [user.id],
+    }),
+    location: one(locations, {
+        fields: [userLocations.locationId],
+        references: [locations.id],
+    }),
+}));
+
+export const eventParticipantsRelations = relations(
+    eventParticipants,
+    ({ one }) => ({
+        event: one(events, {
+            fields: [eventParticipants.eventId],
+            references: [events.id],
+        }),
+        user: one(user, {
+            fields: [eventParticipants.userId],
+            references: [user.id],
+        }),
+    })
+);
+
+export const eventInterestedRelations = relations(
+    eventInterested,
+    ({ one }) => ({
+        event: one(events, {
+            fields: [eventInterested.eventId],
+            references: [events.id],
+        }),
+        user: one(user, {
+            fields: [eventInterested.userId],
+            references: [user.id],
+        }),
+    })
+);
+
 export const commentsRelations = relations(comments, ({ one, many }) => ({
     event: one(events, { fields: [comments.eventId], references: [events.id] }),
-    user: one(users, { fields: [comments.userId], references: [users.id] }),
+    user: one(user, { fields: [comments.userId], references: [user.id] }),
     parentComment: one(comments, {
         fields: [comments.parentCommentId],
         references: [comments.id],
         relationName: 'replies',
     }),
     replies: many(comments, { relationName: 'replies' }),
+}));
+
+export const notificationsRelations = relations(notifications, ({ one }) => ({
+    user: one(user, {
+        fields: [notifications.userId],
+        references: [user.id],
+        relationName: 'user',
+    }),
+    event: one(events, {
+        fields: [notifications.eventId],
+        references: [events.id],
+    }),
+    relatedUser: one(user, {
+        fields: [notifications.relatedUserId],
+        references: [user.id],
+        relationName: 'notificationsRelatedUser',
+    }),
+}));
+
+export const reportsRelations = relations(reports, ({ one }) => ({
+    reporter: one(user, {
+        fields: [reports.reporterId],
+        references: [user.id],
+        relationName: 'reporter',
+    }),
+    resolver: one(user, {
+        fields: [reports.resolvedBy],
+        references: [user.id],
+        relationName: 'resolver',
+    }),
 }));

@@ -1,17 +1,22 @@
-import * as React from 'react';
 import { cn } from '@/lib/utils';
+import { authClient } from '@/lib/api';
 
-type GoogleButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
-
-export function GoogleButton({ className, ...props }: GoogleButtonProps) {
+export function GoogleButton() {
+    const handleSignIn = () => {
+        authClient.signIn
+            .social({
+                provider: 'google',
+                callbackURL: 'http://localhost:5173/main',
+            })
+            .catch(console.error);
+    };
     return (
         <button
             type="button"
             className={cn(
-                'w-full h-11 rounded-xl border border-border bg-transparent hover:bg-muted flex items-center justify-center gap-2.5 text-sm font-medium text-foreground transition-colors cursor-pointer',
-                className
+                'w-full h-11 rounded-xl border border-border bg-transparent hover:bg-muted flex items-center justify-center gap-2.5 text-sm font-medium text-foreground transition-colors cursor-pointer'
             )}
-            {...props}
+            onClick={handleSignIn}
         >
             <GoogleIcon />
             Continue with Google

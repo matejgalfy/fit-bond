@@ -1,12 +1,17 @@
-import { Elysia, t } from 'elysia';
+import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysiajs/openapi';
 import { z } from 'zod';
 import { eventsRoutes } from './modules/events/events.routes';
+import { auth } from './auth';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app = new Elysia()
-    .use(cors())
+    .use(
+        cors({
+            credentials: true,
+        })
+    )
     .use(
         openapi({
             documentation: {
@@ -22,13 +27,8 @@ const app = new Elysia()
             exclude: { methods: ['OPTIONS'] },
         })
     )
+    .mount(auth.handler) // Mount authentication routes
     .use(eventsRoutes)
-    .get('/', () => 'Hello Bun!')
-    .post('/greet', ({ body }) => `Hello ${body.name}`, {
-        body: t.Object({
-            name: t.String(),
-        }),
-    })
     .listen(3000);
 
 console.log('Server running on http://localhost:3000');
