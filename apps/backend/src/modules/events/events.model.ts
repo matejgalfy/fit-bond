@@ -52,8 +52,7 @@ export const eventsModel = {
                 createdAt: events.createdAt,
                 organizer: {
                     id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
+                    name: user.name,
                     profilePictureUrl: user.profilePictureUrl,
                 },
                 location: {
@@ -97,8 +96,7 @@ export const eventsModel = {
                 updatedAt: events.updatedAt,
                 organizer: {
                     id: user.id,
-                    firstName: user.firstName,
-                    lastName: user.lastName,
+                    name: user.name,
                     profilePictureUrl: user.profilePictureUrl,
                 },
                 location: {

@@ -46,11 +46,7 @@ export function Login() {
                     {/* CARD (reusable wrapper) */}
                     <AuthCard>
                         {/* Google (reusable) */}
-                        <GoogleButton
-                            onClick={() => {
-                                console.log('Google login');
-                            }}
-                        />
+                        <GoogleButton />
 
                         {/* Divider (reusable) */}
                         <AuthDivider />

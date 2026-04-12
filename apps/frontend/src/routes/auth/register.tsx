@@ -49,11 +49,7 @@ function Register() {
                     {/* CARD (reusable wrapper) */}
                     <AuthCard>
                         {/* Google (reusable) */}
-                        <GoogleButton
-                            onClick={() => {
-                                console.log('Google register');
-                            }}
-                        />
+                        <GoogleButton />
 
                         {/* Divider (reusable) */}
                         <AuthDivider />

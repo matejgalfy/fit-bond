@@ -1,4 +1,4 @@
-import { Elysia} from 'elysia';
+import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysiajs/openapi';
 import { z } from 'zod';
@@ -7,7 +7,11 @@ import { auth } from './auth';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app = new Elysia()
-    .use(cors())
+    .use(
+        cors({
+            credentials: true,
+        })
+    )
     .use(
         openapi({
             documentation: {
@@ -23,7 +27,7 @@ const app = new Elysia()
             exclude: { methods: ['OPTIONS'] },
         })
     )
-    .mount('/auth', auth.handler) // Mount authentication routes
+    .mount(auth.handler) // Mount authentication routes
     .use(eventsRoutes)
     .listen(3000);
 
