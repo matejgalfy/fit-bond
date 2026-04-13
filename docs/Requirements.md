@@ -34,7 +34,9 @@ An administrator is responsible for platform safety and quality. The administrat
 
 - ban users when needed,
 - review and resolve reports,
-- edit or delete problematic posts or comments,
+- edit or delete problematic posts, comments or user profile,
+- discover and search for events,
+- search for users, 
 - keep the platform usable and respectful.
 
 ## 4. Scope of the First Complete Version
