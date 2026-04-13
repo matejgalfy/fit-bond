@@ -18,6 +18,7 @@ export default defineConfig([
         '.next',
         'coverage',
         'bun.lock',
+        '**/routeTree.gen.ts',
     ]),
     {
         files: ['**/*.{ts,tsx}'],
