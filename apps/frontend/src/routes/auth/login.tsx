@@ -3,14 +3,14 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
 
-import { AuthNavbar } from '@/components/auth/auth-navbar';
-import { AuthCard } from '@/components/auth/auth-card';
-import { AuthHeader } from '@/components/auth/auth-header';
-import { AuthDivider } from '@/components/auth/auth-divider';
-import { PasswordInput } from '@/components/auth/password-input';
+import { AppNavbar } from '@/components/layout/app-navbar';
+import { AuthCard } from '@/features/auth/components/auth-card';
+import { AuthHeader } from '@/features/auth/components/auth-header';
+import { AuthDivider } from '@/features/auth/components/auth-divider';
+import { PasswordInput } from '@/features/auth/components/password-input';
 
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
-import { TextInput } from '@/components/auth/text-input';
+import { TextInput } from '@/features/auth/components/text-input';
 import { Mail } from 'lucide-react';
 
 import { authClient } from '@/lib/api';
@@ -36,7 +36,7 @@ export function Login() {
 
     useEffect(() => {
         if (session?.user) {
-            void navigate({ to: '/main' });
+            void navigate({ to: '/pages/home-page' });
         }
     }, [session, navigate]);
 
@@ -62,7 +62,7 @@ export function Login() {
                     return;
                 }
 
-                void navigate({ to: '/main' });
+                void navigate({ to: '/pages/home-page' });
             })
             .catch(() => {
                 setError('Sign in failed. Please try again.');
@@ -76,7 +76,7 @@ export function Login() {
 
     return (
         <div className="min-h-svh bg-background text-foreground transition-colors duration-300">
-            <AuthNavbar
+            <AppNavbar
                 dark={dark}
                 onToggleDark={() => {
                     setDark(!dark);

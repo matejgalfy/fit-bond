@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
 
-import { AuthNavbar } from '@/components/auth/auth-navbar';
-import { AuthCard } from '@/components/auth/auth-card';
-import { AuthHeader } from '@/components/auth/auth-header';
-import { AuthDivider } from '@/components/auth/auth-divider';
-import { PasswordInput } from '@/components/auth/password-input';
+import { AppNavbar } from '@/components/layout/app-navbar';
+import { AuthCard } from '@/features/auth/components/auth-card';
+import { AuthHeader } from '@/features/auth/components/auth-header';
+import { AuthDivider } from '@/features/auth/components/auth-divider';
+import { PasswordInput } from '@/features/auth/components/password-input';
 
-import { TextInput } from '@/components/auth/text-input';
+import { TextInput } from '@/features/auth/components/text-input';
 import { Mail, User } from 'lucide-react';
 
 import { authClient } from '@/lib/api';
@@ -39,7 +39,7 @@ function Register() {
 
     useEffect(() => {
         if (session?.user) {
-            void navigate({ to: '/main' });
+            void navigate({ to: '/pages/home-page' });
         }
     }, [session, navigate]);
 
@@ -75,7 +75,7 @@ function Register() {
                     return;
                 }
 
-                void navigate({ to: '/main' });
+                void navigate({ to: '/pages/home-page' });
             })
             .catch(() => {
                 setError('Registration failed. Please try again.');
@@ -89,7 +89,7 @@ function Register() {
 
     return (
         <div className="min-h-svh bg-background text-foreground transition-colors duration-300">
-            <AuthNavbar
+            <AppNavbar
                 dark={dark}
                 onToggleDark={() => {
                     setDark(!dark);

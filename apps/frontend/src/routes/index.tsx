@@ -14,7 +14,7 @@ function IndexRedirect() {
     }
 
     if (session?.user) {
-        void navigate({ to: '/main' });
+        void navigate({ to: '/pages/home-page' });
     } else {
         void navigate({ to: '/auth/login' });
     }
