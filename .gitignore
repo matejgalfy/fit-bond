@@ -28,6 +28,9 @@ report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 *.tsbuildinfo
 .tanstack/
 
+# TanStack Router - automatically generated file
+apps/frontend/src/routeTree.gen.ts
+
 # IntelliJ based IDEs
 .idea
 
