@@ -1,15 +1,11 @@
-import { Shield, type LucideIcon } from 'lucide-react';
+import { Shield } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
+import type { NavigationItem } from '@/components/layout/navigation-item';
 
-export interface SideNavItem {
-    icon: LucideIcon;
-    label: string;
-    id: string;
-    badge?: number;
-}
+export type SideNavItem = NavigationItem;
 
 interface SideNavProps {
-    items: SideNavItem[];
+    items: NavigationItem[];
     activeNav: string;
     onChange: Dispatch<SetStateAction<string>>;
 }
@@ -17,6 +13,7 @@ interface SideNavProps {
 export function SideNav({ items, activeNav, onChange }: SideNavProps) {
     return (
         <aside
+            className="hidden md:flex"
             style={{
                 width: 220,
                 background: 'var(--card)',
@@ -24,7 +21,6 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                 transition: 'background 0.3s',
                 overflow: 'hidden',
                 flexShrink: 0,
-                display: 'flex',
                 flexDirection: 'column',
                 paddingTop: 8,
             }}

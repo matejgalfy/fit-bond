@@ -1,24 +1,33 @@
 import { useState } from 'react';
-import { Bell, Home, Compass, CalendarDays, User } from 'lucide-react';
+import { Bell, Home, Compass, CalendarDays, User, Shield } from 'lucide-react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { EventCard } from '@/features/events/components/event-card';
 import { SideNav } from '@/features/events/components/side-nav';
 import { AppNavbar } from '@/components/layout/app-navbar';
-import type { SideNavItem } from '@/features/events/components/side-nav';
+import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
+import type { NavigationItem } from '@/components/layout/navigation-item';
 import type { SportEvent } from '@/features/events/components/event-card';
 
 export const Route = createFileRoute('/pages/home-page')({
     component: FitBondShell,
 });
 
-const NAV_ITEMS: SideNavItem[] = [
+const NAV_ITEMS: NavigationItem[] = [
     { icon: Home, label: 'Home', id: 'home' },
     { icon: Compass, label: 'Discover', id: 'discover' },
     { icon: CalendarDays, label: 'My Events', id: 'events' },
     { icon: Bell, label: 'Notifications', id: 'notifications', badge: 3 },
     { icon: User, label: 'Profile', id: 'profile' },
 ];
+
+const ADMIN_NAV_ITEM: NavigationItem = {
+    icon: Shield,
+    label: 'Admin',
+    id: 'admin',
+};
+
+const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
 
 const MOCK_EVENTS: SportEvent[] = [
     {
@@ -128,7 +137,7 @@ function FitBondShell() {
                 />
 
                 {/* MAIN CONTENT */}
-                <main style={{ flex: 1, padding: '24px', overflow: 'auto' }}>
+                <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
                     <div style={{ maxWidth: 960, margin: '0 auto' }}>
                         {/* Welcome message */}
                         <div style={{ marginBottom: 24 }}>
@@ -172,14 +181,7 @@ function FitBondShell() {
                             Upcoming events
                         </h2>
 
-                        <div
-                            style={{
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: 16,
-                                maxWidth: 600,
-                            }}
-                        >
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                             {MOCK_EVENTS.map((event) => (
                                 <EventCard key={event.id} event={event} />
                             ))}
@@ -187,6 +189,12 @@ function FitBondShell() {
                     </div>
                 </main>
             </div>
+
+            <MobileBottomNav
+                items={BOTTOM_NAV_ITEMS}
+                activeNav={activeNav}
+                onChange={setActiveNav}
+            />
         </div>
     );
 }
