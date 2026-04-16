@@ -1,10 +1,10 @@
-import { api } from './api';
+import { api } from '@/lib/api';
 import type {
     CancelEventBody,
     CreateEventBody,
     EventQueryFilters,
     UpdateEventBody,
-} from '../../../backend/src/modules/events/events.schema';
+} from '../../../../../backend/src/modules/events/events.schema';
 
 interface EdenErrorLike {
     value?: unknown;

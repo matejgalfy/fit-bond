@@ -1,11 +1,11 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { UpdateFullProfileInput } from '../../../backend/src/modules/users/users.schema';
+import type { UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.schema';
 import {
+    findUserByName,
     getPublicProfile,
     updateFullProfile,
-    findUserByName,
     userQueryKeys,
-} from '../lib/users-api';
+} from '../api/users-api';
 
 export function usePublicProfile(userId?: string) {
     return useQuery({

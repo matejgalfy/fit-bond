@@ -9,7 +9,7 @@ import type {
     CreateEventBody,
     EventQueryFilters,
     UpdateEventBody,
-} from '../../../backend/src/modules/events/events.schema';
+} from '../../../../../backend/src/modules/events/events.schema';
 import {
     cancelEvent,
     createEvent,
@@ -18,7 +18,7 @@ import {
     getEvent,
     listEvents,
     updateEvent,
-} from '../lib/events-api';
+} from '../api/events-api';
 
 export function useEvents(filters?: EventQueryFilters) {
     return useQuery({
