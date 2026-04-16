@@ -117,11 +117,6 @@ export const verification = pgTable(
     (table) => [index('verification_identifier_idx').on(table.identifier)]
 );
 
-export const userRelations = relations(user, ({ many }) => ({
-    sessions: many(session),
-    accounts: many(account),
-}));
-
 export const sessionRelations = relations(session, ({ one }) => ({
     user: one(user, {
         fields: [session.userId],
@@ -284,6 +279,11 @@ export const reports = pgTable('reports', {
 
 // Relations
 export const usersRelations = relations(user, ({ many }) => ({
+    // --- Better Auth Relations ---
+    sessions: many(session),
+    accounts: many(account),
+
+    // --- FitBond Application Relations ---
     preferredSports: many(userPreferredSports),
     locations: many(userLocations),
     organizedEvents: many(events, { relationName: 'organizer' }),

@@ -1,3 +1,8 @@
+/* 
+this is here because there were some problems with 
+running lint in the gitlab pipeline
+*/
+
 /* eslint-disable */
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

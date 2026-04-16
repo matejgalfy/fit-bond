@@ -4,6 +4,7 @@ import { openapi } from '@elysiajs/openapi';
 import { z } from 'zod';
 import { eventsRoutes } from './modules/events/events.routes';
 import { auth } from './auth';
+import { usersRoutes } from './modules/users/users.routes';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app = new Elysia()
@@ -21,7 +22,10 @@ const app = new Elysia()
                     description:
                         'Social sports application for discovering, creating, and joining local sports events',
                 },
-                tags: [{ name: 'Events', description: 'Event management' }],
+                tags: [
+                    { name: 'Events', description: 'Event management' },
+                    { name: 'Users', description: 'User management' },
+                ],
             },
             mapJsonSchema: { zod: z.toJSONSchema },
             exclude: { methods: ['OPTIONS'] },
@@ -29,6 +33,7 @@ const app = new Elysia()
     )
     .mount(auth.handler) // Mount authentication routes
     .use(eventsRoutes)
+    .use(usersRoutes)
     .listen(3000);
 
 console.log('Server running on http://localhost:3000');
