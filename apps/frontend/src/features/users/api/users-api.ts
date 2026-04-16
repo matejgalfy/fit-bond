@@ -1,5 +1,5 @@
-import { api } from './api';
-import type { UpdateFullProfileInput } from '../../../backend/src/modules/users/users.schema';
+import { api } from '@/lib/api';
+import type { UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.schema';
 
 interface EdenErrorLike {
     value?: unknown;
