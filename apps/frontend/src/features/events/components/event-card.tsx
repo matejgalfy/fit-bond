@@ -1,4 +1,5 @@
 import { Activity, Clock, Heart, MapPin, Users } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export interface SportEvent {
     id: number;
@@ -33,19 +34,11 @@ export function Avatar({ name, size = 32 }: AvatarProps) {
 
     return (
         <div
+            className="rounded-full bg-[linear-gradient(135deg,var(--primary),var(--ring))] flex items-center justify-center text-primary-foreground font-semibold shrink-0"
             style={{
                 width: size,
                 height: size,
-                borderRadius: '50%',
-                background:
-                    'linear-gradient(135deg, var(--primary), var(--ring))',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'var(--primary-foreground)',
                 fontSize: size * 0.38,
-                fontWeight: 600,
-                flexShrink: 0,
             }}
         >
             {initials}
@@ -55,186 +48,69 @@ export function Avatar({ name, size = 32 }: AvatarProps) {
 
 export function EventCard({ event }: EventCardProps) {
     return (
-        <div
-            style={{
-                background: 'var(--card)',
-                borderRadius: 16,
-                overflow: 'hidden',
-                border: '1px solid var(--border)',
-                transition: 'transform 0.2s, box-shadow 0.2s',
-                cursor: 'pointer',
-            }}
-            onMouseEnter={(e) => {
-                e.currentTarget.style.transform = 'translateY(-2px)';
-                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.1)';
-            }}
-            onMouseLeave={(e) => {
-                e.currentTarget.style.transform = 'translateY(0)';
-                e.currentTarget.style.boxShadow = 'none';
-            }}
-        >
+        <div className="bg-card rounded-2xl overflow-hidden border border-border transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
             <div
+                className="h-30 flex items-center justify-center relative"
                 style={{
-                    height: 120,
                     background: `linear-gradient(135deg, color-mix(in srgb, ${event.color} 12%, transparent), color-mix(in srgb, ${event.color} 40%, transparent))`,
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    position: 'relative',
                 }}
             >
-                <span style={{ fontSize: 36, opacity: 0.6 }}>
+                <span className="opacity-60">
                     <Activity size={36} color={event.color} strokeWidth={1.5} />
                 </span>
                 {event.full && (
-                    <span
-                        style={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            background: 'var(--destructive)',
-                            color: 'var(--primary-foreground)',
-                            fontSize: 11,
-                            fontWeight: 600,
-                            padding: '2px 8px',
-                            borderRadius: 6,
-                        }}
-                    >
+                    <span className="absolute top-2 right-2 bg-destructive text-primary-foreground text-[11px] font-semibold px-2 py-0.5 rounded-md">
                         Full
                     </span>
                 )}
-                <span
-                    style={{
-                        position: 'absolute',
-                        top: 8,
-                        left: 8,
-                        background: 'var(--secondary)',
-                        color: 'var(--primary)',
-                        fontSize: 11,
-                        fontWeight: 600,
-                        padding: '2px 8px',
-                        borderRadius: 6,
-                        backdropFilter: 'blur(4px)',
-                    }}
-                >
+                <span className="absolute top-2 left-2 bg-secondary text-primary text-[11px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm">
                     {event.sport}
                 </span>
             </div>
 
-            <div style={{ padding: '12px 16px' }}>
-                <h3
-                    style={{
-                        margin: 0,
-                        fontSize: 15,
-                        fontWeight: 600,
-                        color: 'var(--card-foreground)',
-                        fontFamily: 'var(--font-heading)',
-                    }}
-                >
+            <div className="px-4 py-3">
+                <h3 className="m-0 text-[15px] font-semibold text-card-foreground font-heading">
                     {event.name}
                 </h3>
 
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 8,
-                        fontSize: 12,
-                        color: 'var(--muted-foreground)',
-                    }}
-                >
+                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
                     <Clock size={13} />
                     <span>
                         {event.date} · {event.time}
                     </span>
                 </div>
 
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 6,
-                        marginTop: 4,
-                        fontSize: 12,
-                        color: 'var(--muted-foreground)',
-                    }}
-                >
+                <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                     <MapPin size={13} />
                     <span>{event.location}</span>
                 </div>
 
-                <div
-                    style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        fontSize: 12,
-                        marginTop: 10,
-                    }}
-                >
-                    <span
-                        style={{
-                            color: 'var(--muted-foreground)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                        }}
-                    >
+                <div className="flex justify-between text-xs mt-2.5">
+                    <span className="text-muted-foreground flex items-center gap-1">
                         <Users size={13} /> {event.participants}/
                         {event.capacity} joined
                     </span>
-                    <span
-                        style={{
-                            color: 'var(--primary)',
-                            display: 'flex',
-                            alignItems: 'center',
-                            gap: 4,
-                        }}
-                    >
+                    <span className="text-primary flex items-center gap-1">
                         <Heart size={13} fill="var(--primary)" />{' '}
                         {event.interested}
                     </span>
                 </div>
 
-                <div
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 8,
-                        marginTop: 10,
-                        paddingTop: 10,
-                        borderTop: '1px solid var(--border)',
-                    }}
-                >
+                <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-border">
                     <Avatar name={event.organizer} size={24} />
-                    <span
-                        style={{
-                            fontSize: 12,
-                            color: 'var(--muted-foreground)',
-                        }}
-                    >
+                    <span className="text-xs text-muted-foreground">
                         {event.organizer}
                     </span>
                     <span
-                        style={{
-                            marginLeft: 'auto',
-                            fontSize: 11,
-                            fontWeight: 500,
-                            color:
-                                event.skill === 'Beginner'
-                                    ? 'var(--primary)'
-                                    : event.skill === 'Advanced'
-                                      ? 'var(--destructive)'
-                                      : 'var(--secondary-foreground)',
-                            background:
-                                event.skill === 'Beginner'
-                                    ? 'var(--secondary)'
-                                    : event.skill === 'Advanced'
-                                      ? 'var(--secondary)'
-                                      : 'var(--accent)',
-                            padding: '2px 8px',
-                            borderRadius: 6,
-                        }}
+                        className={cn(
+                            'ml-auto text-[11px] font-medium px-2 py-0.5 rounded-md',
+                            event.skill === 'Beginner' &&
+                                'text-primary bg-secondary',
+                            event.skill === 'Advanced' &&
+                                'text-destructive bg-secondary',
+                            event.skill === 'Intermediate' &&
+                                'text-secondary-foreground bg-accent'
+                        )}
                     >
                         {event.skill}
                     </span>

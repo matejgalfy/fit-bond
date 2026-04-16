@@ -16,15 +16,7 @@ function UserAvatar({ name }: { name: string }) {
         .join('');
 
     return (
-        <div
-            className="w-8 h-8 rounded-full flex items-center justify-center font-semibold"
-            style={{
-                background:
-                    'linear-gradient(135deg, var(--primary), var(--ring))',
-                color: 'var(--primary-foreground)',
-                fontSize: 12,
-            }}
-        >
+        <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs bg-[linear-gradient(135deg,var(--primary),var(--ring))] text-primary-foreground">
             {initials}
         </div>
     );
@@ -43,10 +35,7 @@ export function AppNavbar({
                     F
                 </div>
 
-                <span
-                    className="text-xl font-bold text-primary"
-                    style={{ fontFamily: 'var(--font-jakarta)' }}
-                >
+                <span className="text-xl font-bold text-primary font-heading">
                     FitBond
                 </span>
             </div>

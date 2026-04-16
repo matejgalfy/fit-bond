@@ -1,5 +1,6 @@
 import { Shield } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
+import { cn } from '@/lib/utils';
 import type { NavigationItem } from '@/components/layout/navigation-item';
 
 export type SideNavItem = NavigationItem;
@@ -12,27 +13,8 @@ interface SideNavProps {
 
 export function SideNav({ items, activeNav, onChange }: SideNavProps) {
     return (
-        <aside
-            className="hidden md:flex"
-            style={{
-                width: 220,
-                background: 'var(--card)',
-                borderRight: '1px solid var(--border)',
-                transition: 'background 0.3s',
-                overflow: 'hidden',
-                flexShrink: 0,
-                flexDirection: 'column',
-                paddingTop: 8,
-            }}
-        >
-            <div
-                style={{
-                    padding: '0 8px',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: 2,
-                }}
-            >
+        <aside className="hidden md:flex w-55 bg-card border-r border-border transition-colors duration-300 overflow-hidden shrink-0 flex-col pt-2">
+            <div className="px-2 flex flex-col gap-0.5">
                 {items.map((item) => {
                     const active = activeNav === item.id;
 
@@ -42,46 +24,17 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                             onClick={() => {
                                 onChange(item.id);
                             }}
-                            style={{
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: 10,
-                                padding: '10px 12px',
-                                borderRadius: 10,
-                                background: active
-                                    ? 'var(--accent)'
-                                    : 'transparent',
-                                color: active
-                                    ? 'var(--primary)'
-                                    : 'var(--muted-foreground)',
-                                border: 'none',
-                                cursor: 'pointer',
-                                fontSize: 14,
-                                fontWeight: active ? 600 : 400,
-                                fontFamily: 'var(--font-sans)',
-                                width: '100%',
-                                textAlign: 'left',
-                                transition: 'background 0.2s, color 0.2s',
-                            }}
+                            className={cn(
+                                'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-sm font-sans w-full text-left transition-[background,color] duration-200',
+                                active
+                                    ? 'bg-accent text-primary font-semibold'
+                                    : 'bg-transparent text-muted-foreground font-normal'
+                            )}
                         >
                             <item.icon size={18} />
                             <span>{item.label}</span>
                             {item.badge !== undefined && (
-                                <span
-                                    style={{
-                                        marginLeft: 'auto',
-                                        background: 'var(--destructive)',
-                                        color: 'var(--primary-foreground)',
-                                        fontSize: 11,
-                                        fontWeight: 600,
-                                        width: 20,
-                                        height: 20,
-                                        borderRadius: '50%',
-                                        display: 'flex',
-                                        alignItems: 'center',
-                                        justifyContent: 'center',
-                                    }}
-                                >
+                                <span className="ml-auto bg-destructive text-primary-foreground text-[11px] font-semibold w-5 h-5 rounded-full flex items-center justify-center">
                                     {item.badge}
                                 </span>
                             )}
@@ -90,46 +43,20 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                 })}
             </div>
 
-            <div style={{ padding: '0 8px', marginTop: 16 }}>
-                <div
-                    style={{
-                        fontSize: 11,
-                        fontWeight: 600,
-                        color: 'var(--muted-foreground)',
-                        padding: '0 12px 6px',
-                        textTransform: 'uppercase',
-                        letterSpacing: 0.5,
-                    }}
-                >
+            <div className="px-2 mt-4">
+                <div className="text-[11px] font-semibold text-muted-foreground px-3 pb-1.5 uppercase tracking-[0.5px]">
                     Admin
                 </div>
                 <button
                     onClick={() => {
                         onChange('admin');
                     }}
-                    style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: 10,
-                        padding: '10px 12px',
-                        borderRadius: 10,
-                        background:
-                            activeNav === 'admin'
-                                ? 'var(--secondary)'
-                                : 'transparent',
-                        color:
-                            activeNav === 'admin'
-                                ? 'var(--destructive)'
-                                : 'var(--muted-foreground)',
-                        border: 'none',
-                        cursor: 'pointer',
-                        fontSize: 14,
-                        fontWeight: activeNav === 'admin' ? 600 : 400,
-                        fontFamily: 'var(--font-sans)',
-                        width: '100%',
-                        textAlign: 'left',
-                        transition: 'background 0.2s',
-                    }}
+                    className={cn(
+                        'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-sm font-sans w-full text-left transition-colors duration-200',
+                        activeNav === 'admin'
+                            ? 'bg-secondary text-destructive font-semibold'
+                            : 'bg-transparent text-muted-foreground font-normal'
+                    )}
                 >
                     <Shield size={18} />
                     <span>Dashboard</span>
