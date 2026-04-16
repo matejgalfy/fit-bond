@@ -108,16 +108,7 @@ function FitBondShell() {
 
     return (
         <div
-            className={dark ? 'dark' : undefined}
-            style={{
-                fontFamily: 'var(--font-sans)',
-                background: 'var(--background)',
-                color: 'var(--foreground)',
-                minHeight: '100vh',
-                display: 'flex',
-                flexDirection: 'column',
-                transition: 'background 0.3s, color 0.3s',
-            }}
+            className={`${dark ? 'dark ' : ''}font-sans bg-background text-foreground min-h-screen flex flex-col transition-colors duration-300`}
         >
             {/* NAVBAR */}
             <AppNavbar
@@ -128,7 +119,7 @@ function FitBondShell() {
                 userName={userName}
             />
 
-            <div style={{ display: 'flex', flex: 1 }}>
+            <div className="flex flex-1">
                 {/* SIDEBAR - desktop */}
                 <SideNav
                     items={NAV_ITEMS}
@@ -138,46 +129,24 @@ function FitBondShell() {
 
                 {/* MAIN CONTENT */}
                 <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
-                    <div style={{ maxWidth: 960, margin: '0 auto' }}>
+                    <div className="max-w-240 mx-auto">
                         {/* Welcome message */}
-                        <div style={{ marginBottom: 24 }}>
-                            <h1
-                                style={{
-                                    fontFamily: 'var(--font-heading)',
-                                    fontSize: 26,
-                                    fontWeight: 700,
-                                    margin: 0,
-                                    color: 'var(--foreground)',
-                                }}
-                            >
+                        <div className="mb-6">
+                            <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
                                 Welcome back,{' '}
-                                <span style={{ color: 'var(--primary)' }}>
+                                <span className="text-primary">
                                     {firstName}
                                 </span>{' '}
                                 👋
                             </h1>
-                            <p
-                                style={{
-                                    fontSize: 14,
-                                    color: 'var(--muted-foreground)',
-                                    marginTop: 4,
-                                }}
-                            >
+                            <p className="text-sm text-muted-foreground mt-1">
                                 Discover upcoming events near you and connect
                                 with fellow athletes.
                             </p>
                         </div>
 
                         {/* Event cards */}
-                        <h2
-                            style={{
-                                fontFamily: 'var(--font-heading)',
-                                fontSize: 18,
-                                fontWeight: 600,
-                                margin: '0 0 16px',
-                                color: 'var(--foreground)',
-                            }}
-                        >
+                        <h2 className="font-heading text-lg font-semibold mb-4 mt-0 text-foreground">
                             Upcoming events
                         </h2>
 
