@@ -5,14 +5,14 @@ interface ProfileCardProps {
   isOwner?: boolean;
 }
 
-export function BasicProfileCard({ user }: ProfileCardProps) {
+export function ProfileCard({ user }: ProfileCardProps) {
   return (
     <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle>{name}</CardTitle>
+        <CardTitle>{user.name}</CardTitle>
       </CardHeader>
       <CardContent>
-        <p className="text-sm text-muted-foreground">{bio}</p>
+        <p className="text-sm text-muted-foreground">{user.bio}</p>
       </CardContent>
     </Card>
   );

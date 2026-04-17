@@ -1,12 +1,12 @@
 import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import { Link } from '@tanstack/react-router';
 
 interface AppNavbarProps {
     dark: boolean;
     onToggleDark: () => void;
     userName?: string;
-    onAvatarClick?: () => void;
 }
 
 function UserAvatar({ name }: { name: string }) {
@@ -26,7 +26,6 @@ export function AppNavbar({
     dark,
     onToggleDark,
     userName,
-    onAvatarClick,
 }: AppNavbarProps) {
     return (
         <nav className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 gap-3">
@@ -47,7 +46,7 @@ export function AppNavbar({
                 size="icon"
                 onClick={onToggleDark}
                 className={cn(dark ? 'text-orange-400' : 'text-primary')}
-                aria-label="Toggle dark mode"
+                aria-label="Toggle dark mode"                
             >
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
@@ -56,11 +55,13 @@ export function AppNavbar({
                 <Button
                     variant="ghost"
                     size="icon"
-                    onClick={onAvatarClick}
                     className="h-9 w-9 rounded-lg"
                     aria-label="Open profile menu"
+                    asChild
                 >
-                    <UserAvatar name={userName} />
+                    <Link to="/pages/profile-page">
+                        <UserAvatar name={userName} />
+                    </Link>
                 </Button>
             ) : null}
         </nav>
