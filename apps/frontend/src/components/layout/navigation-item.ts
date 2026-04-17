@@ -5,4 +5,5 @@ export interface NavigationItem {
     label: string;
     id: string;
     badge?: number;
+    href?: string;
 }
