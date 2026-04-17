@@ -1,5 +1,6 @@
 import { Shield } from 'lucide-react';
 import type { Dispatch, SetStateAction } from 'react';
+import { Link } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import type { NavigationItem } from '@/components/layout/navigation-item';
 
@@ -17,20 +18,14 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
             <div className="px-2 flex flex-col gap-0.5">
                 {items.map((item) => {
                     const active = activeNav === item.id;
-
-                    return (
-                        <button
-                            key={item.id}
-                            onClick={() => {
-                                onChange(item.id);
-                            }}
-                            className={cn(
-                                'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-sm font-sans w-full text-left transition-[background,color] duration-200',
-                                active
-                                    ? 'bg-accent text-primary font-semibold'
-                                    : 'bg-transparent text-muted-foreground font-normal'
-                            )}
-                        >
+                    const className = cn(
+                        'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-sm font-sans w-full text-left transition-[background,color] duration-200',
+                        active
+                            ? 'bg-accent text-primary font-semibold'
+                            : 'bg-transparent text-muted-foreground font-normal'
+                    );
+                    const content = (
+                        <>
                             <item.icon size={18} />
                             <span>{item.label}</span>
                             {item.badge !== undefined && (
@@ -38,6 +33,29 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                                     {item.badge}
                                 </span>
                             )}
+                        </>
+                    );
+
+                    return item.href ? (
+                        <Link
+                            key={item.id}
+                            to={item.href}
+                            className={className}
+                            onClick={() => {
+                                onChange(item.id);
+                            }}
+                        >
+                            {content}
+                        </Link>
+                    ) : (
+                        <button
+                            key={item.id}
+                            onClick={() => {
+                                onChange(item.id);
+                            }}
+                            className={className}
+                        >
+                            {content}
                         </button>
                     );
                 })}
