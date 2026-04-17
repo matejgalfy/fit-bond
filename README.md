@@ -237,7 +237,7 @@ const response = await api.events.post({
 
 - **Framework**: React with TypeScript
 - **Build tool**: Vite
-- **Styling**: Tailwind CSS
+- **Styling**: Tailwind CSS + shadcn
 - **Testing**: included test setup
 
 ## Troubleshooting
