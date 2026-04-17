@@ -38,7 +38,7 @@ export const PublicUserSchema = createSelectSchema(user).pick({
     profilePictureUrl: true,
 });
 
-export const PublicUserProfileSchema = PublicUserSchema.extend({
+export const UserProfileSchema = PublicUserSchema.extend({
     sports: z.array(
         baseSportSchema.pick({
             id: true,
@@ -64,5 +64,4 @@ export const userIdParam = z.object({
     id: z.string(),
 });
 
-export type PublicUserProfile = z.infer<typeof PublicUserProfileSchema>;
 export type UpdateFullProfileInput = z.infer<typeof updateFullProfileSchema>;
