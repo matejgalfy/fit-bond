@@ -1,5 +1,5 @@
 import type { UserProfile } from "../../../../../backend/src/modules/users/users.types";
-
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 interface ProfileCardProps {
   user: UserProfile;
   isOwner?: boolean;
