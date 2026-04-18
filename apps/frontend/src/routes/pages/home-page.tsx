@@ -22,7 +22,13 @@ const NAV_ITEMS: NavigationItem[] = [
         id: 'events',
         href: '/pages/my-events',
     },
-    { icon: Bell, label: 'Notifications', id: 'notifications', badge: 3 },
+    {
+        icon: Bell,
+        label: 'Notifications',
+        id: 'notifications',
+        badge: 3,
+        href: '/pages/notifications-page',
+    },
     { icon: User, label: 'Profile', id: 'profile' },
 ];
 

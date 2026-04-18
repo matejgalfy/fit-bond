@@ -19,7 +19,13 @@ const NAV_ITEMS: NavigationItem[] = [
     { icon: Home, label: 'Home', id: 'home', href: '/pages/home-page' },
     { icon: Compass, label: 'Discover', id: 'discover' },
     { icon: CalendarDays, label: 'My Events', id: 'events' },
-    { icon: Bell, label: 'Notifications', id: 'notifications', badge: 3 },
+    {
+        icon: Bell,
+        label: 'Notifications',
+        id: 'notifications',
+        badge: 3,
+        href: '/pages/notifications-page',
+    },
     { icon: User, label: 'Profile', id: 'profile' },
 ];
 
