@@ -3,7 +3,7 @@ import { Bell, Home, Compass, CalendarDays, User, Shield } from 'lucide-react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { AppNavbar } from '@/components/layout/app-navbar';
-import { SideNav } from '@/features/events/components/side-nav';
+import { SideNav } from '@/components/layout/side-nav';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import { ProfileCard } from '@/features/users/components/profile-card';
 import { usePublicProfile } from '@/features/users/hooks/users';
