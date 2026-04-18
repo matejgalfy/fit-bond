@@ -46,6 +46,10 @@
     --color-chart-1: var(--chart-1);
     --color-popover-foreground: var(--popover-foreground);
     --color-popover: var(--popover);
+    --color-badge-sport-bg: var(--badge-sport-bg);
+    --color-badge-sport-text: var(--badge-sport-text);
+    --color-badge-location-bg: var(--badge-location-bg);
+    --color-badge-location-text: var(--badge-location-text);
     --radius-2xl: calc(var(--radius) * 1.8);
     --radius-3xl: calc(var(--radius) * 2.2);
     --radius-4xl: calc(var(--radius) * 2.6);
@@ -92,6 +96,11 @@
     --sidebar-accent-foreground: oklch(0.205 0 0);
     --sidebar-border: oklch(0.922 0 0);
     --sidebar-ring: oklch(0.708 0 0);
+
+    --badge-sport-bg: var(--color-orange-100);
+    --badge-sport-text: var(--color-orange-500);
+    --badge-location-bg: var(--color-blue-50);
+    --badge-location-text: var(--color-blue-500);
 }
 
 .dark {
@@ -131,6 +140,11 @@
     --sidebar-accent-foreground: oklch(0.985 0 0);
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
+
+    --badge-sport-bg: color-mix(in srgb, var(--color-orange-500) 20%, transparent);
+    --badge-sport-text: var(--color-orange-400);
+    --badge-location-bg: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
+    --badge-location-text: var(--color-blue-400);
 }
 
 * {
