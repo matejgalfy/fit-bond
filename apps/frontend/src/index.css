@@ -1,8 +1,8 @@
 @import 'https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&family=DM+Sans:wght@400;500;600&display=swap';
 @import 'tailwindcss';
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/geist";
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/geist';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -141,9 +141,17 @@
     --sidebar-border: oklch(1 0 0 / 10%);
     --sidebar-ring: oklch(0.556 0 0);
 
-    --badge-sport-bg: color-mix(in srgb, var(--color-orange-500) 20%, transparent);
+    --badge-sport-bg: color-mix(
+        in srgb,
+        var(--color-orange-500) 20%,
+        transparent
+    );
     --badge-sport-text: var(--color-orange-400);
-    --badge-location-bg: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
+    --badge-location-bg: color-mix(
+        in srgb,
+        var(--color-blue-500) 10%,
+        transparent
+    );
     --badge-location-text: var(--color-blue-400);
 }
 
@@ -160,13 +168,13 @@ body {
 }
 
 @layer base {
-  * {
-    @apply border-border outline-ring/50;
+    * {
+        @apply border-border outline-ring/50;
     }
-  body {
-    @apply bg-background text-foreground;
+    body {
+        @apply bg-background text-foreground;
     }
-  html {
-    @apply font-sans;
+    html {
+        @apply font-sans;
     }
 }

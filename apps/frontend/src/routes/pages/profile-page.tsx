@@ -36,17 +36,24 @@ const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
 
 function ProfilePage() {
     const navigate = useNavigate();
-    
+
     const { userId: searchUserId } = Route.useSearch();
-    const { data: session, isPending: isSessionPending } = authClient.useSession();
-    
+    const { data: session, isPending: isSessionPending } =
+        authClient.useSession();
+
     const [dark, setDark] = useState(false);
     const [activeNav, setActiveNav] = useState('profile');
 
-    const targetUserId = searchUserId || session?.user.id;
-    const isOwner = Boolean(session?.user.id && session.user.id === targetUserId);
+    const targetUserId = searchUserId ?? session?.user.id;
+    const isOwner = Boolean(
+        session?.user.id && session.user.id === targetUserId
+    );
 
-    const { data: user_data, isPending: isUserPending, isError } = usePublicProfile(targetUserId);
+    const {
+        data: user_data,
+        isPending: isUserPending,
+        isError,
+    } = usePublicProfile(targetUserId);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', dark);
@@ -64,10 +71,14 @@ function ProfilePage() {
     const userName = session.user.name;
 
     return (
-        <div className={`${dark ? 'dark ' : ''}font-sans bg-background text-foreground min-h-screen flex flex-col transition-colors duration-300`}>
+        <div
+            className={`${dark ? 'dark ' : ''}font-sans bg-background text-foreground min-h-screen flex flex-col transition-colors duration-300`}
+        >
             <AppNavbar
                 dark={dark}
-                onToggleDark={() => setDark(!dark)}
+                onToggleDark={() => {
+                    setDark(!dark);
+                }}
                 userName={userName}
             />
 
@@ -84,30 +95,49 @@ function ProfilePage() {
                             {/* Dynamic heading based on whether it's the user's own profile */}
                             <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
                                 {isOwner ? (
-                                    <>My <span className="text-primary">Profile</span></>
+                                    <>
+                                        My{' '}
+                                        <span className="text-primary">
+                                            Profile
+                                        </span>
+                                    </>
                                 ) : (
-                                    <><span className="text-primary">{user_data?.name}'s</span> Profile</>
+                                    <>
+                                        <span className="text-primary">
+                                            {user_data?.name}'s
+                                        </span>{' '}
+                                        Profile
+                                    </>
                                 )}
                             </h1>
                             <p className="text-sm text-muted-foreground mt-1">
-                                {isOwner 
-                                    ? "Manage your personal information and sports preferences."
-                                    : "View public profile and sports preferences."}
+                                {isOwner
+                                    ? 'Manage your personal information and sports preferences.'
+                                    : 'View public profile and sports preferences.'}
                             </p>
                         </div>
 
                         {isUserPending ? (
                             <div className="flex justify-center py-12">
-                                <p className="text-muted-foreground animate-pulse">Loading profile data...</p>
+                                <p className="text-muted-foreground animate-pulse">
+                                    Loading profile data...
+                                </p>
                             </div>
-                        ) : isError || !user_data ? (
+                        ) : isError ? (
                             <div className="bg-destructive/10 text-destructive p-6 rounded-2xl border border-destructive/20 text-center">
-                                <p className="font-semibold">Failed to load profile information.</p>
-                                <p className="text-sm opacity-80">Please try again later.</p>
+                                <p className="font-semibold">
+                                    Failed to load profile information.
+                                </p>
+                                <p className="text-sm opacity-80">
+                                    Please try again later.
+                                </p>
                             </div>
                         ) : (
                             <div className="flex justify-start">
-                                <ProfileCard user={user_data} isOwner={isOwner} />
+                                <ProfileCard
+                                    user={user_data}
+                                    isOwner={isOwner}
+                                />
                             </div>
                         )}
                     </div>

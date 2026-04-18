@@ -32,7 +32,7 @@ export const userQueryKeys = {
 export async function getPublicProfile(userId: string): Promise<UserProfile> {
     const response = await api.users({ userId }).profile.get();
     if (response.error) {
-        throw new Error('Failed to fetch public profile'); 
+        throw new Error('Failed to fetch public profile');
     }
     return response.data;
 }

@@ -22,11 +22,7 @@ function UserAvatar({ name }: { name: string }) {
     );
 }
 
-export function AppNavbar({
-    dark,
-    onToggleDark,
-    userName,
-}: AppNavbarProps) {
+export function AppNavbar({ dark, onToggleDark, userName }: AppNavbarProps) {
     return (
         <nav className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 gap-3">
             <div className="flex items-center gap-1.5">
@@ -46,7 +42,7 @@ export function AppNavbar({
                 size="icon"
                 onClick={onToggleDark}
                 className={cn(dark ? 'text-orange-400' : 'text-primary')}
-                aria-label="Toggle dark mode"                
+                aria-label="Toggle dark mode"
             >
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
