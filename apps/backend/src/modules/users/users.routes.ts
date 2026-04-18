@@ -1,4 +1,4 @@
-import { Elysia } from 'elysia';
+import { Elysia, status} from 'elysia';
 import { usersController } from './users.controller';
 import { ZodError } from 'zod';
 import { updateFullProfileSchema } from './users.schema';
@@ -7,8 +7,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     .onError(({ error, set }) => {
         if (error instanceof ZodError) {
             set.status = 422;
-            return { error: 'Validation failed', issues: error.issues };
-        }
+            return status(422, { message: 'Validation failed', issues: error.issues });        }
     })
     .get(
         '/:userId/profile',

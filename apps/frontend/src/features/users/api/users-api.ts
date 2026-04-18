@@ -1,5 +1,6 @@
 import { api } from '@/lib/api';
 import type { UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.schema';
+import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 
 interface EdenErrorLike {
     value?: unknown;
@@ -28,9 +29,11 @@ export const userQueryKeys = {
     search: (name: string) => [...userQueryKeys.all, 'search', name] as const,
 };
 
-export async function getPublicProfile(userId: string) {
+export async function getPublicProfile(userId: string): Promise<UserProfile> {
     const response = await api.users({ userId }).profile.get();
-    throwIfResponseError(response.error, 'Failed to fetch public profile');
+    if (response.error) {
+        throw new Error('Failed to fetch public profile'); 
+    }
     return response.data;
 }
 
