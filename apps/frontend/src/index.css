@@ -55,6 +55,12 @@
     --sport-basketball: hsl(24 95% 53%);
     --sport-yoga: hsl(142 71% 45%);
     --sport-football: hsl(262 83% 58%);
+    --notifications-surface-hover: hsl(210 40% 98%);
+    --notifications-blue: hsl(210 100% 50%);
+    --notifications-blue-soft: hsl(210 100% 95%);
+    --notifications-orange: hsl(24 95% 53%);
+    --notifications-green: hsl(142 71% 45%);
+    --notifications-red: hsl(0 84% 60%);
     --radius: 0.625rem;
 }
 
@@ -80,6 +86,12 @@
     --sport-basketball: hsl(24 95% 61%);
     --sport-yoga: hsl(142 71% 52%);
     --sport-football: hsl(262 83% 68%);
+    --notifications-surface-hover: hsl(223 47% 14%);
+    --notifications-blue: hsl(210 100% 62%);
+    --notifications-blue-soft: hsl(210 100% 20%);
+    --notifications-orange: hsl(24 95% 61%);
+    --notifications-green: hsl(142 71% 52%);
+    --notifications-red: hsl(0 84% 68%);
 }
 
 * {
