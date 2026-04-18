@@ -28,12 +28,12 @@ export function NotificationsTabFilter({
                 }
             }}
         >
-            <TabsList className="w-full sm:w-fit">
+            <TabsList className="flex-wrap w-fit">
                 {tabs.map((tab) => (
                     <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className="flex-1 sm:flex-none text-xs sm:text-sm px-2 sm:px-4"
+                        className="flex-none text-sm px-4"
                     >
                         {tab.label}
                         <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground group-data-[state=active]:bg-blue-500 group-data-[state=active]:text-white">
