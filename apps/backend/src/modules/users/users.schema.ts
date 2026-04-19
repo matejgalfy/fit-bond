@@ -1,67 +1,59 @@
-import { z } from 'zod';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { user } from '../../db/schema';
-import { baseSportSchema } from '../sports/sports.schema';
-import { baseLocationSchema } from '../locations/locations.schema';
+import { t } from 'elysia';
 
-export const updateBaseUserSchema = createInsertSchema(user, {
-    email: () => z.email(),
-    name: (schema) => schema.min(1).max(100),
-    bio: (schema) => schema.max(500).optional(),
-    profilePictureUrl: () => z.url().optional(), // Maybe use only image column TODO
-})
-    .pick({
-        email: true,
-        name: true,
-        bio: true,
-        profilePictureUrl: true,
-    })
-    .partial();
-
-export const userLocationInputSchema = z.object({
-    locationId: z.uuid(),
-    radius: z.number().min(1).max(100),
-    label: z.string().optional().nullable(),
-    isPrimary: z.boolean().default(false),
+export const updateBaseUserSchema = t.Object({
+    email: t.Optional(t.String({ format: 'email' })),
+    name: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
+    bio: t.Optional(t.String({ maxLength: 500 })),
+    profilePictureUrl: t.Optional(t.String({ format: 'uri' })),
 });
 
-export const updateFullProfileSchema = z.object({
-    base: updateBaseUserSchema.optional(),
-    sportIds: z.array(z.uuid()).optional(),
-    locations: z.array(userLocationInputSchema).optional(),
+export const userLocationInputSchema = t.Object({
+    locationId: t.String({ format: 'uuid' }),
+    radius: t.Number({ minimum: 1, maximum: 100 }),
+    label: t.Optional(t.Union([t.String(), t.Null()])),
+    isPrimary: t.Optional(t.Boolean()),
 });
 
-export const PublicUserSchema = createSelectSchema(user).pick({
-    id: true,
-    name: true,
-    bio: true,
-    profilePictureUrl: true,
+export const updateFullProfileSchema = t.Object({
+    base: t.Optional(updateBaseUserSchema),
+    sportIds: t.Optional(t.Array(t.String({ format: 'uuid' }))),
+    locations: t.Optional(t.Array(userLocationInputSchema)),
 });
 
-export const UserProfileSchema = PublicUserSchema.extend({
-    sports: z.array(
-        baseSportSchema.pick({
-            id: true,
-            name: true,
+export const PublicUserSchema = t.Object({
+    id: t.String(),
+    name: t.String(),
+    bio: t.Union([t.String(), t.Null()]),
+    profilePictureUrl: t.Union([t.String(), t.Null()]),
+});
+
+export const PublicUserProfileSchema = t.Object({
+    ...PublicUserSchema.properties,
+    sports: t.Array(
+        t.Object({
+            id: t.String({ format: 'uuid' }),
+            name: t.String(),
         })
     ),
-    locations: z.array(
-        baseLocationSchema
-            .pick({
-                id: true,
-                city: true,
-            })
-            .extend({
-                radius: z.number(),
-                isPrimary: z.boolean(),
-            })
+    locations: t.Array(
+        t.Object({
+            id: t.String({ format: 'uuid' }),
+            city: t.String(),
+            radius: t.Number(),
+            isPrimary: t.Boolean(),
+        })
     ),
 });
 
 // export const PrivateUserSchema = baseUserSchema.pick(); TODO
 
-export const userIdParam = z.object({
-    id: z.string(),
+export const userIdParam = t.Object({
+    userId: t.String(),
 });
 
-export type UpdateFullProfileInput = z.infer<typeof updateFullProfileSchema>;
+export const userNameParam = t.Object({
+    name: t.String({ minLength: 1 }),
+});
+
+export type PublicUserProfile = typeof PublicUserProfileSchema.static;
+export type UpdateFullProfileInput = typeof updateFullProfileSchema.static;

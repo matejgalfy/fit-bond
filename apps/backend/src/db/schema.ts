@@ -194,6 +194,7 @@ export const events = pgTable('events', {
     duration: integer('duration').notNull(),
     capacity: integer('capacity').notNull(),
     currentParticipants: integer('current_participants').default(0).notNull(),
+    currentInterested: integer('current_interested').default(0).notNull(),
     isPublic: boolean('is_public').default(true).notNull(),
     coverImageUrl: text('cover_image_url'),
     cancelledAt: timestamp('cancelled_at'),
