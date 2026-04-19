@@ -1,6 +1,25 @@
-import { eq, and, ilike, gte, lte, isNull, desc } from 'drizzle-orm';
+import {
+    eq,
+    and,
+    ilike,
+    gte,
+    lte,
+    isNull,
+    desc,
+    count,
+    not,
+    exists,
+    ne,
+} from 'drizzle-orm';
 import type { Database } from '../../db';
-import { events, user, locations, sports } from '../../db/schema';
+import {
+    events,
+    user,
+    locations,
+    sports,
+    eventParticipants,
+    eventInterested,
+} from '../../db/schema';
 import type {
     EventFilters,
     CreateEventInput,
@@ -33,10 +52,55 @@ export const eventsModel = {
             conditions.push(ilike(locations.city, `%${filters.city}%`));
         }
 
+        // User relation filtering
+        if (filters.userId && filters.userRelation === 'organized') {
+            conditions.push(eq(events.organizerId, filters.userId));
+        }
+
+        // Exclude events with user interactions (for discovery)
+        if (filters.userId && filters.excludeUserInteractions) {
+            // Exclude events organized by user
+            conditions.push(ne(events.organizerId, filters.userId));
+
+            // Exclude events user has joined
+            conditions.push(
+                not(
+                    exists(
+                        db
+                            .select()
+                            .from(eventParticipants)
+                            .where(
+                                and(
+                                    eq(eventParticipants.eventId, events.id),
+                                    eq(eventParticipants.userId, filters.userId)
+                                )
+                            )
+                    )
+                )
+            );
+
+            // Exclude events user is interested in
+            conditions.push(
+                not(
+                    exists(
+                        db
+                            .select()
+                            .from(eventInterested)
+                            .where(
+                                and(
+                                    eq(eventInterested.eventId, events.id),
+                                    eq(eventInterested.userId, filters.userId)
+                                )
+                            )
+                    )
+                )
+            );
+        }
+
         const limit = filters.limit ?? 20;
         const offset = filters.offset ?? 0;
 
-        return db
+        let query = db
             .select({
                 id: events.id,
                 name: events.name,
@@ -69,7 +133,28 @@ export const eventsModel = {
             .from(events)
             .innerJoin(user, eq(events.organizerId, user.id))
             .innerJoin(locations, eq(events.locationId, locations.id))
-            .innerJoin(sports, eq(events.sportId, sports.id))
+            .innerJoin(sports, eq(events.sportId, sports.id));
+
+        // Add conditional joins for joined/interested relations
+        if (filters.userId && filters.userRelation === 'joined') {
+            query = query.innerJoin(
+                eventParticipants,
+                and(
+                    eq(eventParticipants.eventId, events.id),
+                    eq(eventParticipants.userId, filters.userId)
+                )
+            );
+        } else if (filters.userId && filters.userRelation === 'interested') {
+            query = query.innerJoin(
+                eventInterested,
+                and(
+                    eq(eventInterested.eventId, events.id),
+                    eq(eventInterested.userId, filters.userId)
+                )
+            );
+        }
+
+        return query
             .where(and(...conditions))
             .orderBy(desc(events.startTime))
             .limit(limit)
@@ -209,6 +294,48 @@ export const eventsModel = {
 
         if (results.length === 0) return null;
         return results[0];
+    },
+
+    async getStatsByUserId(db: Database, userId: string) {
+        // Count organized events
+        const organizedResult = await db
+            .select({ count: count() })
+            .from(events)
+            .where(
+                and(eq(events.organizerId, userId), isNull(events.deletedAt))
+            );
+
+        // Count joined events
+        const joinedResult = await db
+            .select({ count: count() })
+            .from(eventParticipants)
+            .innerJoin(
+                events,
+                and(
+                    eq(eventParticipants.eventId, events.id),
+                    isNull(events.deletedAt)
+                )
+            )
+            .where(eq(eventParticipants.userId, userId));
+
+        // Count interested events
+        const interestedResult = await db
+            .select({ count: count() })
+            .from(eventInterested)
+            .innerJoin(
+                events,
+                and(
+                    eq(eventInterested.eventId, events.id),
+                    isNull(events.deletedAt)
+                )
+            )
+            .where(eq(eventInterested.userId, userId));
+
+        return {
+            organized: organizedResult[0]?.count ?? 0,
+            joined: joinedResult[0]?.count ?? 0,
+            interested: interestedResult[0]?.count ?? 0,
+        };
     },
 };
 

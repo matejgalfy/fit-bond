@@ -1,13 +1,20 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1775995274429,
-      "tag": "0000_demonic_captain_midlands",
-      "breakpoints": true
-    }
-  ]
+    "version": "7",
+    "dialect": "postgresql",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "7",
+            "when": 1775995274429,
+            "tag": "0000_demonic_captain_midlands",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1776530838116,
+            "tag": "0001_flowery_marten_broadcloak",
+            "breakpoints": true
+        }
+    ]
 }

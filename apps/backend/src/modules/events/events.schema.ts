@@ -1,88 +1,111 @@
-import { z } from 'zod';
-import { createInsertSchema, createSelectSchema } from 'drizzle-zod';
-import { events } from '../../db/schema';
+import { t } from 'elysia';
 
-export const selectEventSchema = createSelectSchema(events);
+export const selectEventSchema = t.Object({
+    id: t.String({ format: 'uuid' }),
+    organizerId: t.String(),
+    locationId: t.String({ format: 'uuid' }),
+    sportId: t.String({ format: 'uuid' }),
+    name: t.String(),
+    description: t.Optional(t.Union([t.String(), t.Null()])),
+    skillLevel: t.Union([
+        t.Literal('beginner'),
+        t.Literal('intermediate'),
+        t.Literal('advanced'),
+    ]),
+    startTime: t.Date(),
+    duration: t.Number(),
+    capacity: t.Number(),
+    currentParticipants: t.Number(),
+    currentInterested: t.Number(),
+    isPublic: t.Boolean(),
+    coverImageUrl: t.Optional(t.Union([t.String(), t.Null()])),
+    cancelledAt: t.Optional(t.Union([t.Date(), t.Null()])),
+    cancellationReason: t.Optional(t.Union([t.String(), t.Null()])),
+    createdAt: t.Date(),
+    updatedAt: t.Date(),
+    deletedAt: t.Optional(t.Union([t.Date(), t.Null()])),
+});
 
-export const createEventBody = createInsertSchema(events, {
-    name: (schema) => schema.min(1).max(200).describe('Event name'),
-    description: (schema) =>
-        schema.max(2000).optional().describe('Event description'),
-    sportId: (schema) => schema.describe('Sport UUID'),
-    locationId: (schema) => schema.describe('Location UUID'),
-    skillLevel: (schema) => schema.describe('Required skill level'),
-    startTime: () => z.string().describe('Event start time (ISO 8601)'),
-    duration: (schema) =>
-        schema.min(15).max(480).describe('Duration in minutes'),
-    capacity: (schema) =>
-        schema.min(2).max(200).describe('Maximum number of participants'),
-    isPublic: (schema) =>
-        schema.optional().describe('Whether the event is publicly visible'),
-    coverImageUrl: (schema) => schema.optional().describe('Cover image URL'),
-})
-    .pick({
-        name: true,
-        description: true,
-        sportId: true,
-        locationId: true,
-        skillLevel: true,
-        startTime: true,
-        duration: true,
-        capacity: true,
-        isPublic: true,
-        coverImageUrl: true,
-    })
-    .describe('Create event request body');
+export const createEventBody = t.Object({
+    name: t.String({ minLength: 1, maxLength: 200 }),
+    description: t.Optional(t.String({ maxLength: 2000 })),
+    sportId: t.String({ format: 'uuid' }),
+    locationId: t.String({ format: 'uuid' }),
+    skillLevel: t.Union([
+        t.Literal('beginner'),
+        t.Literal('intermediate'),
+        t.Literal('advanced'),
+    ]),
+    startTime: t.String({ format: 'date-time' }),
+    duration: t.Number({ minimum: 15, maximum: 480 }),
+    capacity: t.Number({ minimum: 2, maximum: 200 }),
+    isPublic: t.Optional(t.Boolean()),
+    coverImageUrl: t.Optional(t.String({ format: 'uri' })),
+});
 
-export const updateEventBody = createEventBody
-    .omit({ sportId: true, locationId: true })
-    .partial()
-    .describe('Update event request body');
+export const updateEventBody = t.Object({
+    name: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    description: t.Optional(t.String({ maxLength: 2000 })),
+    skillLevel: t.Optional(
+        t.Union([
+            t.Literal('beginner'),
+            t.Literal('intermediate'),
+            t.Literal('advanced'),
+        ])
+    ),
+    startTime: t.Optional(t.String({ format: 'date-time' })),
+    duration: t.Optional(t.Number({ minimum: 15, maximum: 480 })),
+    capacity: t.Optional(t.Number({ minimum: 2, maximum: 200 })),
+    isPublic: t.Optional(t.Boolean()),
+    coverImageUrl: t.Optional(t.String({ format: 'uri' })),
+});
 
-export const cancelEventBody = z
-    .object({
-        reason: z.string().max(500).optional().describe('Cancellation reason'),
-    })
-    .describe('Cancel event request body');
+export const cancelEventBody = t.Object({
+    reason: t.Optional(t.String({ maxLength: 500 })),
+});
 
-export const eventQueryFilters = z
-    .object({
-        sportId: z.string().optional().describe('Filter by sport ID'),
-        skillLevel: z
-            .enum(['beginner', 'intermediate', 'advanced'])
-            .optional()
-            .describe('Filter by skill level'),
-        city: z.string().optional().describe('Filter by city name'),
-        fromDate: z
-            .string()
-            .optional()
-            .describe('Events starting after this date (ISO 8601)'),
-        toDate: z
-            .string()
-            .optional()
-            .describe('Events starting before this date (ISO 8601)'),
-        search: z.string().optional().describe('Search events by name'),
-        limit: z.coerce
-            .number()
-            .min(1)
-            .max(100)
-            .optional()
-            .describe('Maximum results per page'),
-        offset: z.coerce
-            .number()
-            .min(0)
-            .optional()
-            .describe('Number of results to skip'),
-    })
-    .describe('Event listing filters');
+export const eventQueryFilters = t.Object({
+    sportId: t.Optional(t.String({ format: 'uuid' })),
+    skillLevel: t.Optional(
+        t.Union([
+            t.Literal('beginner'),
+            t.Literal('intermediate'),
+            t.Literal('advanced'),
+        ])
+    ),
+    city: t.Optional(t.String()),
+    fromDate: t.Optional(t.String({ format: 'date-time' })),
+    toDate: t.Optional(t.String({ format: 'date-time' })),
+    search: t.Optional(t.String()),
+    userId: t.Optional(t.String()),
+    userRelation: t.Optional(
+        t.Union([
+            t.Literal('organized'),
+            t.Literal('joined'),
+            t.Literal('interested'),
+        ])
+    ),
+    excludeUserInteractions: t.Optional(t.Boolean()),
+    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
+    offset: t.Optional(t.Integer({ minimum: 0 })),
+});
 
-export const eventIdParam = z
-    .object({
-        id: z.uuid().describe('Event UUID'),
-    })
-    .describe('Event ID path parameter');
+export const eventIdParam = t.Object({
+    id: t.String({ format: 'uuid' }),
+});
 
-export type CreateEventBody = z.infer<typeof createEventBody>;
-export type UpdateEventBody = z.infer<typeof updateEventBody>;
-export type CancelEventBody = z.infer<typeof cancelEventBody>;
-export type EventQueryFilters = z.infer<typeof eventQueryFilters>;
+export const userIdParam = t.Object({
+    userId: t.String(),
+});
+
+export const eventStatsResponse = t.Object({
+    organized: t.Integer(),
+    interested: t.Integer(),
+    joined: t.Integer(),
+});
+
+export type CreateEventBody = typeof createEventBody.static;
+export type UpdateEventBody = typeof updateEventBody.static;
+export type CancelEventBody = typeof cancelEventBody.static;
+export type EventQueryFilters = typeof eventQueryFilters.static;
+export type EventStatsResponse = typeof eventStatsResponse.static;

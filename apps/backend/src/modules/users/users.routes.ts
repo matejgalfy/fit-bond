@@ -1,19 +1,19 @@
 import { Elysia } from 'elysia';
 import { usersController } from './users.controller';
-import { ZodError } from 'zod';
-import { updateFullProfileSchema } from './users.schema';
+import {
+    updateFullProfileSchema,
+    userIdParam,
+    userNameParam,
+} from './users.schema';
+import { handleServiceError } from '../../utils/error-handler';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
-    .onError(({ error, set }) => {
-        if (error instanceof ZodError) {
-            set.status = 422;
-            return { error: 'Validation failed', issues: error.issues };
-        }
-    })
+    .onError(handleServiceError)
     .get(
         '/:userId/profile',
         ({ params: { userId } }) => usersController.getPublicProfile(userId),
         {
+            params: userIdParam,
             detail: {
                 tags: ['Users'],
                 summary: 'Get public profile',
@@ -22,12 +22,11 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     )
     .put(
         '/:userId/profile',
-        ({ params: { userId }, body }) => {
-            const validatedData = updateFullProfileSchema.parse(body);
-
-            return usersController.updateFullProfile(userId, validatedData);
-        },
+        ({ params: { userId }, body }) =>
+            usersController.updateFullProfile(userId, body),
         {
+            params: userIdParam,
+            body: updateFullProfileSchema,
             detail: {
                 tags: ['Users'],
                 summary: 'Update full profile',
@@ -38,6 +37,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
         '/name/:name',
         ({ params: { name } }) => usersController.findUserByName(name),
         {
+            params: userNameParam,
             detail: {
                 tags: ['Users'],
                 summary: 'Find user by name',

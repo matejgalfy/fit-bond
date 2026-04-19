@@ -6,9 +6,10 @@ import type {
     EventQueryFilters,
 } from './events.schema';
 
-export type Event = InferSelectModel<typeof events>;
+export type EventType = InferSelectModel<typeof events>;
 
 export type SkillLevel = 'beginner' | 'intermediate' | 'advanced';
+export type UserRelation = 'organized' | 'joined' | 'interested';
 
 export type CreateEventInput = CreateEventBody;
 export type UpdateEventInput = UpdateEventBody;

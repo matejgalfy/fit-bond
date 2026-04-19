@@ -6,41 +6,39 @@ import type {
     CreateEventInput,
     UpdateEventInput,
 } from './events.types';
-
-export class EventsServiceError extends Error {
-    public readonly code:
-        | 'NOT_FOUND'
-        | 'FORBIDDEN'
-        | 'CONFLICT'
-        | 'BAD_REQUEST';
-    public readonly statusCode: number;
-
-    constructor(
-        message: string,
-        code: 'NOT_FOUND' | 'FORBIDDEN' | 'CONFLICT' | 'BAD_REQUEST',
-        statusCode: number
-    ) {
-        super(message);
-        this.name = 'EventsServiceError';
-        this.code = code;
-        this.statusCode = statusCode;
-    }
-}
+import { ServiceError } from '../../utils/errors';
 
 export function createEventsService(model: EventsModel = defaultModel) {
     return {
         async list(db: Database, filters: EventFilters) {
+            // Validate that if userRelation is provided, userId must also be provided
+            if (filters.userRelation && !filters.userId) {
+                throw ServiceError.badRequest(
+                    'userId is required when filtering by userRelation'
+                );
+            }
+
+            // Validate that if excludeUserInteractions is provided, userId must also be provided
+            if (filters.excludeUserInteractions && !filters.userId) {
+                throw ServiceError.badRequest(
+                    'userId is required when excludeUserInteractions is true'
+                );
+            }
+
+            // Validate that userRelation and excludeUserInteractions cannot be used together
+            if (filters.userRelation && filters.excludeUserInteractions) {
+                throw ServiceError.badRequest(
+                    'userRelation and excludeUserInteractions cannot be used together'
+                );
+            }
+
             return model.findAll(db, filters);
         },
 
         async getById(db: Database, id: string) {
             const event = await model.findById(db, id);
             if (!event) {
-                throw new EventsServiceError(
-                    'Event not found',
-                    'NOT_FOUND',
-                    404
-                );
+                throw ServiceError.notFound('Event not found');
             }
             return event;
         },
@@ -51,10 +49,8 @@ export function createEventsService(model: EventsModel = defaultModel) {
             input: CreateEventInput
         ) {
             if (new Date(input.startTime) <= new Date()) {
-                throw new EventsServiceError(
-                    'Event start time must be in the future',
-                    'BAD_REQUEST',
-                    400
+                throw ServiceError.badRequest(
+                    'Event start time must be in the future'
                 );
             }
 
@@ -69,41 +65,27 @@ export function createEventsService(model: EventsModel = defaultModel) {
         ) {
             const existing = await model.findRawById(db, eventId);
             if (!existing) {
-                throw new EventsServiceError(
-                    'Event not found',
-                    'NOT_FOUND',
-                    404
-                );
+                throw ServiceError.notFound('Event not found');
             }
             if (existing.organizerId !== userId) {
-                throw new EventsServiceError(
-                    'Only the organizer can update this event',
-                    'FORBIDDEN',
-                    403
+                throw ServiceError.forbidden(
+                    'Only the organizer can update this event'
                 );
             }
             if (existing.cancelledAt) {
-                throw new EventsServiceError(
-                    'Cannot update a cancelled event',
-                    'CONFLICT',
-                    409
-                );
+                throw ServiceError.conflict('Cannot update a cancelled event');
             }
             if (input.startTime && new Date(input.startTime) <= new Date()) {
-                throw new EventsServiceError(
-                    'Event start time must be in the future',
-                    'BAD_REQUEST',
-                    400
+                throw ServiceError.badRequest(
+                    'Event start time must be in the future'
                 );
             }
             if (
                 input.capacity !== undefined &&
                 input.capacity < existing.currentParticipants
             ) {
-                throw new EventsServiceError(
-                    'Capacity cannot be less than current participants',
-                    'BAD_REQUEST',
-                    400
+                throw ServiceError.badRequest(
+                    'Capacity cannot be less than current participants'
                 );
             }
 
@@ -118,25 +100,15 @@ export function createEventsService(model: EventsModel = defaultModel) {
         ) {
             const existing = await model.findRawById(db, eventId);
             if (!existing) {
-                throw new EventsServiceError(
-                    'Event not found',
-                    'NOT_FOUND',
-                    404
-                );
+                throw ServiceError.notFound('Event not found');
             }
             if (existing.organizerId !== userId) {
-                throw new EventsServiceError(
-                    'Only the organizer can cancel this event',
-                    'FORBIDDEN',
-                    403
+                throw ServiceError.forbidden(
+                    'Only the organizer can cancel this event'
                 );
             }
             if (existing.cancelledAt) {
-                throw new EventsServiceError(
-                    'Event is already cancelled',
-                    'CONFLICT',
-                    409
-                );
+                throw ServiceError.conflict('Event is already cancelled');
             }
 
             return model.cancel(db, eventId, reason);
@@ -145,21 +117,19 @@ export function createEventsService(model: EventsModel = defaultModel) {
         async delete(db: Database, eventId: string, userId: string) {
             const existing = await model.findRawById(db, eventId);
             if (!existing) {
-                throw new EventsServiceError(
-                    'Event not found',
-                    'NOT_FOUND',
-                    404
-                );
+                throw ServiceError.notFound('Event not found');
             }
             if (existing.organizerId !== userId) {
-                throw new EventsServiceError(
-                    'Only the organizer can delete this event',
-                    'FORBIDDEN',
-                    403
+                throw ServiceError.forbidden(
+                    'Only the organizer can delete this event'
                 );
             }
 
             await model.softDelete(db, eventId);
+        },
+
+        async getStatsByUserId(db: Database, userId: string) {
+            return model.getStatsByUserId(db, userId);
         },
     };
 }
