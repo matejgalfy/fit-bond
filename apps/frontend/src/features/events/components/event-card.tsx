@@ -1,29 +1,14 @@
-import { Activity, Clock, Heart, MapPin, Users } from 'lucide-react';
+import { Activity, Clock, MapPin, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import type { Event } from '../types';
 
-export interface SportEvent {
-    id: number;
-    name: string;
-    sport: string;
-    date: string;
-    time: string;
-    location: string;
-    participants: number;
-    capacity: number;
-    interested: number;
-    organizer: string;
-    skill: string;
-    color: string;
-    full?: boolean;
+export interface EventCardProps {
+    event: Event;
 }
 
 interface AvatarProps {
     name: string;
     size?: number;
-}
-
-interface EventCardProps {
-    event: SportEvent;
 }
 
 export function Avatar({ name, size = 32 }: AvatarProps) {
@@ -46,25 +31,60 @@ export function Avatar({ name, size = 32 }: AvatarProps) {
     );
 }
 
+function formatDate(date: Date): string {
+    return date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+    });
+}
+
+function formatTime(date: Date): string {
+    return date.toLocaleTimeString('en-US', {
+        hour: 'numeric',
+        minute: '2-digit',
+        hour12: true,
+    });
+}
+
+function getSkillLevelDisplay(skillLevel: string): string {
+    return skillLevel.charAt(0).toUpperCase() + skillLevel.slice(1);
+}
+
 export function EventCard({ event }: EventCardProps) {
+    const isFull = event.currentParticipants >= event.capacity;
+    const isCancelled = event.cancelledAt !== null;
+    const formattedDate = formatDate(event.startTime);
+    const formattedTime = formatTime(event.startTime);
+    const skillLevelDisplay = getSkillLevelDisplay(event.skillLevel);
+    const location = `${event.location.city}, ${event.location.country}`;
+
     return (
         <div className="bg-card rounded-2xl overflow-hidden border border-border transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
             <div
                 className="h-30 flex items-center justify-center relative"
                 style={{
-                    background: `linear-gradient(135deg, color-mix(in srgb, ${event.color} 12%, transparent), color-mix(in srgb, ${event.color} 40%, transparent))`,
+                    background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))`,
                 }}
             >
                 <span className="opacity-60">
-                    <Activity size={36} color={event.color} strokeWidth={1.5} />
+                    <Activity
+                        size={36}
+                        color="var(--primary)"
+                        strokeWidth={1.5}
+                    />
                 </span>
-                {event.full && (
+                {isFull && (
                     <span className="absolute top-2 right-2 bg-destructive text-primary-foreground text-[11px] font-semibold px-2 py-0.5 rounded-md">
                         Full
                     </span>
                 )}
+                {isCancelled && (
+                    <span className="absolute top-2 right-2 bg-muted text-muted-foreground text-[11px] font-semibold px-2 py-0.5 rounded-md">
+                        Cancelled
+                    </span>
+                )}
                 <span className="absolute top-2 left-2 bg-secondary text-primary text-[11px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm">
-                    {event.sport}
+                    {event.sport.name}
                 </span>
             </div>
 
@@ -76,43 +96,39 @@ export function EventCard({ event }: EventCardProps) {
                 <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
                     <Clock size={13} />
                     <span>
-                        {event.date} · {event.time}
+                        {formattedDate} · {formattedTime}
                     </span>
                 </div>
 
                 <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
                     <MapPin size={13} />
-                    <span>{event.location}</span>
+                    <span>{location}</span>
                 </div>
 
                 <div className="flex justify-between text-xs mt-2.5">
                     <span className="text-muted-foreground flex items-center gap-1">
-                        <Users size={13} /> {event.participants}/
+                        <Users size={13} /> {event.currentParticipants}/
                         {event.capacity} joined
-                    </span>
-                    <span className="text-primary flex items-center gap-1">
-                        <Heart size={13} fill="var(--primary)" />{' '}
-                        {event.interested}
                     </span>
                 </div>
 
                 <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-border">
-                    <Avatar name={event.organizer} size={24} />
+                    <Avatar name={event.organizer.name} size={24} />
                     <span className="text-xs text-muted-foreground">
-                        {event.organizer}
+                        {event.organizer.name}
                     </span>
                     <span
                         className={cn(
                             'ml-auto text-[11px] font-medium px-2 py-0.5 rounded-md',
-                            event.skill === 'Beginner' &&
+                            event.skillLevel === 'beginner' &&
                                 'text-primary bg-secondary',
-                            event.skill === 'Advanced' &&
+                            event.skillLevel === 'advanced' &&
                                 'text-destructive bg-secondary',
-                            event.skill === 'Intermediate' &&
+                            event.skillLevel === 'intermediate' &&
                                 'text-secondary-foreground bg-accent'
                         )}
                     >
-                        {event.skill}
+                        {skillLevelDisplay}
                     </span>
                 </div>
             </div>

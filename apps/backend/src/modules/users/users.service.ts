@@ -13,7 +13,7 @@ export function createUsersService(model: UsersModel = defaultModel) {
             const rawUser = await model.getPublicUserProfileById(db, userId);
 
             if (!rawUser) {
-                throw new ServiceError('User not found', 'NOT_FOUND', 404);
+                throw ServiceError.notFound('User not found');
             }
 
             return {
@@ -46,7 +46,7 @@ export function createUsersService(model: UsersModel = defaultModel) {
             const user = await model.findUserByName(db, name);
 
             if (!user) {
-                throw new ServiceError('User not found', 'NOT_FOUND', 404);
+                throw ServiceError.notFound('User not found');
             }
 
             return user;

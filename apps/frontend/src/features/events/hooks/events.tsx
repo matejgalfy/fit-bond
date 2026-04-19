@@ -8,20 +8,23 @@ import type {
     CancelEventBody,
     CreateEventBody,
     EventQueryFilters,
+    EventStatsResponse,
     UpdateEventBody,
 } from '../../../../../backend/src/modules/events/events.schema';
+import type { Event } from '../types';
 import {
     cancelEvent,
     createEvent,
     deleteEvent,
     eventQueryKeys,
     getEvent,
+    getEventStats,
     listEvents,
     updateEvent,
 } from '../api/events-api';
 
 export function useEvents(filters?: EventQueryFilters) {
-    return useQuery({
+    return useQuery<Event[]>({
         queryKey: eventQueryKeys.list(filters),
         queryFn: () => listEvents(filters),
         placeholderData: keepPreviousData,
@@ -29,7 +32,7 @@ export function useEvents(filters?: EventQueryFilters) {
 }
 
 export function useEvent(id?: string) {
-    return useQuery({
+    return useQuery<Event>({
         queryKey: eventQueryKeys.detail(id ?? 'missing'),
         queryFn: () => {
             if (!id) {
@@ -39,6 +42,20 @@ export function useEvent(id?: string) {
             return getEvent(id);
         },
         enabled: Boolean(id),
+    });
+}
+
+export function useEventStats(userId?: string) {
+    return useQuery<EventStatsResponse>({
+        queryKey: eventQueryKeys.stats(userId ?? 'missing'),
+        queryFn: () => {
+            if (!userId) {
+                throw new Error('Missing user id');
+            }
+
+            return getEventStats(userId);
+        },
+        enabled: Boolean(userId),
     });
 }
 
