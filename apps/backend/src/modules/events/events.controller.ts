@@ -1,5 +1,6 @@
 import { db } from '../../db';
-import { eventsService, EventsServiceError } from './events.service';
+import { eventsService } from './events.service';
+import { ServiceError } from '../../utils/errors';
 import type {
     CreateEventBody,
     UpdateEventBody,
@@ -10,11 +11,7 @@ import type {
 function requireUserId(headers: Record<string, string | undefined>): string {
     const userId = headers['x-user-id'];
     if (!userId) {
-        throw new EventsServiceError(
-            'Authentication required',
-            'FORBIDDEN',
-            401
-        );
+        throw ServiceError.unauthorized('Authentication required');
     }
     return userId;
 }
@@ -58,5 +55,9 @@ export const eventsController = {
         const userId = requireUserId(headers);
         await eventsService.delete(db, id, userId);
         return { success: true };
+    },
+
+    async getStatsByUserId(userId: string) {
+        return eventsService.getStatsByUserId(db, userId);
     },
 };

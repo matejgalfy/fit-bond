@@ -1,30 +1,41 @@
 import { Elysia } from 'elysia';
 import { eventsController } from './events.controller';
-import { EventsServiceError } from './events.service';
 import {
     createEventBody,
     updateEventBody,
     cancelEventBody,
     eventQueryFilters,
     eventIdParam,
+    userIdParam,
+    eventStatsResponse,
 } from './events.schema';
+import { handleServiceError } from '../../utils/error-handler';
 
 export const eventsRoutes = new Elysia({ prefix: '/events' })
-    .onError(({ error, set }) => {
-        if (error instanceof EventsServiceError) {
-            set.status = error.statusCode;
-            return { error: error.message, code: error.code };
-        }
-    })
+    .onError(handleServiceError)
     .get('/', ({ query }) => eventsController.list(query), {
         query: eventQueryFilters,
         detail: {
             tags: ['Events'],
             summary: 'List events',
             description:
-                'Retrieve a paginated list of events with optional filtering by sport, skill level, city, date range, and search term.',
+                'Retrieve a paginated list of events with optional filtering by sport, skill level, city, date range, search term, and user relationship. Use userRelation (organized/joined/interested) to get events with specific user relationships. Use excludeUserInteractions=true to get events the user has no interaction with (for discovery). Both require userId parameter.',
         },
     })
+    .get(
+        '/stats/:userId',
+        ({ params }) => eventsController.getStatsByUserId(params.userId),
+        {
+            params: userIdParam,
+            response: eventStatsResponse,
+            detail: {
+                tags: ['Events'],
+                summary: 'Get event statistics for a user',
+                description:
+                    'Returns the count of events organized, joined, and interested by a specific user.',
+            },
+        }
+    )
     .get('/:id', ({ params }) => eventsController.getById(params.id), {
         params: eventIdParam,
         detail: {

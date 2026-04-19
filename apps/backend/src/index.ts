@@ -1,7 +1,6 @@
 import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysiajs/openapi';
-import { z } from 'zod';
 import { eventsRoutes } from './modules/events/events.routes';
 import { auth } from './auth';
 import { usersRoutes } from './modules/users/users.routes';
@@ -27,7 +26,6 @@ const app = new Elysia()
                     { name: 'Users', description: 'User management' },
                 ],
             },
-            mapJsonSchema: { zod: z.toJSONSchema },
             exclude: { methods: ['OPTIONS'] },
         })
     )

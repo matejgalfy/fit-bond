@@ -1,13 +1,18 @@
 import { test, expect, describe, beforeEach, mock } from 'bun:test';
-import { createEventsService, EventsServiceError } from './events.service';
+import { createEventsService } from './events.service';
+import { ServiceError } from '../../utils/errors';
 import type { EventsModel } from './events.model';
 import type { Database } from '../../db';
-import type { Event, CreateEventInput, UpdateEventInput } from './events.types';
+import type {
+    EventType,
+    CreateEventInput,
+    UpdateEventInput,
+} from './events.types';
 
 const futureDate = new Date(Date.now() + 86400000).toISOString();
 const pastDate = new Date(Date.now() - 86400000).toISOString();
 
-function makeMockEvent(overrides: Partial<Event> = {}): Event {
+function makeMockEvent(overrides: Partial<EventType> = {}): EventType {
     return {
         id: 'event-1',
         organizerId: 'user-1',
@@ -37,12 +42,19 @@ function makeMockModel() {
         findById: mock(() =>
             Promise.resolve(null as Record<string, unknown> | null)
         ),
-        findRawById: mock(() => Promise.resolve(null as Event | null)),
+        findRawById: mock(() => Promise.resolve(null as EventType | null)),
         create: mock(() => Promise.resolve(makeMockEvent())),
-        update: mock(() => Promise.resolve(makeMockEvent() as Event | null)),
-        cancel: mock(() => Promise.resolve(makeMockEvent() as Event | null)),
+        update: mock(() =>
+            Promise.resolve(makeMockEvent() as EventType | null)
+        ),
+        cancel: mock(() =>
+            Promise.resolve(makeMockEvent() as EventType | null)
+        ),
         softDelete: mock(() =>
-            Promise.resolve(makeMockEvent() as Event | null)
+            Promise.resolve(makeMockEvent() as EventType | null)
+        ),
+        getStatsByUserId: mock(() =>
+            Promise.resolve({ organized: 0, joined: 0, interested: 0 })
         ),
     };
 }
@@ -71,6 +83,79 @@ describe('EventsService', () => {
             const result = await service.list(fakeDb, {});
             expect(result).toHaveLength(2);
         });
+
+        test('allows filtering by userId and userRelation', async () => {
+            const filters = {
+                userId: 'user-1',
+                userRelation: 'organized' as const,
+            };
+            await service.list(fakeDb, filters);
+            expect(mockModel.findAll).toHaveBeenCalledWith(fakeDb, filters);
+        });
+
+        test('throws BAD_REQUEST when userRelation provided without userId', async () => {
+            expect.assertions(2);
+            try {
+                await service.list(fakeDb, { userRelation: 'organized' });
+            } catch (e) {
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
+                expect((e as ServiceError).message).toContain(
+                    'userId is required'
+                );
+            }
+        });
+
+        test('accepts joined userRelation', async () => {
+            const filters = {
+                userId: 'user-1',
+                userRelation: 'joined' as const,
+            };
+            await service.list(fakeDb, filters);
+            expect(mockModel.findAll).toHaveBeenCalledWith(fakeDb, filters);
+        });
+
+        test('accepts interested userRelation', async () => {
+            const filters = {
+                userId: 'user-1',
+                userRelation: 'interested' as const,
+            };
+            await service.list(fakeDb, filters);
+            expect(mockModel.findAll).toHaveBeenCalledWith(fakeDb, filters);
+        });
+
+        test('allows excluding user interactions for discovery', async () => {
+            const filters = { userId: 'user-1', excludeUserInteractions: true };
+            await service.list(fakeDb, filters);
+            expect(mockModel.findAll).toHaveBeenCalledWith(fakeDb, filters);
+        });
+
+        test('throws BAD_REQUEST when excludeUserInteractions provided without userId', async () => {
+            expect.assertions(2);
+            try {
+                await service.list(fakeDb, { excludeUserInteractions: true });
+            } catch (e) {
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
+                expect((e as ServiceError).message).toContain(
+                    'userId is required'
+                );
+            }
+        });
+
+        test('throws BAD_REQUEST when both userRelation and excludeUserInteractions are provided', async () => {
+            expect.assertions(2);
+            try {
+                await service.list(fakeDb, {
+                    userId: 'user-1',
+                    userRelation: 'organized',
+                    excludeUserInteractions: true,
+                });
+            } catch (e) {
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
+                expect((e as ServiceError).message).toContain(
+                    'cannot be used together'
+                );
+            }
+        });
     });
 
     describe('getById', () => {
@@ -87,9 +172,9 @@ describe('EventsService', () => {
             try {
                 await service.getById(fakeDb, 'missing');
             } catch (e) {
-                expect(e).toBeInstanceOf(EventsServiceError);
-                expect((e as EventsServiceError).code).toBe('NOT_FOUND');
-                expect((e as EventsServiceError).statusCode).toBe(404);
+                expect(e).toBeInstanceOf(ServiceError);
+                expect((e as ServiceError).code).toBe('NOT_FOUND');
+                expect((e as ServiceError).statusCode).toBe(404);
             }
         });
     });
@@ -123,8 +208,8 @@ describe('EventsService', () => {
             try {
                 await service.create(fakeDb, 'user-1', pastInput);
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('BAD_REQUEST');
-                expect((e as EventsServiceError).statusCode).toBe(400);
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
+                expect((e as ServiceError).statusCode).toBe(400);
             }
         });
     });
@@ -153,7 +238,7 @@ describe('EventsService', () => {
             try {
                 await service.update(fakeDb, 'missing', 'user-1', updateInput);
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('NOT_FOUND');
+                expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
         });
 
@@ -165,8 +250,8 @@ describe('EventsService', () => {
             try {
                 await service.update(fakeDb, 'event-1', 'user-1', updateInput);
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('FORBIDDEN');
-                expect((e as EventsServiceError).statusCode).toBe(403);
+                expect((e as ServiceError).code).toBe('FORBIDDEN');
+                expect((e as ServiceError).statusCode).toBe(403);
             }
         });
 
@@ -181,7 +266,7 @@ describe('EventsService', () => {
             try {
                 await service.update(fakeDb, 'event-1', 'user-1', updateInput);
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('CONFLICT');
+                expect((e as ServiceError).code).toBe('CONFLICT');
             }
         });
 
@@ -195,7 +280,7 @@ describe('EventsService', () => {
                     startTime: pastDate,
                 });
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('BAD_REQUEST');
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
             }
         });
 
@@ -212,7 +297,7 @@ describe('EventsService', () => {
                     capacity: 3,
                 });
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('BAD_REQUEST');
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
             }
         });
     });
@@ -245,7 +330,7 @@ describe('EventsService', () => {
             try {
                 await service.cancel(fakeDb, 'missing', 'user-1');
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('NOT_FOUND');
+                expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
         });
 
@@ -257,7 +342,7 @@ describe('EventsService', () => {
             try {
                 await service.cancel(fakeDb, 'event-1', 'user-1');
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('FORBIDDEN');
+                expect((e as ServiceError).code).toBe('FORBIDDEN');
             }
         });
 
@@ -272,7 +357,7 @@ describe('EventsService', () => {
             try {
                 await service.cancel(fakeDb, 'event-1', 'user-1');
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('CONFLICT');
+                expect((e as ServiceError).code).toBe('CONFLICT');
             }
         });
     });
@@ -295,7 +380,7 @@ describe('EventsService', () => {
             try {
                 await service.delete(fakeDb, 'missing', 'user-1');
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('NOT_FOUND');
+                expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
         });
 
@@ -307,19 +392,43 @@ describe('EventsService', () => {
             try {
                 await service.delete(fakeDb, 'event-1', 'user-1');
             } catch (e) {
-                expect((e as EventsServiceError).code).toBe('FORBIDDEN');
+                expect((e as ServiceError).code).toBe('FORBIDDEN');
             }
+        });
+    });
+
+    describe('getStatsByUserId', () => {
+        test('returns event statistics for a user', async () => {
+            const stats = { organized: 5, joined: 3, interested: 2 };
+            mockModel.getStatsByUserId.mockResolvedValueOnce(stats);
+
+            const result = await service.getStatsByUserId(fakeDb, 'user-1');
+
+            expect(result).toEqual(stats);
+            expect(mockModel.getStatsByUserId).toHaveBeenCalledWith(
+                fakeDb,
+                'user-1'
+            );
+        });
+
+        test('returns zero counts when user has no events', async () => {
+            const stats = { organized: 0, joined: 0, interested: 0 };
+            mockModel.getStatsByUserId.mockResolvedValueOnce(stats);
+
+            const result = await service.getStatsByUserId(fakeDb, 'user-1');
+
+            expect(result).toEqual(stats);
         });
     });
 });
 
-describe('EventsServiceError', () => {
+describe('ServiceError', () => {
     test('has correct properties', () => {
-        const error = new EventsServiceError('Not found', 'NOT_FOUND', 404);
+        const error = new ServiceError('Not found', 'NOT_FOUND');
         expect(error.message).toBe('Not found');
         expect(error.code).toBe('NOT_FOUND');
         expect(error.statusCode).toBe(404);
-        expect(error.name).toBe('EventsServiceError');
+        expect(error.name).toBe('ServiceError');
         expect(error).toBeInstanceOf(Error);
     });
 
@@ -329,11 +438,21 @@ describe('EventsServiceError', () => {
             { code: 'FORBIDDEN' as const, status: 403 },
             { code: 'CONFLICT' as const, status: 409 },
             { code: 'BAD_REQUEST' as const, status: 400 },
+            { code: 'UNAUTHORIZED' as const, status: 401 },
+            { code: 'INTERNAL_ERROR' as const, status: 500 },
         ];
         for (const { code, status } of codes) {
-            const error = new EventsServiceError('test', code, status);
+            const error = new ServiceError('test', code);
             expect(error.code).toBe(code);
             expect(error.statusCode).toBe(status);
         }
+    });
+
+    test('static factories create correct errors', () => {
+        expect(ServiceError.notFound('x').code).toBe('NOT_FOUND');
+        expect(ServiceError.forbidden('x').code).toBe('FORBIDDEN');
+        expect(ServiceError.unauthorized('x').code).toBe('UNAUTHORIZED');
+        expect(ServiceError.conflict('x').code).toBe('CONFLICT');
+        expect(ServiceError.badRequest('x').code).toBe('BAD_REQUEST');
     });
 });
