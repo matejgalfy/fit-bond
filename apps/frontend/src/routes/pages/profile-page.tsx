@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Bell, Home, Compass, CalendarDays, User, Shield } from 'lucide-react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, useNavigate, getRouteApi } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { SideNav } from '@/components/layout/side-nav';
@@ -34,10 +34,12 @@ const ADMIN_NAV_ITEM: NavigationItem = {
 
 const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
 
+const routeApi = getRouteApi('/pages/profile-page');
+
 function ProfilePage() {
     const navigate = useNavigate();
 
-    const { userId: searchUserId } = Route.useSearch();
+    const { userId: searchUserId } = routeApi.useSearch();
     const { data: session, isPending: isSessionPending } =
         authClient.useSession();
 
