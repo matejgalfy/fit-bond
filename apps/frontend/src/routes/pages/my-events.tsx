@@ -46,19 +46,9 @@ function RouteComponent() {
     const [activeNav, setActiveNav] = useState('home');
     const [activeTab, setActiveTab] = useState<TabType>('organizing');
 
-    if (isPending) {
-        return null;
-    }
+    const userId = session?.user.id;
 
-    if (!session?.user) {
-        void navigate({ to: '/auth/login' });
-        return null;
-    }
-
-    const userId = session.user.id;
-    const userName = session.user.name;
-
-    // Fetch events for each relation type
+    // Fetch events for each relation type - must be called before any conditional returns
     const { data: organizingEvents } = useEvents({
         userId,
         userRelation: 'organized',
@@ -74,6 +64,17 @@ function RouteComponent() {
 
     // Fetch event stats for counts
     const { data: stats } = useEventStats(userId);
+
+    if (isPending) {
+        return null;
+    }
+
+    if (!session?.user) {
+        void navigate({ to: '/auth/login' });
+        return null;
+    }
+
+    const userName = session.user.name;
 
     const tabEvents: Record<TabType, typeof organizingEvents> = {
         organizing: organizingEvents ?? [],
