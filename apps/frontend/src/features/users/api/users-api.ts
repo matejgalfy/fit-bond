@@ -1,6 +1,9 @@
 import { api } from '@/lib/api';
 import { throwIfError } from '@/lib/api-error';
-import type { UserProfile, UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.types';
+import type {
+    UserProfile,
+    UpdateFullProfileInput,
+} from '../../../../../backend/src/modules/users/users.types';
 
 export const userQueryKeys = {
     all: ['users'] as const,

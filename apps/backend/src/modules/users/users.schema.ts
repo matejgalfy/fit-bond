@@ -20,7 +20,6 @@ export const updateFullProfileSchema = t.Object({
     locations: t.Optional(t.Array(userLocationInputSchema)),
 });
 
-
 export const userProfileSchema = t.Object({
     id: t.String(),
     name: t.String(),
@@ -51,4 +50,3 @@ export const userIdParam = t.Object({
 export const userNameParam = t.Object({
     name: t.String({ minLength: 1 }),
 });
-
