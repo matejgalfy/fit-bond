@@ -1,3 +1,4 @@
-import { z } from 'zod';
-import { UserProfileSchema } from './users.schema';
-export type UserProfile = z.infer<typeof UserProfileSchema>;
+import { userProfileSchema, updateFullProfileSchema } from "./users.schema";
+
+export type UserProfile = typeof userProfileSchema.static;
+export type UpdateFullProfileInput = typeof updateFullProfileSchema.static;

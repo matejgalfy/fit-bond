@@ -1,6 +1,6 @@
 import { api } from '@/lib/api';
 import { throwIfError } from '@/lib/api-error';
-import type { UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.schema';
+import type { UserProfile, UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.types';
 
 export const userQueryKeys = {
     all: ['users'] as const,
@@ -8,7 +8,7 @@ export const userQueryKeys = {
     search: (name: string) => [...userQueryKeys.all, 'search', name] as const,
 };
 
-export async function getPublicProfile(userId: string) {
+export async function getUserProfile(userId: string): Promise<UserProfile> {
     const { data, error } = await api.users({ userId }).profile.get();
     throwIfError(error, 'Failed to fetch public profile');
     return data;

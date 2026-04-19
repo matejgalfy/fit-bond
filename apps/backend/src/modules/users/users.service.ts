@@ -1,13 +1,12 @@
 import { type Database } from '../../db';
 import type { UsersModel } from './users.model';
-import type { UserProfile } from './users.types';
-import type { UpdateFullProfileInput } from './users.schema';
+import type { UserProfile, UpdateFullProfileInput } from './users.types';
 import { usersModel as defaultModel } from './users.model';
 import { ServiceError } from '../../utils/errors';
 
 export function createUsersService(model: UsersModel = defaultModel) {
     return {
-        async getPublicProfile(
+        async getUserProfile(
             db: Database,
             userId: string
         ): Promise<UserProfile> {

@@ -11,7 +11,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     .onError(handleServiceError)
     .get(
         '/:userId/profile',
-        ({ params: { userId } }) => usersController.getPublicProfile(userId),
+        ({ params: { userId } }) => usersController.getUserProfile(userId),
         {
             params: userIdParam,
             detail: {

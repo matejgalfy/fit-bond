@@ -1,20 +1,20 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.schema';
+import type { UpdateFullProfileInput } from '../../../../../backend/src/modules/users/users.types';
 import {
     findUserByName,
-    getPublicProfile,
+    getUserProfile,
     updateFullProfile,
     userQueryKeys,
 } from '../api/users-api';
 
-export function usePublicProfile(userId?: string) {
+export function useUserProfile(userId?: string) {
     return useQuery({
         queryKey: userQueryKeys.profile(userId ?? 'missing'),
         queryFn: () => {
             if (!userId) {
                 throw new Error('Missing user id');
             }
-            return getPublicProfile(userId);
+            return getUserProfile(userId);
         },
         enabled: Boolean(userId),
     });

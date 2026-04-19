@@ -6,7 +6,7 @@ import { AppNavbar } from '@/components/layout/app-navbar';
 import { SideNav } from '@/components/layout/side-nav';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import { ProfileCard } from '@/features/users/components/profile-card';
-import { usePublicProfile } from '@/features/users/hooks/users';
+import { useUserProfile } from '@/features/users/hooks/users';
 import type { NavigationItem } from '@/components/layout/navigation-item';
 
 export const Route = createFileRoute('/pages/profile-page')({
@@ -53,7 +53,7 @@ function ProfilePage() {
         data: user_data,
         isPending: isUserPending,
         isError,
-    } = usePublicProfile(targetUserId);
+    } = useUserProfile(targetUserId);
 
     useEffect(() => {
         document.documentElement.classList.toggle('dark', dark);
