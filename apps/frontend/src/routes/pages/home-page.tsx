@@ -46,6 +46,13 @@ function FitBondShell() {
     const { data: session, isPending } = authClient.useSession();
     const [dark, setDark] = useState(false);
     const [activeNav, setActiveNav] = useState('home');
+
+    // Fetch events - must be called before any conditional returns
+    const { data: backendEvents } = useEvents({
+        userId: session?.user.id,
+        excludeUserInteractions: true,
+    });
+
     if (isPending) {
         return null;
     }
@@ -54,10 +61,6 @@ function FitBondShell() {
         void navigate({ to: '/auth/login' });
         return null;
     }
-    const { data: backendEvents } = useEvents({
-        userId: session.user.id,
-        excludeUserInteractions: true,
-    });
 
     const userName = session.user.name;
     const firstName = userName.split(' ')[0];
