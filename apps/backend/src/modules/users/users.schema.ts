@@ -20,15 +20,11 @@ export const updateFullProfileSchema = t.Object({
     locations: t.Optional(t.Array(userLocationInputSchema)),
 });
 
-export const PublicUserSchema = t.Object({
+export const userProfileSchema = t.Object({
     id: t.String(),
     name: t.String(),
     bio: t.Union([t.String(), t.Null()]),
     profilePictureUrl: t.Union([t.String(), t.Null()]),
-});
-
-export const PublicUserProfileSchema = t.Object({
-    ...PublicUserSchema.properties,
     sports: t.Array(
         t.Object({
             id: t.String({ format: 'uuid' }),
@@ -54,6 +50,3 @@ export const userIdParam = t.Object({
 export const userNameParam = t.Object({
     name: t.String({ minLength: 1 }),
 });
-
-export type PublicUserProfile = typeof PublicUserProfileSchema.static;
-export type UpdateFullProfileInput = typeof updateFullProfileSchema.static;

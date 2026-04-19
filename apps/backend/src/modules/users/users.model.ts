@@ -1,7 +1,7 @@
 import { eq, and, isNull } from 'drizzle-orm';
 import type { Database } from '../../db';
 import { user, userPreferredSports, userLocations } from '../../db/schema';
-import type { UpdateFullProfileInput } from './users.schema';
+import type { UpdateFullProfileInput } from './users.types';
 
 export const usersModel = {
     // TODO createUser

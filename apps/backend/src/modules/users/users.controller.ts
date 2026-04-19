@@ -1,10 +1,10 @@
 import { db } from '../../db';
 import { usersService } from './users.service';
-import type { UpdateFullProfileInput } from './users.schema';
+import type { UpdateFullProfileInput } from './users.types';
 
 export const usersController = {
-    async getPublicProfile(userId: string) {
-        return usersService.getPublicProfile(db, userId);
+    async getUserProfile(userId: string) {
+        return usersService.getUserProfile(db, userId);
     },
 
     async updateFullProfile(userId: string, data: UpdateFullProfileInput) {
