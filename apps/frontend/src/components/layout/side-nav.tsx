@@ -14,7 +14,7 @@ interface SideNavProps {
 
 export function SideNav({ items, activeNav, onChange }: SideNavProps) {
     return (
-        <aside className="hidden md:flex w-55 bg-card border-r border-border transition-colors duration-300 overflow-hidden shrink-0 flex-col pt-2">
+        <aside className="hidden md:flex sticky top-14 self-start h-[calc(100vh-3.5rem)] w-55 bg-card border-r border-border transition-colors duration-300 overflow-y-auto overflow-x-hidden shrink-0 flex-col pt-2">
             <div className="px-2 flex flex-col gap-0.5">
                 {items.map((item) => {
                     const active = activeNav === item.id;

@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Bell, Home, Compass, CalendarDays, User, Shield } from 'lucide-react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { EventCard } from '@/features/events/components/event-card';
@@ -7,44 +6,26 @@ import { SideNav } from '@/components/layout/side-nav';
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { EventAddButton } from '@/features/events/components/event-add-button';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
-import type { NavigationItem } from '@/components/layout/navigation-item';
+import {
+    NAV_ITEMS,
+    BOTTOM_NAV_ITEMS,
+} from '@/components/layout/navigation-item';
 import { EventTabFilter } from '@/features/events/components/event-tab-filter';
+import { EventTab, type EventTabValue } from '../../features/events/event-tabs';
 import { useEvents, useEventStats } from '@/features/events/hooks/events';
 
 export const Route = createFileRoute('/pages/my-events')({
     component: RouteComponent,
 });
 
-const NAV_ITEMS: NavigationItem[] = [
-    { icon: Home, label: 'Home', id: 'home', href: '/pages/home-page' },
-    { icon: Compass, label: 'Discover', id: 'discover' },
-    { icon: CalendarDays, label: 'My Events', id: 'events' },
-    {
-        icon: Bell,
-        label: 'Notifications',
-        id: 'notifications',
-        badge: 3,
-        href: '/pages/notifications-page',
-    },
-    { icon: User, label: 'Profile', id: 'profile' },
-];
-
-const ADMIN_NAV_ITEM: NavigationItem = {
-    icon: Shield,
-    label: 'Admin',
-    id: 'admin',
-};
-
-const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
-
-type TabType = 'organizing' | 'joined' | 'interested';
-
 function RouteComponent() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
     const [dark, setDark] = useState(false);
-    const [activeNav, setActiveNav] = useState('home');
-    const [activeTab, setActiveTab] = useState<TabType>('organizing');
+    const [activeNav, setActiveNav] = useState('events');
+    const [activeTab, setActiveTab] = useState<EventTabValue>(
+        EventTab.organizing
+    );
 
     const userId = session?.user.id;
 
@@ -76,16 +57,16 @@ function RouteComponent() {
 
     const userName = session.user.name;
 
-    const tabEvents: Record<TabType, typeof organizingEvents> = {
-        organizing: organizingEvents ?? [],
-        joined: joinedEvents ?? [],
-        interested: interestedEvents ?? [],
+    const tabEvents: Record<EventTabValue, typeof organizingEvents> = {
+        [EventTab.organizing]: organizingEvents ?? [],
+        [EventTab.joined]: joinedEvents ?? [],
+        [EventTab.interested]: interestedEvents ?? [],
     };
 
     const counts = {
-        organizing: stats?.organized ?? 0,
-        joined: stats?.joined ?? 0,
-        interested: stats?.interested ?? 0,
+        [EventTab.organizing]: stats?.organized ?? 0,
+        [EventTab.joined]: stats?.joined ?? 0,
+        [EventTab.interested]: stats?.interested ?? 0,
     };
 
     return (

@@ -1,15 +1,10 @@
 import { useMemo, useState } from 'react';
 import {
     Bell,
-    CalendarDays,
-    Compass,
-    Home,
     HeartPulse,
     MessageCircle,
-    User,
     UserPlus,
     XCircle,
-    Shield,
     CheckCircle2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
@@ -24,7 +19,10 @@ import {
     type NotificationTabValue,
 } from '@/features/notifications/components/notifications-tab-filter';
 import { MarkAllAsReadButton } from '@/features/notifications/components/mark-all-as-read-button';
-import type { NavigationItem } from '@/components/layout/navigation-item';
+import {
+    NAV_ITEMS,
+    BOTTOM_NAV_ITEMS,
+} from '@/components/layout/navigation-item';
 
 export const Route = createFileRoute('/pages/notifications-page')({
     component: RouteComponent,
@@ -47,27 +45,6 @@ interface NotificationItem {
     createdAt: number;
     isUnread: boolean;
 }
-
-const NAV_ITEMS: NavigationItem[] = [
-    { icon: Home, label: 'Home', id: 'home', href: '/pages/home-page' },
-    { icon: Compass, label: 'Discover', id: 'discover' },
-    {
-        icon: CalendarDays,
-        label: 'My Events',
-        id: 'events',
-        href: '/pages/my-events',
-    },
-    { icon: Bell, label: 'Notifications', id: 'notifications' },
-    { icon: User, label: 'Profile', id: 'profile' },
-];
-
-const ADMIN_NAV_ITEM: NavigationItem = {
-    icon: Shield,
-    label: 'Admin',
-    id: 'admin',
-};
-
-const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
 
 const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     {

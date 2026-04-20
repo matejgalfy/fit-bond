@@ -15,25 +15,25 @@ export function MobileBottomNav({
     onChange,
 }: MobileBottomNavProps) {
     return (
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-16 flex items-center justify-around border-t bg-card border-border">
+        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 h-14 flex items-center justify-around border-t bg-card border-border">
             {items.map((item) => {
                 const active = activeNav === item.id;
                 const className = cn(
-                    'relative flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-xs font-medium transition-colors',
+                    'relative flex items-center justify-center flex-1 h-full px-1 transition-colors',
                     active ? 'text-primary' : 'text-muted-foreground'
                 );
                 const content = (
-                    <>
-                        <span className="relative inline-flex items-center justify-center">
-                            <item.icon size={20} />
-                            {item.badge !== undefined && (
-                                <span className="absolute -top-1.5 -right-2 min-w-4 h-4 rounded-full bg-destructive text-primary-foreground text-[10px] font-bold flex items-center justify-center px-1">
-                                    {item.badge}
-                                </span>
-                            )}
-                        </span>
-                        <span>{item.label}</span>
-                    </>
+                    <span
+                        className="relative inline-flex items-center justify-center"
+                        aria-hidden="true"
+                    >
+                        <item.icon size={18} />
+                        {item.badge !== undefined && (
+                            <span className="absolute -top-1.5 -right-1.5 min-w-3 h-3 rounded-full bg-destructive text-primary-foreground text-[9px] font-bold flex items-center justify-center px-0.5">
+                                {item.badge}
+                            </span>
+                        )}
+                    </span>
                 );
 
                 if (item.href) {
@@ -41,6 +41,7 @@ export function MobileBottomNav({
                         <Link
                             key={item.id}
                             to={item.href}
+                            aria-label={item.label}
                             onClick={() => {
                                 onChange(item.id);
                             }}
@@ -54,6 +55,7 @@ export function MobileBottomNav({
                 return (
                     <button
                         key={item.id}
+                        aria-label={item.label}
                         onClick={() => {
                             onChange(item.id);
                         }}

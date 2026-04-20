@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { Bell, Home, Compass, CalendarDays, User, Shield } from 'lucide-react';
+import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { AppNavbar } from '@/components/layout/app-navbar';
@@ -7,7 +6,10 @@ import { SideNav } from '@/components/layout/side-nav';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import { ProfileCard } from '@/features/users/components/profile-card';
 import { useUserProfile } from '@/features/users/hooks/users';
-import type { NavigationItem } from '@/components/layout/navigation-item';
+import {
+    NAV_ITEMS,
+    BOTTOM_NAV_ITEMS,
+} from '@/components/layout/navigation-item';
 
 export const Route = createFileRoute('/pages/profile-page')({
     validateSearch: (search: Record<string, unknown>): { userId?: string } => {
@@ -17,22 +19,6 @@ export const Route = createFileRoute('/pages/profile-page')({
     },
     component: ProfilePage,
 });
-
-const NAV_ITEMS: NavigationItem[] = [
-    { icon: Home, label: 'Home', id: 'home' },
-    { icon: Compass, label: 'Discover', id: 'discover' },
-    { icon: CalendarDays, label: 'My Events', id: 'events' },
-    { icon: Bell, label: 'Notifications', id: 'notifications', badge: 3 },
-    { icon: User, label: 'Profile', id: 'profile' },
-];
-
-const ADMIN_NAV_ITEM: NavigationItem = {
-    icon: Shield,
-    label: 'Admin',
-    id: 'admin',
-};
-
-const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
 
 function ProfilePage() {
     const navigate = useNavigate();
@@ -56,11 +42,6 @@ function ProfilePage() {
         isPending: isUserPending,
         isError,
     } = useUserProfile(targetUserId);
-
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', dark);
-    }, [dark]);
-
     if (isSessionPending) {
         return null;
     }

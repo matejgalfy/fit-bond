@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
@@ -32,16 +32,6 @@ function Register() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
-
-    useEffect(() => {
-        document.documentElement.classList.toggle('dark', dark);
-    }, [dark]);
-
-    useEffect(() => {
-        if (session?.user) {
-            void navigate({ to: '/pages/home-page' });
-        }
-    }, [session, navigate]);
 
     const handleSubmit = () => {
         setError('');
@@ -87,8 +77,15 @@ function Register() {
         return null;
     }
 
+    if (session?.user) {
+        void navigate({ to: '/pages/home-page' });
+        return null;
+    }
+
     return (
-        <div className="min-h-svh bg-background text-foreground transition-colors duration-300">
+        <div
+            className={`${dark ? 'dark ' : ''}min-h-svh bg-background text-foreground transition-colors duration-300`}
+        >
             <AppNavbar
                 dark={dark}
                 onToggleDark={() => {
