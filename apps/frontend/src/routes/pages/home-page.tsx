@@ -1,45 +1,20 @@
 import { useState } from 'react';
-import { Bell, Home, Compass, CalendarDays, User, Shield } from 'lucide-react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { EventCard } from '@/features/events/components/event-card';
 import { SideNav } from '@/components/layout/side-nav';
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
-import type { NavigationItem } from '@/components/layout/navigation-item';
+import {
+    NAV_ITEMS,
+    BOTTOM_NAV_ITEMS,
+} from '@/components/layout/navigation-item';
 import type { Event } from '@/features/events/types';
 import { useEvents } from '@/features/events/hooks/events';
 
 export const Route = createFileRoute('/pages/home-page')({
     component: FitBondShell,
 });
-
-const NAV_ITEMS: NavigationItem[] = [
-    { icon: Home, label: 'Home', id: 'home' },
-    { icon: Compass, label: 'Discover', id: 'discover' },
-    {
-        icon: CalendarDays,
-        label: 'My Events',
-        id: 'events',
-        href: '/pages/my-events',
-    },
-    {
-        icon: Bell,
-        label: 'Notifications',
-        id: 'notifications',
-        badge: 3,
-        href: '/pages/notifications-page',
-    },
-    { icon: User, label: 'Profile', id: 'profile' },
-];
-
-const ADMIN_NAV_ITEM: NavigationItem = {
-    icon: Shield,
-    label: 'Admin',
-    id: 'admin',
-};
-
-const BOTTOM_NAV_ITEMS = [...NAV_ITEMS, ADMIN_NAV_ITEM];
 
 function FitBondShell() {
     const navigate = useNavigate();
