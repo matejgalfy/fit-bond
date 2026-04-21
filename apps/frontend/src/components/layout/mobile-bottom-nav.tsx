@@ -1,12 +1,12 @@
-import type { Dispatch, SetStateAction } from 'react';
 import { Link } from '@tanstack/react-router';
 import type { NavigationItem } from './navigation-item';
 import { cn } from '@/lib/utils';
+import type { Dispatch, SetStateAction } from 'react';
 
 interface MobileBottomNavProps {
     items: NavigationItem[];
     activeNav: string;
-    onChange: Dispatch<SetStateAction<string>>;
+    onChange?: Dispatch<SetStateAction<string>>;
 }
 
 export function MobileBottomNav({
@@ -43,7 +43,7 @@ export function MobileBottomNav({
                             to={item.href}
                             aria-label={item.label}
                             onClick={() => {
-                                onChange(item.id);
+                                onChange?.(item.id);
                             }}
                             className={className}
                         >
@@ -57,7 +57,7 @@ export function MobileBottomNav({
                         key={item.id}
                         aria-label={item.label}
                         onClick={() => {
-                            onChange(item.id);
+                            onChange?.(item.id);
                         }}
                         className={className}
                     >

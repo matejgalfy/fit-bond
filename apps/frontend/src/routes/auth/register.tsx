@@ -25,7 +25,6 @@ function Register() {
     const { data: session, isPending: isSessionLoading } =
         authClient.useSession();
 
-    const [dark, setDark] = useState(false);
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -83,15 +82,8 @@ function Register() {
     }
 
     return (
-        <div
-            className={`${dark ? 'dark ' : ''}min-h-svh bg-background text-foreground transition-colors duration-300`}
-        >
-            <AppNavbar
-                dark={dark}
-                onToggleDark={() => {
-                    setDark(!dark);
-                }}
-            />
+        <div className="min-h-svh bg-background text-foreground transition-colors duration-300">
+            <AppNavbar />
 
             <div className="flex items-center justify-center min-h-[calc(100svh-56px)] p-6">
                 <div className="w-full max-w-105">

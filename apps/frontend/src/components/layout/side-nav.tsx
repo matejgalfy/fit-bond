@@ -1,15 +1,15 @@
 import { Shield } from 'lucide-react';
-import type { Dispatch, SetStateAction } from 'react';
 import { Link } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import type { NavigationItem } from '@/components/layout/navigation-item';
+import type { Dispatch, SetStateAction } from 'react';
 
 export type SideNavItem = NavigationItem;
 
 interface SideNavProps {
     items: NavigationItem[];
     activeNav: string;
-    onChange: Dispatch<SetStateAction<string>>;
+    onChange?: Dispatch<SetStateAction<string>>;
 }
 
 export function SideNav({ items, activeNav, onChange }: SideNavProps) {
@@ -42,7 +42,7 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                             to={item.href}
                             className={className}
                             onClick={() => {
-                                onChange(item.id);
+                                onChange?.(item.id);
                             }}
                         >
                             {content}
@@ -51,7 +51,7 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                         <button
                             key={item.id}
                             onClick={() => {
-                                onChange(item.id);
+                                onChange?.(item.id);
                             }}
                             className={className}
                         >
@@ -67,7 +67,7 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                 </div>
                 <button
                     onClick={() => {
-                        onChange('admin');
+                        onChange?.('admin');
                     }}
                     className={cn(
                         'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-sm font-sans w-full text-left transition-colors duration-200',

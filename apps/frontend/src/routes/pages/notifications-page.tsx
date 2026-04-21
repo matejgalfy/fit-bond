@@ -8,21 +8,13 @@ import {
     CheckCircle2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
-import { SideNav } from '@/components/layout/side-nav';
-import { AppNavbar } from '@/components/layout/app-navbar';
-import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
-import { authClient } from '@/lib/api';
+import { createFileRoute } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import {
     NotificationsTabFilter,
     type NotificationTabValue,
 } from '@/features/notifications/components/notifications-tab-filter';
 import { MarkAllAsReadButton } from '@/features/notifications/components/mark-all-as-read-button';
-import {
-    NAV_ITEMS,
-    BOTTOM_NAV_ITEMS,
-} from '@/components/layout/navigation-item';
 
 export const Route = createFileRoute('/pages/notifications-page')({
     component: RouteComponent,
@@ -145,40 +137,14 @@ const notificationMeta: Record<
 };
 
 function RouteComponent() {
-    const navigate = useNavigate();
-    const { data: session, isPending } = authClient.useSession();
-    const [dark, setDark] = useState(false);
-    const [activeNav, setActiveNav] = useState('notifications');
     const [activeFilter, setActiveFilter] =
         useState<NotificationTabValue>('all');
     const [notifications, setNotifications] = useState<NotificationItem[]>(
         INITIAL_NOTIFICATIONS
     );
 
-    if (isPending) {
-        return null;
-    }
-
-    if (!session?.user) {
-        void navigate({ to: '/auth/login' });
-        return null;
-    }
-
     const unreadCount = notifications.filter((item) => item.isUnread).length;
     const allCount = notifications.length;
-
-    const sideNavItems = useMemo(
-        () =>
-            NAV_ITEMS.map((item) =>
-                item.id === 'notifications'
-                    ? {
-                          ...item,
-                          badge: unreadCount > 0 ? unreadCount : undefined,
-                      }
-                    : item
-            ),
-        [unreadCount]
-    );
 
     const sortedNotifications = useMemo(
         () => [...notifications].sort((a, b) => b.createdAt - a.createdAt),
@@ -210,137 +176,108 @@ function RouteComponent() {
     };
 
     return (
-        <div
-            className={`${dark ? 'dark ' : ''} font-sans text-foreground bg-background min-h-screen flex flex-col transition-colors duration-200`}
-        >
-            <AppNavbar
-                dark={dark}
-                onToggleDark={() => {
-                    setDark(!dark);
-                }}
-                userName={session.user.name}
-            />
+        <div className="max-w-200 mx-auto">
+            <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                    <h1 className="font-heading text-[26px] font-bold text-foreground">
+                        Notifications
+                    </h1>
 
-            <div className="flex flex-1">
-                <SideNav
-                    items={sideNavItems}
-                    activeNav={activeNav}
-                    onChange={setActiveNav}
-                />
-
-                <main className="flex-1 overflow-auto p-4 pb-20 md:p-6">
-                    <div className="max-w-200 mx-auto">
-                        <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                                <h1 className="font-heading text-[26px] font-bold text-foreground">
-                                    Notifications
-                                </h1>
-
-                                <div className="mt-5">
-                                    <NotificationsTabFilter
-                                        value={activeFilter}
-                                        counts={{
-                                            all: allCount,
-                                            unread: unreadCount,
-                                        }}
-                                        onValueChange={setActiveFilter}
-                                    />
-                                </div>
-                            </div>
-
-                            <MarkAllAsReadButton
-                                disabled={unreadCount === 0}
-                                onClick={handleMarkAllAsRead}
-                            />
-                        </div>
-
-                        <div className="flex flex-col gap-2">
-                            {visibleNotifications.map((item) => {
-                                const meta = notificationMeta[item.type];
-                                const Icon = meta.icon;
-
-                                return (
-                                    <button
-                                        key={item.id}
-                                        type="button"
-                                        onClick={() => {
-                                            handleMarkAsRead(item.id);
-                                        }}
-                                        className={cn(
-                                            'relative w-full rounded-[12px] border bg-card px-4 py-3.5 text-left transition-colors duration-200',
-                                            item.isUnread
-                                                ? 'border-[color-mix(in_srgb,var(--notifications-blue)_18%,var(--border))]'
-                                                : 'border-border',
-                                            'hover:bg-slate-50 dark:hover:bg-slate-700'
-                                        )}
-                                    >
-                                        <div className="flex items-center">
-                                            <div className="flex w-3.5 items-center justify-start">
-                                                <span
-                                                    className={cn(
-                                                        'h-2 w-2 rounded-full transition-colors',
-                                                        item.isUnread
-                                                            ? 'bg-primary'
-                                                            : 'bg-transparent'
-                                                    )}
-                                                />
-                                            </div>
-
-                                            <div
-                                                className={cn(
-                                                    'flex h-11 w-11 mr-4.5 shrink-0 items-center justify-center rounded-xl',
-                                                    meta.iconWrapClassName
-                                                )}
-                                            >
-                                                <Icon size={20} />
-                                            </div>
-
-                                            <div className="min-w-0 flex-1">
-                                                <h2
-                                                    className={cn(
-                                                        'font-heading text-[14px] text-card-foreground',
-                                                        item.isUnread &&
-                                                            'font-extrabold'
-                                                    )}
-                                                >
-                                                    {item.title}
-                                                </h2>
-                                                <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">
-                                                    {item.description}
-                                                </p>
-                                                <p className="mt-1 text-[12px] text-[#94A3B8]">
-                                                    {item.time}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    </button>
-                                );
-                            })}
-
-                            {visibleNotifications.length === 0 ? (
-                                <div className="rounded-[14px] border border-border bg-card px-5 py-10 text-center">
-                                    <Bell
-                                        size={36}
-                                        className="mx-auto mb-2 text-muted-foreground"
-                                    />
-                                    <h3 className="mb-1 text-[15px] font-semibold text-card-foreground">
-                                        No notifications
-                                    </h3>
-                                    <p className="text-[13px] text-muted-foreground">
-                                        You're all caught up!
-                                    </p>
-                                </div>
-                            ) : null}
-                        </div>
+                    <div className="mt-5">
+                        <NotificationsTabFilter
+                            value={activeFilter}
+                            counts={{
+                                all: allCount,
+                                unread: unreadCount,
+                            }}
+                            onValueChange={setActiveFilter}
+                        />
                     </div>
-                </main>
+                </div>
+
+                <MarkAllAsReadButton
+                    disabled={unreadCount === 0}
+                    onClick={handleMarkAllAsRead}
+                />
             </div>
 
-            <MobileBottomNav
-                items={BOTTOM_NAV_ITEMS}
-                activeNav={activeNav}
-                onChange={setActiveNav}
-            />
+            <div className="flex flex-col gap-2">
+                {visibleNotifications.map((item) => {
+                    const meta = notificationMeta[item.type];
+                    const Icon = meta.icon;
+
+                    return (
+                        <button
+                            key={item.id}
+                            type="button"
+                            onClick={() => {
+                                handleMarkAsRead(item.id);
+                            }}
+                            className={cn(
+                                'relative w-full rounded-[12px] border bg-card px-4 py-3.5 text-left transition-colors duration-200',
+                                item.isUnread
+                                    ? 'border-[color-mix(in_srgb,var(--notifications-blue)_18%,var(--border))]'
+                                    : 'border-border',
+                                'hover:bg-slate-50 dark:hover:bg-slate-700'
+                            )}
+                        >
+                            <div className="flex items-center">
+                                <div className="flex w-3.5 items-center justify-start">
+                                    <span
+                                        className={cn(
+                                            'h-2 w-2 rounded-full transition-colors',
+                                            item.isUnread
+                                                ? 'bg-primary'
+                                                : 'bg-transparent'
+                                        )}
+                                    />
+                                </div>
+
+                                <div
+                                    className={cn(
+                                        'flex h-11 w-11 mr-4.5 shrink-0 items-center justify-center rounded-xl',
+                                        meta.iconWrapClassName
+                                    )}
+                                >
+                                    <Icon size={20} />
+                                </div>
+
+                                <div className="min-w-0 flex-1">
+                                    <h2
+                                        className={cn(
+                                            'font-heading text-[14px] text-card-foreground',
+                                            item.isUnread && 'font-extrabold'
+                                        )}
+                                    >
+                                        {item.title}
+                                    </h2>
+                                    <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">
+                                        {item.description}
+                                    </p>
+                                    <p className="mt-1 text-[12px] text-[#94A3B8]">
+                                        {item.time}
+                                    </p>
+                                </div>
+                            </div>
+                        </button>
+                    );
+                })}
+
+                {visibleNotifications.length === 0 ? (
+                    <div className="rounded-[14px] border border-border bg-card px-5 py-10 text-center">
+                        <Bell
+                            size={36}
+                            className="mx-auto mb-2 text-muted-foreground"
+                        />
+                        <h3 className="mb-1 text-[15px] font-semibold text-card-foreground">
+                            No notifications
+                        </h3>
+                        <p className="text-[13px] text-muted-foreground">
+                            You're all caught up!
+                        </p>
+                    </div>
+                ) : null}
+            </div>
         </div>
     );
 }
