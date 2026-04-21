@@ -5,7 +5,7 @@ FitBond is a social sports application for discovering, creating, and joining lo
 ## Stack
 
 - **Monorepo**: Bun workspaces (`apps/backend`, `apps/frontend`)
-- **Backend**: Elysia on Bun, PostgreSQL with Drizzle ORM, Zod validation
+- **Backend**: Elysia on Bun, PostgreSQL with Drizzle ORM, `t` from Elysia for validation, better-auth for authentication
 - **Frontend**: React 19 + TypeScript + Vite, `@elysiajs/eden` treaty client
 - **Routing**: TanStack Start in SPA mode — file-based routing under `src/routes/`
 - **Server state**: React Query (`@tanstack/react-query`) — all API calls go through query/mutation hooks
@@ -92,38 +92,40 @@ Each module in `apps/backend/src/modules/<name>/` follows a layered architecture
 
 | File | Responsibility |
 |------|---------------|
-| `<name>.types.ts` | TypeScript types (DB types from Drizzle, input types from Zod schemas) |
-| `<name>.schema.ts` | Zod validation schemas, built with `createInsertSchema`/`createSelectSchema` from `drizzle-zod` |
+| `<name>.types.ts` | TypeScript types (DB types from Drizzle, input types inferred from `t` schemas) |
+| `<name>.schema.ts` | Elysia `t` schemas for request/response validation |
 | `<name>.model.ts` | Drizzle ORM queries — all functions accept `db: Database` parameter |
 | `<name>.service.ts` | Business logic — uses factory pattern `createXxxService(model?)` for testable DI |
-| `<name>.controller.ts` | HTTP adapter — validates input with Zod `.parse()`, extracts auth, injects `db`, calls service |
+| `<name>.controller.ts` | HTTP adapter — extracts auth user from context, injects `db`, calls service |
 | `<name>.routes.ts` | Elysia plugin with route definitions and `onError` hook |
 | `<name>.test.ts` | Unit tests using `bun:test` with mocked model layer |
 
 Routes are registered in `apps/backend/src/index.ts` via `.use(xxxRoutes)`.
 
-### Validation with Zod + drizzle-zod
+### Validation with Elysia `t`
 
-Schemas are derived from the DB schema and refined with validation rules:
+Schemas are defined using `t` from Elysia and passed directly to route handler options — Elysia validates automatically before the handler runs:
 
 ```typescript
-import { createInsertSchema } from 'drizzle-zod';
-import { events } from '../../db/schema';
+import { t } from 'elysia';
 
-export const createEventBody = createInsertSchema(events, {
-    name: (schema) => schema.min(1).max(200),
-    duration: (schema) => schema.min(15).max(480),
-}).pick({ name: true, duration: true, /* ... */ });
+export const createEventBody = t.Object({
+    name: t.String({ minLength: 1, maxLength: 200 }),
+    duration: t.Number({ minimum: 15, maximum: 480 }),
+    sportId: t.String({ format: 'uuid' }),
+    // ...
+});
 
-export const updateEventBody = createEventBody
-    .omit({ sportId: true, locationId: true })
-    .partial();
+export const updateEventBody = t.Object({
+    name: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
+    // ...
+});
 
 // Types inferred from schemas
-export type CreateEventBody = z.infer<typeof createEventBody>;
+export type CreateEventBody = typeof createEventBody.static;
 ```
 
-Validation runs in the controller via `.parse()`. `ZodError` is caught in each module's route-level `onError` hook and returned as 422.
+Pass schemas to routes via options: `{ body: createEventBody, params: eventIdParam, query: eventQueryFilters }`. Validation errors are automatically returned as 422.
 
 ### Error Handling Pattern
 
@@ -136,12 +138,28 @@ export class EventsServiceError extends Error {
 }
 ```
 
+### Authentication (better-auth)
+
+Auth is implemented with `better-auth` + `drizzleAdapter`:
+
+- Config: `apps/backend/src/auth.ts` — email/password + Google OAuth, trusted origin `http://localhost:5173`
+- Middleware: `apps/backend/src/auth_middleware.ts` — `authLayer` Elysia plugin that mounts `auth.handler` and exposes an `auth` macro
+- Protected routes declare `auth: true` in their route options; Elysia injects `user` and `session` into the handler context
+- Unauthenticated requests to protected routes receive a 401 automatically
+
+```typescript
+// Protect a route
+app.post('/events', handler, { auth: true, body: createEventBody });
+
+// Access the authenticated user in the handler
+({ body, user }) => eventsController.create(db, body, user)
+```
+
 ### Database
 
-- Schema: `apps/backend/src/db/schema.ts` — 9 tables with explicit Drizzle relations
+- Schema: `apps/backend/src/db/schema.ts` — tables include `user`, `session`, `account` (better-auth) plus domain tables
 - Connection: `apps/backend/src/db/index.ts` — exports `db` instance and `Database` type
 - Seeding: `apps/backend/src/db/seed.ts` — uses `drizzle-seed` + `@faker-js/faker`
-- Auth placeholder: `x-user-id` header (until auth module is implemented)
 
 ### Testing Pattern
 
@@ -159,7 +177,7 @@ Use `expect.assertions(n)` with try/catch for error-throwing tests (avoids ESLin
 - Use `cn()` from `src/lib/utils.ts` for conditional/merged class names
 - Shadcn components in `src/components/ui/` are auto-generated — do not edit them manually; re-generate if needed
 - All backend data fetching must go through React Query hooks, never direct `await client.xxx.get()` in components
-- Route params and search params must be validated with Zod using `zodValidator` from TanStack Router
+- Route params and search params must be validated using `zodValidator` from TanStack Router (frontend) or `t` schemas (backend)
 - After every change ensure `bun test` and `bun lint` passes with no errors
 - Use `import type { X }` for type-only imports
 - Do not weaken tsconfig strict settings
@@ -174,4 +192,5 @@ Use `expect.assertions(n)` with try/catch for error-throwing tests (avoids ESLin
 | Module | Status |
 |--------|--------|
 | events | ✅ Implemented (CRUD, cancel, filtering, tests) |
-| admin, auth, comments, notifications, participation, profile, reports | Stub files only |
+| auth | ✅ Implemented (better-auth — email/password + Google OAuth) |
+| admin, comments, notifications, participation, profile, reports | Stub files only |

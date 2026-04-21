@@ -1,20 +1,12 @@
 import { db } from '../../db';
 import { eventsService } from './events.service';
-import { ServiceError } from '../../utils/errors';
+
 import type {
     CreateEventBody,
     UpdateEventBody,
     CancelEventBody,
     EventQueryFilters,
 } from './events.schema';
-
-function requireUserId(headers: Record<string, string | undefined>): string {
-    const userId = headers['x-user-id'];
-    if (!userId) {
-        throw ServiceError.unauthorized('Authentication required');
-    }
-    return userId;
-}
 
 export const eventsController = {
     async list(filters: EventQueryFilters) {
@@ -25,35 +17,20 @@ export const eventsController = {
         return eventsService.getById(db, id);
     },
 
-    async create(
-        headers: Record<string, string | undefined>,
-        data: CreateEventBody
-    ) {
-        const userId = requireUserId(headers);
-        return eventsService.create(db, userId, data);
+    async create(user: { id: string }, data: CreateEventBody) {
+        return eventsService.create(db, user.id, data);
     },
 
-    async update(
-        id: string,
-        headers: Record<string, string | undefined>,
-        data: UpdateEventBody
-    ) {
-        const userId = requireUserId(headers);
-        return eventsService.update(db, id, userId, data);
+    async update(id: string, user: { id: string }, data: UpdateEventBody) {
+        return eventsService.update(db, id, user.id, data);
     },
 
-    async cancel(
-        id: string,
-        headers: Record<string, string | undefined>,
-        data: CancelEventBody
-    ) {
-        const userId = requireUserId(headers);
-        return eventsService.cancel(db, id, userId, data.reason);
+    async cancel(id: string, user: { id: string }, data: CancelEventBody) {
+        return eventsService.cancel(db, id, user.id, data.reason);
     },
 
-    async delete(id: string, headers: Record<string, string | undefined>) {
-        const userId = requireUserId(headers);
-        await eventsService.delete(db, id, userId);
+    async delete(id: string, user: { id: string }) {
+        await eventsService.delete(db, id, user.id);
         return { success: true };
     },
 

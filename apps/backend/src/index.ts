@@ -2,11 +2,13 @@ import { Elysia } from 'elysia';
 import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysiajs/openapi';
 import { eventsRoutes } from './modules/events/events.routes';
-import { auth } from './auth';
 import { usersRoutes } from './modules/users/users.routes';
+import { commentsRoutes } from './modules/comments/comments.routes';
+import { authLayer } from './auth_middleware';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const app = new Elysia()
+    .use(authLayer)
     .use(
         cors({
             credentials: true,
@@ -24,14 +26,15 @@ const app = new Elysia()
                 tags: [
                     { name: 'Events', description: 'Event management' },
                     { name: 'Users', description: 'User management' },
+                    { name: 'Comments', description: 'Event comments' },
                 ],
             },
             exclude: { methods: ['OPTIONS'] },
         })
     )
-    .mount(auth.handler) // Mount authentication routes
     .use(eventsRoutes)
     .use(usersRoutes)
+    .use(commentsRoutes)
     .listen(3000);
 
 console.log('Server running on http://localhost:3000');
