@@ -5,7 +5,11 @@ import { createAuthClient } from 'better-auth/react';
 const api_url = 'http://localhost:3000';
 
 // TODO: move the API base URL to env file.
-export const api = treaty<Backend>(api_url);
+export const api = treaty<Backend>(api_url, {
+    fetch: {
+        credentials: 'include',
+    },
+});
 
 export const authClient = createAuthClient({
     baseURL: api_url,

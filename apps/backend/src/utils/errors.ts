@@ -10,29 +10,21 @@ const CODE_TO_STATUS = {
 export type ServiceErrorCode = keyof typeof CODE_TO_STATUS;
 
 export class ServiceError extends Error {
-    public readonly code: ServiceErrorCode;
     public readonly statusCode: number;
 
-    constructor(message: string, code: ServiceErrorCode) {
+    constructor(
+        message: string,
+        public readonly code: ServiceErrorCode
+    ) {
         super(message);
         this.name = 'ServiceError';
-        this.code = code;
         this.statusCode = CODE_TO_STATUS[code];
     }
 
-    static notFound(message: string) {
-        return new ServiceError(message, 'NOT_FOUND');
-    }
-    static forbidden(message: string) {
-        return new ServiceError(message, 'FORBIDDEN');
-    }
-    static unauthorized(message: string) {
-        return new ServiceError(message, 'UNAUTHORIZED');
-    }
-    static conflict(message: string) {
-        return new ServiceError(message, 'CONFLICT');
-    }
-    static badRequest(message: string) {
-        return new ServiceError(message, 'BAD_REQUEST');
-    }
+    static notFound = (msg: string) => new ServiceError(msg, 'NOT_FOUND');
+    static forbidden = (msg: string) => new ServiceError(msg, 'FORBIDDEN');
+    static unauthorized = (msg: string) =>
+        new ServiceError(msg, 'UNAUTHORIZED');
+    static conflict = (msg: string) => new ServiceError(msg, 'CONFLICT');
+    static badRequest = (msg: string) => new ServiceError(msg, 'BAD_REQUEST');
 }
