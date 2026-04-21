@@ -2,10 +2,9 @@ import { Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
+import { useTheme } from 'next-themes';
 
 interface AppNavbarProps {
-    dark: boolean;
-    onToggleDark: () => void;
     userName?: string;
 }
 
@@ -22,7 +21,13 @@ function UserAvatar({ name }: { name: string }) {
     );
 }
 
-export function AppNavbar({ dark, onToggleDark, userName }: AppNavbarProps) {
+export function AppNavbar({ userName }: AppNavbarProps) {
+    const { resolvedTheme, setTheme } = useTheme();
+    const dark = resolvedTheme === 'dark';
+    const toggleDark = () => {
+        setTheme(dark ? 'light' : 'dark');
+    };
+
     return (
         <nav className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 gap-3">
             <div className="flex items-center gap-1.5">
@@ -40,7 +45,7 @@ export function AppNavbar({ dark, onToggleDark, userName }: AppNavbarProps) {
             <Button
                 variant="outline"
                 size="icon"
-                onClick={onToggleDark}
+                onClick={toggleDark}
                 className={cn(dark ? 'text-orange-400' : 'text-primary')}
                 aria-label="Toggle dark mode"
             >

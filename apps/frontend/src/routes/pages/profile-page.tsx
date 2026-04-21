@@ -1,15 +1,7 @@
-import { useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
-import { AppNavbar } from '@/components/layout/app-navbar';
-import { SideNav } from '@/components/layout/side-nav';
-import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import { ProfileCard } from '@/features/users/components/profile-card';
 import { useUserProfile } from '@/features/users/hooks/users';
-import {
-    NAV_ITEMS,
-    BOTTOM_NAV_ITEMS,
-} from '@/components/layout/navigation-item';
 
 export const Route = createFileRoute('/pages/profile-page')({
     validateSearch: (search: Record<string, unknown>): { userId?: string } => {
@@ -21,16 +13,11 @@ export const Route = createFileRoute('/pages/profile-page')({
 });
 
 function ProfilePage() {
-    const navigate = useNavigate();
-
     const routeSearch = Route.useSearch() as unknown as { userId?: string };
     const searchUserId = routeSearch.userId;
 
     const { data: session, isPending: isSessionPending } =
         authClient.useSession();
-
-    const [dark, setDark] = useState(false);
-    const [activeNav, setActiveNav] = useState('profile');
 
     const targetUserId = searchUserId ?? session?.user.id;
     const isOwner = Boolean(
@@ -42,96 +29,54 @@ function ProfilePage() {
         isPending: isUserPending,
         isError,
     } = useUserProfile(targetUserId);
-    if (isSessionPending) {
-        return null;
-    }
 
-    if (!session?.user) {
-        void navigate({ to: '/auth/login' });
-        return null;
-    }
-
-    const userName = session.user.name;
+    if (isSessionPending) return null;
+    if (!session?.user) return null;
 
     return (
-        <div
-            className={`${dark ? 'dark ' : ''}font-sans bg-background text-foreground min-h-screen flex flex-col transition-colors duration-300`}
-        >
-            <AppNavbar
-                dark={dark}
-                onToggleDark={() => {
-                    setDark(!dark);
-                }}
-                userName={userName}
-            />
-
-            <div className="flex flex-1">
-                <SideNav
-                    items={NAV_ITEMS}
-                    activeNav={activeNav}
-                    onChange={setActiveNav}
-                />
-
-                <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
-                    <div className="max-w-240 mx-auto">
-                        <div className="mb-6">
-                            {/* Dynamic heading based on whether it's the user's own profile */}
-                            <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
-                                {isOwner ? (
-                                    <>
-                                        My{' '}
-                                        <span className="text-primary">
-                                            Profile
-                                        </span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <span className="text-primary">
-                                            {user_data?.name}'s
-                                        </span>{' '}
-                                        Profile
-                                    </>
-                                )}
-                            </h1>
-                            <p className="text-sm text-muted-foreground mt-1">
-                                {isOwner
-                                    ? 'Manage your personal information and sports preferences.'
-                                    : 'View public profile and sports preferences.'}
-                            </p>
-                        </div>
-
-                        {isUserPending ? (
-                            <div className="flex justify-center py-12">
-                                <p className="text-muted-foreground animate-pulse">
-                                    Loading profile data...
-                                </p>
-                            </div>
-                        ) : isError ? (
-                            <div className="bg-destructive/10 text-destructive p-6 rounded-2xl border border-destructive/20 text-center">
-                                <p className="font-semibold">
-                                    Failed to load profile information.
-                                </p>
-                                <p className="text-sm opacity-80">
-                                    Please try again later.
-                                </p>
-                            </div>
-                        ) : (
-                            <div className="flex justify-start">
-                                <ProfileCard
-                                    user={user_data}
-                                    isOwner={isOwner}
-                                />
-                            </div>
-                        )}
-                    </div>
-                </main>
+        <div className="max-w-240 mx-auto">
+            <div className="mb-6">
+                <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
+                    {isOwner ? (
+                        <>
+                            My <span className="text-primary">Profile</span>
+                        </>
+                    ) : (
+                        <>
+                            <span className="text-primary">
+                                {user_data?.name}'s
+                            </span>{' '}
+                            Profile
+                        </>
+                    )}
+                </h1>
+                <p className="text-sm text-muted-foreground mt-1">
+                    {isOwner
+                        ? 'Manage your personal information and sports preferences.'
+                        : 'View public profile and sports preferences.'}
+                </p>
             </div>
 
-            <MobileBottomNav
-                items={BOTTOM_NAV_ITEMS}
-                activeNav={activeNav}
-                onChange={setActiveNav}
-            />
+            {isUserPending ? (
+                <div className="flex justify-center py-12">
+                    <p className="text-muted-foreground animate-pulse">
+                        Loading profile data...
+                    </p>
+                </div>
+            ) : isError ? (
+                <div className="bg-destructive/10 text-destructive p-6 rounded-2xl border border-destructive/20 text-center">
+                    <p className="font-semibold">
+                        Failed to load profile information.
+                    </p>
+                    <p className="text-sm opacity-80">
+                        Please try again later.
+                    </p>
+                </div>
+            ) : (
+                <div className="flex justify-start">
+                    <ProfileCard user={user_data} isOwner={isOwner} />
+                </div>
+            )}
         </div>
     );
 }
