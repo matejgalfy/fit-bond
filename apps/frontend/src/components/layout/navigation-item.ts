@@ -11,7 +11,7 @@ export interface NavigationItem {
 
 export const NAV_ITEMS: NavigationItem[] = [
     { icon: Home, label: 'Home', id: 'home', href: '/pages/home-page' },
-    { icon: Compass, label: 'Discover', id: 'discover' },
+    { icon: Compass, label: 'Discover', id: 'discover', href: '/pages/discover-page' },
     {
         icon: CalendarDays,
         label: 'My Events',

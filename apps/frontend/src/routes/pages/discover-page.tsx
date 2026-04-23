@@ -1,0 +1,100 @@
+import { useState, useMemo } from 'react';
+import { createFileRoute } from '@tanstack/react-router';
+import { authClient } from '@/lib/api';
+import { useEvents } from '@/features/events/hooks/events';
+import { EventCard } from '@/features/events/components/event-card';
+import {
+    DiscoverFilters,
+    type DiscoverFiltersState,
+} from '@/features/events/components/discover-filters';
+import { useDebounce } from '@/hooks/use-debounce';
+
+export const Route = createFileRoute('/pages/discover-page')({
+    component: DiscoverPage,
+});
+
+function DiscoverPage() {
+    const { data: session } = authClient.useSession();
+    
+    // Stav lokálnych filtrov riadený používateľom
+    const [rawFilters, setRawFilters] = useState<DiscoverFiltersState>({
+        search: '',
+        date: '',
+        city: '',
+        skillLevel: 'any',
+    });
+
+    // Debouncnuté textové hodnoty pre zamedzenie spamu requestov
+    const debouncedSearch = useDebounce(rawFilters.search, 300);
+    const debouncedCity = useDebounce(rawFilters.city, 300);
+
+    // Príprava payloadu pre useEvents (memoizované, aby nedochádzalo k zbytočným re-renders)
+    const apiFilters = useMemo(() => {
+        return {
+            userId: session?.user?.id,
+            excludeUserInteractions: true, // Zabezpečí, že uvidíme len nové eventy
+            search: debouncedSearch || undefined,
+            city: debouncedCity || undefined,
+            date: rawFilters.date || undefined,
+            skillLevel: rawFilters.skillLevel === 'any' ? undefined : rawFilters.skillLevel,
+            limit: 20, // Konštantný limit pre stránkovanie
+        };
+    }, [
+        session?.user?.id,
+        debouncedSearch,
+        debouncedCity,
+        rawFilters.date,
+        rawFilters.skillLevel,
+    ]);
+
+    const { data: events, isPending } = useEvents(apiFilters);
+
+    // Zabezpečenie proti crashu pred načítaním session
+    if (!session?.user) return null;
+
+    return (
+        <div className="max-w-240 mx-auto">
+            {/* Header */}
+            <div className="mb-6">
+                <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
+                    Discover Events
+                </h1>
+                <p className="text-[15px] text-muted-foreground mt-1">
+                    Find sport activities that match your interests
+                </p>
+            </div>
+
+            {/* Filtračný panel */}
+            <DiscoverFilters filters={rawFilters} onChange={setRawFilters} />
+
+            {/* Results Header */}
+            <div className="mb-4 text-[15px] text-muted-foreground">
+                <strong className="text-foreground font-semibold">
+                    {events?.length ?? 0}
+                </strong>{' '}
+                events found
+            </div>
+
+            {/* Results Grid */}
+            {isPending ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-pulse">
+                    {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="h-48 bg-slate-100 dark:bg-slate-800 rounded-2xl" />
+                    ))}
+                </div>
+            ) : (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    {events?.map((event) => (
+                        <EventCard key={event.id} event={event} />
+                    ))}
+                    
+                    {events?.length === 0 && (
+                        <div className="col-span-full py-12 text-center text-muted-foreground bg-card rounded-2xl border border-border">
+                            No events found matching your criteria.
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
