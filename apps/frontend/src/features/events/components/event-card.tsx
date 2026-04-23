@@ -19,7 +19,7 @@ export function Avatar({ name, size = 32 }: AvatarProps) {
 
     return (
         <div
-            className="rounded-full bg-[linear-gradient(135deg,var(--primary),var(--ring))] flex items-center justify-center text-primary-foreground font-semibold shrink-0"
+            className="rounded-full bg-linear-to-br from-primary-blue to-strong-blue flex items-center justify-center text-surface font-semibold shrink-0"
             style={{
                 width: size,
                 height: size,
@@ -59,73 +59,70 @@ export function EventCard({ event }: EventCardProps) {
     const location = `${event.location.city}, ${event.location.country}`;
 
     return (
-        <div className="bg-card rounded-2xl overflow-hidden border border-border transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
-            <div
-                className="h-30 flex items-center justify-center relative"
-                style={{
-                    background: `linear-gradient(135deg, hsl(var(--primary)), hsl(var(--ring)))`,
-                }}
-            >
-                <span className="opacity-60">
+        <div className="bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
+            <div className="h-30 flex items-center justify-center relative bg-linear-to-br bg-soft-blue">
+                <span>
                     <Activity
                         size={36}
-                        color="var(--primary)"
+                        color="var(--primary-blue)"
                         strokeWidth={1.5}
                     />
                 </span>
-                {isFull && (
-                    <span className="absolute top-2 right-2 bg-destructive text-primary-foreground text-[11px] font-semibold px-2 py-0.5 rounded-md">
-                        Full
-                    </span>
-                )}
-                {isCancelled && (
-                    <span className="absolute top-2 right-2 bg-muted text-muted-foreground text-[11px] font-semibold px-2 py-0.5 rounded-md">
-                        Cancelled
-                    </span>
-                )}
-                <span className="absolute top-2 left-2 bg-secondary text-primary text-[11px] font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm">
+                <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                    {isFull && (
+                        <span className="bg-primary-red text-surface text-tiny font-semibold px-2 py-0.5 rounded-md">
+                            Full
+                        </span>
+                    )}
+                    {isCancelled && (
+                        <span className="bg-muted-background/30 text-secondary-text text-tiny font-semibold px-2 py-0.5 rounded-md">
+                            Cancelled
+                        </span>
+                    )}
+                </div>
+                <span className="absolute top-2 left-2 bg-primary-blue/10 text-primary-blue text-tiny font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm">
                     {event.sport.name}
                 </span>
             </div>
 
             <div className="px-4 py-3">
-                <h3 className="m-0 text-[15px] font-semibold text-card-foreground font-heading">
+                <h3 className="m-0 text-regular font-semibold text-primary-text font-heading">
                     {event.name}
                 </h3>
 
-                <div className="flex items-center gap-1.5 mt-2 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5 mt-2 text-tiny text-secondary-text">
                     <Clock size={13} />
                     <span>
                         {formattedDate} · {formattedTime}
                     </span>
                 </div>
 
-                <div className="flex items-center gap-1.5 mt-1 text-xs text-muted-foreground">
+                <div className="flex items-center gap-1.5 mt-1 text-tiny text-secondary-text">
                     <MapPin size={13} />
                     <span>{location}</span>
                 </div>
 
-                <div className="flex justify-between text-xs mt-2.5">
-                    <span className="text-muted-foreground flex items-center gap-1">
+                <div className="flex justify-between text-tiny mt-2.5">
+                    <span className="text-secondary-text flex items-center gap-1">
                         <Users size={13} /> {event.currentParticipants}/
                         {event.capacity} joined
                     </span>
                 </div>
 
-                <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-border">
+                <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-outline">
                     <Avatar name={event.organizer.name} size={24} />
-                    <span className="text-xs text-muted-foreground">
+                    <span className="text-tiny text-secondary-text">
                         {event.organizer.name}
                     </span>
                     <span
                         className={cn(
-                            'ml-auto text-[11px] font-medium px-2 py-0.5 rounded-md',
+                            'ml-auto text-tiny font-medium px-2 py-0.5 rounded-sm',
                             event.skillLevel === 'beginner' &&
-                                'text-primary bg-secondary',
+                                'text-primary-blue bg-soft-blue',
                             event.skillLevel === 'advanced' &&
-                                'text-destructive bg-secondary',
+                                'text-primary-red bg-soft-red',
                             event.skillLevel === 'intermediate' &&
-                                'text-secondary-foreground bg-accent'
+                                'text-strong-orange bg-soft-orange'
                         )}
                     >
                         {skillLevelDisplay}

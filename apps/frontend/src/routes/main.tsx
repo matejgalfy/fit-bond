@@ -29,8 +29,10 @@ function MainPage() {
     }
 
     return (
-        <div className="min-h-svh bg-background text-foreground flex flex-col items-center justify-center gap-6">
-            <h1 className="text-4xl font-bold">Hello, {session.user.name}</h1>
+        <div className="min-h-svh bg-background text-primary-text flex flex-col items-center justify-center gap-6">
+            <h1 className="text-heading font-bold">
+                Hello, {session.user.name}
+            </h1>
             <Button
                 variant="outline"
                 onClick={handleSignOut}

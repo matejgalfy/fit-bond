@@ -15,7 +15,7 @@ function UserAvatar({ name }: { name: string }) {
         .join('');
 
     return (
-        <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-xs bg-[linear-gradient(135deg,var(--primary),var(--ring))] text-primary-foreground">
+        <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-tiny bg-linear-to-br from-primary-blue to-strong-blue text-surface">
             {initials}
         </div>
     );
@@ -29,13 +29,13 @@ export function AppNavbar({ userName }: AppNavbarProps) {
     };
 
     return (
-        <nav className="sticky top-0 z-50 h-14 bg-card border-b border-border flex items-center px-4 gap-3">
+        <nav className="sticky top-0 z-50 h-14 bg-surface border-b border-outline flex items-center px-4 gap-3">
             <div className="flex items-center gap-1.5">
-                <div className="w-7 h-7 rounded-lg bg-linear-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white text-sm font-bold">
+                <div className="w-7 h-7 rounded-lg bg-linear-to-br from-primary-blue to-strong-blue flex items-center justify-center text-regular font-bold text-surface">
                     F
                 </div>
 
-                <span className="text-xl font-bold text-primary font-heading">
+                <span className="text-subheading font-bold text-primary-blue font-heading">
                     FitBond
                 </span>
             </div>
@@ -46,7 +46,9 @@ export function AppNavbar({ userName }: AppNavbarProps) {
                 variant="outline"
                 size="icon"
                 onClick={toggleDark}
-                className={cn(dark ? 'text-orange-400' : 'text-primary')}
+                className={cn(
+                    dark ? 'text-primary-orange' : 'text-primary-blue'
+                )}
                 aria-label="Toggle dark mode"
             >
                 {dark ? <Sun size={18} /> : <Moon size={18} />}

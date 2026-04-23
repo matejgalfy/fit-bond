@@ -106,33 +106,27 @@ const notificationMeta: Record<
 > = {
     comment: {
         icon: MessageCircle,
-        iconWrapClassName:
-            'bg-[color-mix(in_srgb,var(--notifications-blue)_12%,white)] text-[var(--notifications-blue)]',
+        iconWrapClassName: 'bg-soft-blue text-primary-blue',
     },
     reply: {
         icon: MessageCircle,
-        iconWrapClassName:
-            'bg-[color-mix(in_srgb,var(--notifications-blue)_12%,white)] text-[var(--notifications-blue)]',
+        iconWrapClassName: 'bg-soft-blue text-primary-blue',
     },
     participant: {
         icon: UserPlus,
-        iconWrapClassName:
-            'bg-[color-mix(in_srgb,var(--notifications-green)_12%,white)] text-[var(--notifications-green)]',
+        iconWrapClassName: 'bg-soft-green text-primary-green',
     },
     cancelled: {
         icon: XCircle,
-        iconWrapClassName:
-            'bg-[color-mix(in_srgb,var(--notifications-red)_12%,white)] text-[var(--notifications-red)]',
+        iconWrapClassName: 'bg-soft-red text-primary-red',
     },
     updated: {
         icon: HeartPulse,
-        iconWrapClassName:
-            'bg-[color-mix(in_srgb,var(--notifications-orange)_12%,white)] text-[var(--notifications-orange)]',
+        iconWrapClassName: 'bg-soft-orange text-primary-orange',
     },
     joined: {
         icon: CheckCircle2,
-        iconWrapClassName:
-            'bg-[color-mix(in_srgb,var(--notifications-green)_12%,white)] text-[var(--notifications-green)]',
+        iconWrapClassName: 'bg-soft-green text-primary-green',
     },
 };
 
@@ -179,7 +173,7 @@ function RouteComponent() {
         <div className="max-w-200 mx-auto">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
-                    <h1 className="font-heading text-[26px] font-bold text-foreground">
+                    <h1 className="font-heading text-heading font-bold text-primary-text">
                         Notifications
                     </h1>
 
@@ -214,10 +208,10 @@ function RouteComponent() {
                                 handleMarkAsRead(item.id);
                             }}
                             className={cn(
-                                'relative w-full rounded-[12px] border bg-card px-4 py-3.5 text-left transition-colors duration-200',
+                                'relative w-full rounded-[12px] border bg-surface px-4 py-3.5 text-left transition-colors duration-200 cursor-pointer',
                                 item.isUnread
-                                    ? 'border-[color-mix(in_srgb,var(--notifications-blue)_18%,var(--border))]'
-                                    : 'border-border',
+                                    ? 'border-primary-blue/20'
+                                    : 'border-outline',
                                 'hover:bg-slate-50 dark:hover:bg-slate-700'
                             )}
                         >
@@ -227,7 +221,7 @@ function RouteComponent() {
                                         className={cn(
                                             'h-2 w-2 rounded-full transition-colors',
                                             item.isUnread
-                                                ? 'bg-primary'
+                                                ? 'bg-primary-blue'
                                                 : 'bg-transparent'
                                         )}
                                     />
@@ -245,16 +239,16 @@ function RouteComponent() {
                                 <div className="min-w-0 flex-1">
                                     <h2
                                         className={cn(
-                                            'font-heading text-[14px] text-card-foreground',
-                                            item.isUnread && 'font-extrabold'
+                                            'font-subheading text-regular text-primary-text',
+                                            item.isUnread && 'font-bold'
                                         )}
                                     >
                                         {item.title}
                                     </h2>
-                                    <p className="mt-0.5 text-[13px] leading-5 text-muted-foreground">
+                                    <p className="mt-0.5 text-small leading-5 text-secondary-text">
                                         {item.description}
                                     </p>
-                                    <p className="mt-1 text-[12px] text-[#94A3B8]">
+                                    <p className="mt-1 text-tiny text-tertiary-text">
                                         {item.time}
                                     </p>
                                 </div>
@@ -264,15 +258,15 @@ function RouteComponent() {
                 })}
 
                 {visibleNotifications.length === 0 ? (
-                    <div className="rounded-[14px] border border-border bg-card px-5 py-10 text-center">
+                    <div className="rounded-[14px] border border-outline bg-surface px-5 py-10 text-center">
                         <Bell
                             size={36}
-                            className="mx-auto mb-2 text-muted-foreground"
+                            className="mx-auto mb-2 text-secondary-text"
                         />
-                        <h3 className="mb-1 text-[15px] font-semibold text-card-foreground">
+                        <h3 className="mb-1 text-subheading font-semibold text-primary-text">
                             No notifications
                         </h3>
-                        <p className="text-[13px] text-muted-foreground">
+                        <p className="text-small text-secondary-text">
                             You're all caught up!
                         </p>
                     </div>

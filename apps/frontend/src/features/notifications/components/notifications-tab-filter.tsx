@@ -33,10 +33,10 @@ export function NotificationsTabFilter({
                     <TabsTrigger
                         key={tab.value}
                         value={tab.value}
-                        className="flex-none text-sm px-4"
+                        className="flex-none px-4 text-regular"
                     >
                         {tab.label}
-                        <span className="rounded-full bg-muted px-1.5 py-0.5 text-xs leading-none text-muted-foreground group-data-[state=active]:bg-blue-500 group-data-[state=active]:text-white">
+                        <span className="rounded-full bg-muted-background px-1.5 py-0.5 text-tiny leading-none text-secondary-text group-data-[state=active]:bg-primary-blue group-data-[state=active]:text-surface">
                             {counts[tab.value]}
                         </span>
                     </TabsTrigger>

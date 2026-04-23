@@ -23,7 +23,7 @@ const data = {
             interested: 8,
             organizer: 'Eva M.',
             skill: 'Beginner',
-            color: 'var(--sport-yoga)',
+            color: 'var(--primary-purple)',
         },
         {
             name: 'Friday Football Match',
@@ -36,7 +36,7 @@ const data = {
             interested: 3,
             organizer: 'Tomáš R.',
             skill: 'Intermediate',
-            color: 'var(--sport-football)',
+            color: 'var(--primary-purple)',
         },
     ],
     joined: [
@@ -51,7 +51,7 @@ const data = {
             interested: 5,
             organizer: 'Jana K.',
             skill: 'Beginner',
-            color: 'var(--sport-running)',
+            color: 'var(--primary-blue)',
         },
         {
             name: 'Tennis Doubles',
@@ -64,7 +64,7 @@ const data = {
             interested: 2,
             organizer: 'Martin S.',
             skill: 'Advanced',
-            color: 'var(--sport-basketball)',
+            color: 'var(--primary-orange)',
         },
     ],
     interested: [
@@ -79,7 +79,7 @@ const data = {
             interested: 15,
             organizer: 'Lucie P.',
             skill: 'Intermediate',
-            color: 'var(--sport-yoga)',
+            color: 'var(--primary-purple)',
         },
     ],
 };

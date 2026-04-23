@@ -20,7 +20,7 @@ export function PasswordInput({
         <div className="relative mb-2.5">
             <Lock
                 size={16}
-                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text pointer-events-none"
             />
 
             <Input
@@ -36,7 +36,7 @@ export function PasswordInput({
                 onClick={() => {
                     setShow(!show);
                 }}
-                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-secondary-text hover:text-primary-text"
                 aria-label={show ? 'Hide password' : 'Show password'}
             >
                 {show ? <EyeOff size={16} /> : <Eye size={16} />}
