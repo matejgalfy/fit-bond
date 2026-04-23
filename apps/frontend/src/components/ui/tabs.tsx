@@ -33,9 +33,9 @@ function TabsTrigger({
     return (
         <TabsPrimitive.Trigger
             className={cn(
-                'group inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-medium transition-colors',
-                'border border-transparent text-muted-foreground hover:text-foreground hover:border-border',
-                'data-[state=active]:border-blue-500 data-[state=active]:bg-blue-500/10 data-[state=active]:text-blue-500',
+                'group inline-flex items-center gap-1.5 rounded-xl px-4 py-2 text-regular font-medium transition-colors cursor-pointer',
+                'border border-transparent text-secondary-text hover:text-primary-text hover:border-outline',
+                'data-[state=active]:border-primary-blue data-[state=active]:bg-soft-blue data-[state=active]:text-primary-blue',
                 'disabled:pointer-events-none disabled:opacity-50',
                 className
             )}

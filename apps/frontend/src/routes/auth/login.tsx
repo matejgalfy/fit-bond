@@ -69,7 +69,7 @@ export function Login() {
     }
 
     return (
-        <div className="min-h-svh bg-background text-foreground transition-colors duration-300">
+        <div className="min-h-svh bg-background text-primary-text transition-colors duration-300">
             <AppNavbar />
 
             <div className="flex items-center justify-center min-h-[calc(100svh-56px)] p-6">
@@ -107,13 +107,13 @@ export function Login() {
                             />
 
                             <div className="text-right mb-5">
-                                <span className="text-[13px] text-primary font-medium cursor-pointer hover:underline">
+                                <span className="text-small text-primary-blue font-medium cursor-pointer hover:underline">
                                     Forgot password?
                                 </span>
                             </div>
 
                             {error && (
-                                <p className="text-sm text-destructive text-center mb-3">
+                                <p className="text-regular text-primary-red text-center mb-3">
                                     {error}
                                 </p>
                             )}
@@ -121,17 +121,17 @@ export function Login() {
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full h-11 rounded-xl text-[15px] font-semibold"
+                                className="w-full h-11 rounded-xl text-regular font-semibold"
                             >
                                 {isLoading ? 'Signing in…' : 'Sign In'}
                             </Button>
                         </form>
 
-                        <p className="text-center text-[13px] text-muted-foreground mt-4">
+                        <p className="text-center text-small text-secondary-text mt-4">
                             Don&apos;t have an account?{' '}
                             <Link
                                 to="/auth/register"
-                                className="text-primary font-medium cursor-pointer hover:underline"
+                                className="text-primary-blue font-medium cursor-pointer hover:underline"
                             >
                                 Create one
                             </Link>

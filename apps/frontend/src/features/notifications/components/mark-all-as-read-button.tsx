@@ -16,9 +16,9 @@ export function MarkAllAsReadButton({
             variant="outline"
             disabled={disabled}
             onClick={onClick}
-            className="h-auto rounded-lg bg-transparent px-3.5 py-1.5 text-[12px] font-medium text-blue-500 hover:bg-card "
+            className="h-auto rounded-md bg-transparent px-2 py-1 text-small font-medium text-primary-blue hover:bg-surface"
         >
-            <Check size={16} />
+            <Check size={14} />
             Mark all as read
         </Button>
     );
