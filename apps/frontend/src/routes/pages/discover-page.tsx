@@ -15,7 +15,7 @@ export const Route = createFileRoute('/pages/discover-page')({
 
 function DiscoverPage() {
     const { data: session } = authClient.useSession();
-    
+
     // Stav lokálnych filtrov riadený používateľom
     const [rawFilters, setRawFilters] = useState<DiscoverFiltersState>({
         search: '',
@@ -31,16 +31,19 @@ function DiscoverPage() {
     // Príprava payloadu pre useEvents (memoizované, aby nedochádzalo k zbytočným re-renders)
     const apiFilters = useMemo(() => {
         return {
-            userId: session?.user?.id,
+            userId: session?.user.id,
             excludeUserInteractions: true, // Zabezpečí, že uvidíme len nové eventy
             search: debouncedSearch || undefined,
             city: debouncedCity || undefined,
             date: rawFilters.date || undefined,
-            skillLevel: rawFilters.skillLevel === 'any' ? undefined : rawFilters.skillLevel,
+            skillLevel:
+                rawFilters.skillLevel === 'any'
+                    ? undefined
+                    : rawFilters.skillLevel,
             limit: 20, // Konštantný limit pre stránkovanie
         };
     }, [
-        session?.user?.id,
+        session?.user.id,
         debouncedSearch,
         debouncedCity,
         rawFilters.date,
@@ -79,7 +82,10 @@ function DiscoverPage() {
             {isPending ? (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-pulse">
                     {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="h-48 bg-muted-background rounded-2xl" />
+                        <div
+                            key={i}
+                            className="h-48 bg-muted-background rounded-2xl"
+                        />
                     ))}
                 </div>
             ) : (
@@ -87,7 +93,7 @@ function DiscoverPage() {
                     {events?.map((event) => (
                         <EventCard key={event.id} event={event} />
                     ))}
-                    
+
                     {events?.length === 0 && (
                         <div className="col-span-full py-12 text-center text-secondary-text bg-surface rounded-2xl border border-outline">
                             No events found matching your criteria.

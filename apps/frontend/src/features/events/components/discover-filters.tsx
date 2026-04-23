@@ -51,7 +51,9 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                             placeholder="Search sport or event name..."
                             className="pl-9 h-10 rounded-xl"
                             value={filters.search}
-                            onChange={(e) => updateFilter('search', e.target.value)}
+                            onChange={(e) => {
+                                updateFilter('search', e.target.value);
+                            }}
                         />
                     </div>
                     {/* Visual representation of an active tag (matching design) */}
@@ -59,7 +61,9 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                         <div className="mt-2 inline-flex items-center gap-1 bg-soft-blue text-strong-blue text-tiny px-2.5 py-1 rounded-full font-medium">
                             {filters.search}
                             <button
-                                onClick={() => updateFilter('search', '')}
+                                onClick={() => {
+                                    updateFilter('search', '');
+                                }}
                                 className="hover:bg-primary-blue/20 rounded-full p-0.5 transition-colors cursor-pointer"
                                 aria-label="Clear search"
                             >
@@ -79,7 +83,9 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                             type="date"
                             className="h-10 rounded-xl w-full block text-primary-text"
                             value={filters.date}
-                            onChange={(e) => updateFilter('date', e.target.value)}
+                            onChange={(e) => {
+                                updateFilter('date', e.target.value);
+                            }}
                         />
                     </div>
                 </div>
@@ -99,7 +105,9 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                             placeholder="City or area..."
                             className="pl-9 h-10 rounded-xl"
                             value={filters.city}
-                            onChange={(e) => updateFilter('city', e.target.value)}
+                            onChange={(e) => {
+                                updateFilter('city', e.target.value);
+                            }}
                         />
                     </div>
                 </div>
@@ -117,10 +125,13 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                             <Button
                                 key={level.value}
                                 variant={isActive ? 'default' : 'outline'}
-                                onClick={() => updateFilter('skillLevel', level.value)}
+                                onClick={() => {
+                                    updateFilter('skillLevel', level.value);
+                                }}
                                 className={cn(
                                     'rounded-xl h-9 px-4 text-small transition-colors',
-                                    !isActive && 'text-secondary-text border-outline bg-transparent hover:bg-muted-background hover:text-primary-text'
+                                    !isActive &&
+                                        'text-secondary-text border-outline bg-transparent hover:bg-muted-background hover:text-primary-text'
                                 )}
                             >
                                 {level.label}

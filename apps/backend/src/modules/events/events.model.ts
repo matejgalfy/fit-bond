@@ -47,9 +47,14 @@ export const eventsModel = {
             conditions.push(eq(events.isPublic, filters.isPublic));
         }
         if (filters.search) {
-            conditions.push(
-                or(ilike(events.name, `%${filters.search}%`),
-                   ilike(sports.name, `%${filters.search}%`))!);
+            const searchCondition = or(
+                ilike(events.name, `%${filters.search}%`),
+                ilike(sports.name, `%${filters.search}%`)
+            );
+
+            if (searchCondition) {
+                conditions.push(searchCondition);
+            }
         }
         if (filters.fromDate) {
             conditions.push(gte(events.startTime, new Date(filters.fromDate)));
@@ -62,7 +67,7 @@ export const eventsModel = {
         }
         if (filters.date) {
             conditions.push(eq(sql`${events.startTime}::date`, filters.date));
-}
+        }
 
         // User relation filtering
         if (filters.userId && filters.userRelation === 'organized') {
