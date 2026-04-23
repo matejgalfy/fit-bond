@@ -23,17 +23,17 @@ function HomePage() {
     return (
         <div className="max-w-240 mx-auto">
             <div className="mb-6">
-                <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
+                <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     Welcome back,{' '}
-                    <span className="text-primary">{firstName}</span> 👋
+                    <span className="text-primary-blue">{firstName}</span> 👋
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-regular text-secondary-text mt-1">
                     Discover upcoming events near you and connect with fellow
                     athletes.
                 </p>
             </div>
 
-            <h2 className="font-heading text-lg font-semibold mb-4 mt-0 text-foreground">
+            <h2 className="font-heading text-subheading font-semibold mb-4 mt-0 text-primary-text">
                 Upcoming events
             </h2>
 

@@ -14,7 +14,7 @@ export function GoogleButton() {
         <button
             type="button"
             className={cn(
-                'w-full h-11 rounded-xl border border-border bg-transparent hover:bg-muted flex items-center justify-center gap-2.5 text-sm font-medium text-foreground transition-colors cursor-pointer'
+                'w-full h-11 rounded-xl border border-outline bg-transparent hover:bg-muted-background flex items-center justify-center gap-2.5 text-regular font-medium text-primary-text transition-colors cursor-pointer'
             )}
             onClick={handleSignIn}
         >

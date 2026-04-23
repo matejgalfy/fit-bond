@@ -6,10 +6,10 @@ interface AuthHeaderProps {
 export function AuthHeader({ title, subtitle }: AuthHeaderProps) {
     return (
         <div className="text-center mb-7">
-            <h1 className="text-[26px] font-bold text-foreground mb-1.5">
+            <h1 className="text-heading font-bold text-primary-text mb-1.5">
                 {title}
             </h1>
-            <p className="text-sm text-muted-foreground">{subtitle}</p>
+            <p className="text-regular text-secondary-text">{subtitle}</p>
         </div>
     );
 }

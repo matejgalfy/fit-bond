@@ -36,21 +36,22 @@ function ProfilePage() {
     return (
         <div className="max-w-240 mx-auto">
             <div className="mb-6">
-                <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
+                <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     {isOwner ? (
                         <>
-                            My <span className="text-primary">Profile</span>
+                            My{' '}
+                            <span className="text-primary-blue">Profile</span>
                         </>
                     ) : (
                         <>
-                            <span className="text-primary">
+                            <span className="text-primary-blue">
                                 {user_data?.name}'s
                             </span>{' '}
                             Profile
                         </>
                     )}
                 </h1>
-                <p className="text-sm text-muted-foreground mt-1">
+                <p className="text-regular text-secondary-text mt-1">
                     {isOwner
                         ? 'Manage your personal information and sports preferences.'
                         : 'View public profile and sports preferences.'}
@@ -59,16 +60,16 @@ function ProfilePage() {
 
             {isUserPending ? (
                 <div className="flex justify-center py-12">
-                    <p className="text-muted-foreground animate-pulse">
+                    <p className="text-secondary-text animate-pulse">
                         Loading profile data...
                     </p>
                 </div>
             ) : isError ? (
-                <div className="bg-destructive/10 text-destructive p-6 rounded-2xl border border-destructive/20 text-center">
+                <div className="bg-soft-red text-primary-red p-6 rounded-2xl border border-primary-red/20 text-center">
                     <p className="font-semibold">
                         Failed to load profile information.
                     </p>
-                    <p className="text-sm opacity-80">
+                    <p className="text-regular opacity-80">
                         Please try again later.
                     </p>
                 </div>

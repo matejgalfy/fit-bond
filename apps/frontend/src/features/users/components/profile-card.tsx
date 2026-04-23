@@ -19,26 +19,26 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
         user.locations.find((l) => l.isPrimary) ?? user.locations.at(0);
 
     return (
-        <Card className="w-full max-w-2xl border-border shadow-sm bg-card rounded-3xl p-6">
+        <Card className="w-full max-w-2xl border-outline shadow-sm bg-surface rounded-3xl p-6">
             <CardContent className="p-0 space-y-8">
                 {/* Upper part: Avatar and Info */}
                 <div className="flex items-start gap-6">
                     <div className="relative">
-                        <div className="w-24 h-24 rounded-full bg-[linear-gradient(135deg,var(--primary),var(--ring))] flex items-center justify-center text-primary-foreground text-3xl font-bold">
+                        <div className="w-24 h-24 rounded-full bg-linear-to-br from-primary-blue to-strong-blue flex items-center justify-center text-surface text-heading font-bold">
                             {initials}
                         </div>
                         {isOwner && (
-                            <button className="absolute bottom-0 right-0 p-1.5 bg-background rounded-full border border-border shadow-sm hover:bg-accent transition-colors">
-                                <Pencil className="w-4 h-4 text-primary" />
+                            <button className="absolute cursor-pointer bottom-0 right-0 p-1.5 bg-background rounded-full border border-outline shadow-sm hover:bg-soft-blue transition-colors">
+                                <Pencil className="w-4 h-4 text-primary-blue" />
                             </button>
                         )}
                     </div>
 
                     <div className="space-y-1 py-1">
-                        <h1 className="text-3xl font-bold text-foreground">
+                        <h1 className="text-heading font-bold text-primary-text">
                             {user.name}
                         </h1>
-                        <p className="text-muted-foreground text-lg leading-relaxed max-w-md">
+                        <p className="text-secondary-text text-subheading leading-relaxed max-w-md">
                             {user.bio ?? 'No bio yet.'}
                         </p>
                     </div>
@@ -46,17 +46,17 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
 
                 {/* Buttons */}
                 {isOwner && (
-                    <div className="flex gap-3">
+                    <div className="flex flex-wrap gap-3">
                         <Button
                             variant="outline"
-                            className="rounded-xl border-primary text-primary hover:bg-primary/10 hover:text-primary px-6 font-semibold"
+                            className="rounded-xl border-primary-blue text-primary-blue hover:bg-primary-blue/10 hover:text-primary-blue px-6 font-semibold"
                         >
                             <Pencil className="w-4 h-4 mr-2" />
                             Edit Profile
                         </Button>
                         <Button
                             variant="outline"
-                            className="rounded-xl border-destructive text-destructive hover:bg-destructive/10 hover:text-destructive px-6 font-semibold"
+                            className="rounded-xl border-primary-red text-primary-red hover:bg-primary-red/10 hover:text-primary-red px-6 font-semibold"
                         >
                             <LogOut className="w-4 h-4 mr-2" />
                             Log Out
@@ -66,14 +66,14 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
 
                 {/* Sports */}
                 <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    <h3 className="text-regular font-semibold text-secondary-text uppercase tracking-wider">
                         Preferred Sports
                     </h3>
                     <div className="flex flex-wrap gap-2">
                         {user.sports.map((sport) => (
                             <div
                                 key={sport.id}
-                                className="px-4 py-1.5 rounded-full bg-badge-sport-bg text-badge-sport-text font-bold text-sm"
+                                className="px-4 py-1.5 rounded-full bg-soft-orange text-strong-orange font-bold text-regular"
                             >
                                 {sport.name}
                             </div>
@@ -83,13 +83,13 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
 
                 {/* Locations */}
                 <div className="space-y-3">
-                    <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">
+                    <h3 className="text-regular font-semibold text-secondary-text uppercase tracking-wider">
                         Preferred Location
                     </h3>
                     {primaryLocation && (
-                        <div className="inline-flex items-center px-3 py-1.5 rounded-xl bg-badge-location-bg font-semibold text-sm gap-2">
-                            <MapPin className="w-4 h-4 text-badge-location-text" />
-                            <span className="text-slate-700 dark:text-slate-300">
+                        <div className="inline-flex items-center px-3 py-1.5 rounded-xl bg-soft-blue font-semibold text-regular gap-2">
+                            <MapPin className="w-4 h-4 text-strong-blue" />
+                            <span className="text-primary-text">
                                 {primaryLocation.city} ·{' '}
                                 {primaryLocation.radius} km radius
                             </span>

@@ -51,7 +51,7 @@ function MyEventsPage() {
     return (
         <div className="max-w-240 mx-auto">
             <div className="mb-6">
-                <h1 className="font-heading text-[26px] font-bold m-0 text-foreground">
+                <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     My Events
                 </h1>
             </div>

@@ -39,7 +39,7 @@ function PagesLayout() {
     const activeNav = pathnameToNavId(location.pathname);
 
     return (
-        <div className="font-sans bg-background text-foreground min-h-screen flex flex-col transition-colors duration-300">
+        <div className="font-sans bg-background text-primary-text min-h-screen flex flex-col transition-colors duration-300">
             <AppNavbar userName={session.user.name} />
             <div className="flex flex-1">
                 <SideNav items={NAV_ITEMS} activeNav={activeNav} />

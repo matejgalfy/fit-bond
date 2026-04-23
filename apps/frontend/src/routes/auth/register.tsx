@@ -82,7 +82,7 @@ function Register() {
     }
 
     return (
-        <div className="min-h-svh bg-background text-foreground transition-colors duration-300">
+        <div className="min-h-svh bg-background text-primary-text transition-colors duration-300">
             <AppNavbar />
 
             <div className="flex items-center justify-center min-h-[calc(100svh-56px)] p-6">
@@ -138,7 +138,7 @@ function Register() {
                             />
 
                             {error && (
-                                <p className="text-sm text-destructive text-center mb-3">
+                                <p className="text-regular text-primary-red text-center mb-3">
                                     {error}
                                 </p>
                             )}
@@ -146,7 +146,7 @@ function Register() {
                             <Button
                                 type="submit"
                                 disabled={isLoading}
-                                className="w-full h-11 rounded-xl text-[15px] font-semibold"
+                                className="w-full h-11 rounded-xl text-regular font-semibold"
                             >
                                 {isLoading
                                     ? 'Creating account…'
@@ -154,11 +154,11 @@ function Register() {
                             </Button>
                         </form>
 
-                        <p className="text-center text-[13px] text-muted-foreground mt-4">
+                        <p className="text-center text-small text-secondary-text mt-4">
                             Already have an account?{' '}
                             <Link
                                 to="/auth/login"
-                                className="text-primary font-medium cursor-pointer hover:underline"
+                                className="text-primary-blue font-medium cursor-pointer hover:underline"
                             >
                                 Sign in
                             </Link>
