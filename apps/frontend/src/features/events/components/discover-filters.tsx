@@ -34,33 +34,34 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
     };
 
     return (
-        <Card className="p-5 mb-6 border-border shadow-sm rounded-2xl">
+        <Card className="p-5 mb-6 border-outline bg-surface shadow-sm rounded-2xl">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-5">
                 {/* Sport Search Input */}
                 <div>
-                    <label className="text-[13px] text-muted-foreground font-medium mb-1.5 block">
+                    <label className="text-small text-secondary-text font-medium mb-1.5 block">
                         Sport
                     </label>
                     <div className="relative">
                         <Search
                             size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text"
                         />
                         <Input
                             type="text"
                             placeholder="Search sport or event name..."
-                            className="pl-9 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border-border"
+                            className="pl-9 h-10 rounded-xl"
                             value={filters.search}
                             onChange={(e) => updateFilter('search', e.target.value)}
                         />
                     </div>
                     {/* Visual representation of an active tag (matching design) */}
                     {filters.search && (
-                        <div className="mt-2 inline-flex items-center gap-1 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs px-2.5 py-1 rounded-full font-medium">
+                        <div className="mt-2 inline-flex items-center gap-1 bg-soft-blue text-strong-blue text-tiny px-2.5 py-1 rounded-full font-medium">
                             {filters.search}
                             <button
                                 onClick={() => updateFilter('search', '')}
-                                className="hover:bg-blue-200 dark:hover:bg-blue-800 rounded-full p-0.5 transition-colors"
+                                className="hover:bg-primary-blue/20 rounded-full p-0.5 transition-colors cursor-pointer"
+                                aria-label="Clear search"
                             >
                                 <X size={12} />
                             </button>
@@ -70,14 +71,13 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
 
                 {/* Date Input */}
                 <div>
-                    <label className="text-[13px] text-muted-foreground font-medium mb-1.5 block">
+                    <label className="text-small text-secondary-text font-medium mb-1.5 block">
                         Date
                     </label>
                     <div className="relative">
-                        {/* Native date inputs have their own calendar icon on the right usually, but we style it to match */}
                         <Input
                             type="date"
-                            className="h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border-border text-foreground w-full block"
+                            className="h-10 rounded-xl w-full block text-primary-text"
                             value={filters.date}
                             onChange={(e) => updateFilter('date', e.target.value)}
                         />
@@ -86,18 +86,18 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
 
                 {/* Location Input */}
                 <div>
-                    <label className="text-[13px] text-muted-foreground font-medium mb-1.5 block">
+                    <label className="text-small text-secondary-text font-medium mb-1.5 block">
                         City
                     </label>
                     <div className="relative">
                         <MapPin
                             size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                            className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text"
                         />
                         <Input
                             type="text"
                             placeholder="City or area..."
-                            className="pl-9 h-10 rounded-xl bg-slate-50 dark:bg-slate-900 border-border"
+                            className="pl-9 h-10 rounded-xl"
                             value={filters.city}
                             onChange={(e) => updateFilter('city', e.target.value)}
                         />
@@ -107,7 +107,7 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
 
             {/* Skill Level Toggles */}
             <div>
-                <label className="text-[13px] text-muted-foreground font-medium mb-2 block">
+                <label className="text-small text-secondary-text font-medium mb-2 block">
                     Skill level
                 </label>
                 <div className="flex flex-wrap gap-2">
@@ -119,10 +119,8 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                                 variant={isActive ? 'default' : 'outline'}
                                 onClick={() => updateFilter('skillLevel', level.value)}
                                 className={cn(
-                                    'rounded-xl h-9 px-4 text-sm transition-colors',
-                                    isActive
-                                        ? 'bg-blue-500 hover:bg-blue-600 text-white border-transparent'
-                                        : 'bg-transparent border-border text-muted-foreground hover:bg-slate-100 dark:hover:bg-slate-800'
+                                    'rounded-xl h-9 px-4 text-small transition-colors',
+                                    !isActive && 'text-secondary-text border-outline bg-transparent hover:bg-muted-background hover:text-primary-text'
                                 )}
                             >
                                 {level.label}
