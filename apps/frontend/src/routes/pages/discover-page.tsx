@@ -16,7 +16,6 @@ export const Route = createFileRoute('/pages/discover-page')({
 function DiscoverPage() {
     const { data: session } = authClient.useSession();
 
-    // Stav lokálnych filtrov riadený používateľom
     const [rawFilters, setRawFilters] = useState<DiscoverFiltersState>({
         search: '',
         date: '',
@@ -24,15 +23,13 @@ function DiscoverPage() {
         skillLevel: 'any',
     });
 
-    // Debouncnuté textové hodnoty pre zamedzenie spamu requestov
     const debouncedSearch = useDebounce(rawFilters.search, 300);
     const debouncedCity = useDebounce(rawFilters.city, 300);
 
-    // Príprava payloadu pre useEvents (memoizované, aby nedochádzalo k zbytočným re-renders)
     const apiFilters = useMemo(() => {
         return {
             userId: session?.user.id,
-            excludeUserInteractions: true, // Zabezpečí, že uvidíme len nové eventy
+            excludeUserInteractions: true,
             search: debouncedSearch || undefined,
             city: debouncedCity || undefined,
             date: rawFilters.date || undefined,
@@ -40,7 +37,7 @@ function DiscoverPage() {
                 rawFilters.skillLevel === 'any'
                     ? undefined
                     : rawFilters.skillLevel,
-            limit: 20, // Konštantný limit pre stránkovanie
+            limit: 20, // Pagination limit
         };
     }, [
         session?.user.id,
@@ -52,7 +49,6 @@ function DiscoverPage() {
 
     const { data: events, isPending } = useEvents(apiFilters);
 
-    // Zabezpečenie proti crashu pred načítaním session
     if (!session?.user) return null;
 
     return (
@@ -67,7 +63,7 @@ function DiscoverPage() {
                 </p>
             </div>
 
-            {/* Filtračný panel */}
+            {/* Filtration panel */}
             <DiscoverFilters filters={rawFilters} onChange={setRawFilters} />
 
             {/* Results Header */}
