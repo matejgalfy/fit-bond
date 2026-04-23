@@ -85,6 +85,7 @@ export const eventQueryFilters = t.Object({
             t.Literal('interested'),
         ])
     ),
+    date: t.Optional(t.String({ format: 'date' })),
     excludeUserInteractions: t.Optional(t.Boolean()),
     limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
     offset: t.Optional(t.Integer({ minimum: 0 })),

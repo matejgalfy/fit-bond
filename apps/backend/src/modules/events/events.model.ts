@@ -1,15 +1,18 @@
 import {
     eq,
     and,
+    or,
     ilike,
     gte,
     lte,
+    lt,
     isNull,
     desc,
     count,
     not,
     exists,
     ne,
+    sql,
 } from 'drizzle-orm';
 import type { Database } from '../../db';
 import {
@@ -30,6 +33,10 @@ export const eventsModel = {
     async findAll(db: Database, filters: EventFilters) {
         const conditions = [isNull(events.deletedAt)];
 
+        if (filters.excludeUserInteractions) {
+            conditions.push(isNull(events.cancelledAt));
+            conditions.push(lt(events.currentParticipants, events.capacity));
+        }
         if (filters.sportId) {
             conditions.push(eq(events.sportId, filters.sportId));
         }
@@ -40,7 +47,9 @@ export const eventsModel = {
             conditions.push(eq(events.isPublic, filters.isPublic));
         }
         if (filters.search) {
-            conditions.push(ilike(events.name, `%${filters.search}%`));
+            conditions.push(
+                or(ilike(events.name, `%${filters.search}%`),
+                   ilike(sports.name, `%${filters.search}%`))!);
         }
         if (filters.fromDate) {
             conditions.push(gte(events.startTime, new Date(filters.fromDate)));
@@ -51,6 +60,9 @@ export const eventsModel = {
         if (filters.city) {
             conditions.push(ilike(locations.city, `%${filters.city}%`));
         }
+        if (filters.date) {
+            conditions.push(eq(sql`${events.startTime}::date`, filters.date));
+}
 
         // User relation filtering
         if (filters.userId && filters.userRelation === 'organized') {
