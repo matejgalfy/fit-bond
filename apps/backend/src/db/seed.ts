@@ -89,6 +89,7 @@ async function main() {
                     defaultValue: 'https://picsum.photos/seed/2/400/300',
                 }),
                 deletedAt: f.default({ defaultValue: null }),
+                cancelledAt: f.default({ defaultValue: null }),
             },
             with: {
                 eventParticipants: 1,

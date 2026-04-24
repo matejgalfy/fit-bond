@@ -21,6 +21,7 @@ function pathnameToNavId(pathname: string): string {
     if (pathname.includes('my-events')) return 'events';
     if (pathname.includes('notifications')) return 'notifications';
     if (pathname.includes('profile')) return 'profile';
+    if (pathname.includes('discover')) return 'discover';
     return 'home';
 }
 
