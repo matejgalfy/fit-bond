@@ -33,9 +33,16 @@ export const usersModel = {
     ) {
         return await db.transaction(async (tx) => {
             if (data.base) {
+                const { profilePictureUrl, ...rest } = data.base;
                 await tx
                     .update(user)
-                    .set({ ...data.base, updatedAt: new Date() })
+                    .set({
+                        ...rest,
+                        ...(profilePictureUrl !== undefined && {
+                            image: profilePictureUrl,
+                        }),
+                        updatedAt: new Date(),
+                    })
                     .where(and(eq(user.id, userId), isNull(user.deletedAt)));
             }
 

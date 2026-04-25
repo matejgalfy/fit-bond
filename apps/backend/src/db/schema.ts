@@ -23,6 +23,7 @@ export const skillLevelEnum = pgEnum('skill_level', [
 // Discuss notification types TODO
 export const notificationTypeEnum = pgEnum('notification_type', [
     'event_update',
+    'event_cancelled',
     'participant_joined',
     'comment',
     'interest',
@@ -48,7 +49,6 @@ export const user = pgTable('user', {
     role: userRoleEnum('role').default('user').notNull(),
     email: text('email').notNull().unique(),
     emailVerified: boolean('email_verified').default(false).notNull(),
-    profilePictureUrl: text('profile_picture_url'),
     bannedReason: text('banned_reason'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
@@ -262,6 +262,7 @@ export const notifications = pgTable('notifications', {
     isRead: boolean('is_read').default(false).notNull(),
     readAt: timestamp('read_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at'),
 });
 
 export const reports = pgTable('reports', {
@@ -276,6 +277,7 @@ export const reports = pgTable('reports', {
     resolvedBy: text('resolved_by').references(() => user.id),
     resolution: text('resolution'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
+    deletedAt: timestamp('deleted_at'),
 });
 
 // Relations

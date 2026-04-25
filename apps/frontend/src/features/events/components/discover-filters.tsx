@@ -14,8 +14,7 @@ export interface DiscoverFiltersState {
 
 interface DiscoverFiltersProps {
     filters: DiscoverFiltersState;
-    // eslint-disable-next-line no-unused-vars
-    onChange: (filters: DiscoverFiltersState) => void;
+    onChange: (_filters: DiscoverFiltersState) => void;
 }
 
 const SKILL_LEVELS: { label: string; value: SkillLevel | 'any' }[] = [

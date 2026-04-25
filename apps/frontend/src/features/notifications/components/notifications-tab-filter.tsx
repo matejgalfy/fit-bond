@@ -10,8 +10,7 @@ export type NotificationTabValue = (typeof tabs)[number]['value'];
 interface NotificationsTabFilterProps {
     value: NotificationTabValue;
     counts: Record<NotificationTabValue, number>;
-    /* eslint-disable-next-line no-unused-vars */
-    onValueChange: (value: NotificationTabValue) => void;
+    onValueChange: (_value: NotificationTabValue) => void;
 }
 
 export function NotificationsTabFilter({

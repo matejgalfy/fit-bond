@@ -3,25 +3,14 @@ import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
+import { UserAvatar } from '@/components/ui/user-avatar';
 
 interface AppNavbarProps {
     userName?: string;
+    profilePictureUrl?: string | null;
 }
 
-function UserAvatar({ name }: { name: string }) {
-    const initials = name
-        .split(' ')
-        .map((n) => n[0])
-        .join('');
-
-    return (
-        <div className="w-8 h-8 rounded-full flex items-center justify-center font-semibold text-tiny bg-linear-to-br from-primary-blue to-strong-blue text-surface">
-            {initials}
-        </div>
-    );
-}
-
-export function AppNavbar({ userName }: AppNavbarProps) {
+export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
     const { resolvedTheme, setTheme } = useTheme();
     const dark = resolvedTheme === 'dark';
     const toggleDark = () => {
@@ -63,7 +52,11 @@ export function AppNavbar({ userName }: AppNavbarProps) {
                     asChild
                 >
                     <Link to="/pages/profile-page">
-                        <UserAvatar name={userName} />
+                        <UserAvatar
+                            name={userName}
+                            imageUrl={profilePictureUrl}
+                            size={32}
+                        />
                     </Link>
                 </Button>
             ) : null}

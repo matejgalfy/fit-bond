@@ -41,7 +41,7 @@ export const commentsModel = {
                 author: {
                     id: user.id,
                     name: user.name,
-                    profilePictureUrl: user.profilePictureUrl,
+                    image: user.image,
                 },
             })
             .from(comments)
@@ -65,7 +65,7 @@ export const commentsModel = {
                 author: {
                     id: user.id,
                     name: user.name,
-                    profilePictureUrl: user.profilePictureUrl,
+                    image: user.image,
                 },
             })
             .from(comments)

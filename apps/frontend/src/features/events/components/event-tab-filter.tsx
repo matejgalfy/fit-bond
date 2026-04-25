@@ -10,8 +10,7 @@ const tabs = [
 interface EventTabFilterProps {
     value: EventTabValue;
     counts: Record<EventTabValue, number>;
-    /* eslint-disable-next-line no-unused-vars */
-    onValueChange: (value: EventTabValue) => void;
+    onValueChange: (_value: EventTabValue) => void;
 }
 
 export function EventTabFilter({

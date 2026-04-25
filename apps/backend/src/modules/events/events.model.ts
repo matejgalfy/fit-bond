@@ -134,7 +134,7 @@ export const eventsModel = {
                 organizer: {
                     id: user.id,
                     name: user.name,
-                    profilePictureUrl: user.profilePictureUrl,
+                    image: user.image,
                 },
                 location: {
                     id: locations.id,
@@ -199,7 +199,7 @@ export const eventsModel = {
                 organizer: {
                     id: user.id,
                     name: user.name,
-                    profilePictureUrl: user.profilePictureUrl,
+                    image: user.image,
                 },
                 location: {
                     id: locations.id,

@@ -41,7 +41,10 @@ function PagesLayout() {
 
     return (
         <div className="font-sans bg-background text-primary-text min-h-screen flex flex-col transition-colors duration-300">
-            <AppNavbar userName={session.user.name} />
+            <AppNavbar
+                userName={session.user.name}
+                profilePictureUrl={session.user.image}
+            />
             <div className="flex flex-1">
                 <SideNav items={NAV_ITEMS} activeNav={activeNav} />
                 <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">

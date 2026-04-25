@@ -1,34 +1,10 @@
 import { Activity, Clock, MapPin, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { UserAvatar } from '@/components/ui/user-avatar';
 import type { Event } from '../types';
 
 export interface EventCardProps {
     event: Event;
-}
-
-interface AvatarProps {
-    name: string;
-    size?: number;
-}
-
-export function Avatar({ name, size = 32 }: AvatarProps) {
-    const initials = name
-        .split(' ')
-        .map((n) => n[0])
-        .join('');
-
-    return (
-        <div
-            className="rounded-full bg-linear-to-br from-primary-blue to-strong-blue flex items-center justify-center text-surface font-semibold shrink-0"
-            style={{
-                width: size,
-                height: size,
-                fontSize: size * 0.38,
-            }}
-        >
-            {initials}
-        </div>
-    );
 }
 
 function formatDate(date: Date): string {
@@ -60,14 +36,22 @@ export function EventCard({ event }: EventCardProps) {
 
     return (
         <div className="bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
-            <div className="h-30 flex items-center justify-center relative bg-linear-to-br bg-soft-blue">
-                <span>
-                    <Activity
-                        size={36}
-                        color="var(--primary-blue)"
-                        strokeWidth={1.5}
+            <div className="h-30 flex items-center justify-center relative bg-linear-to-br from-soft-blue to-primary-blue/20 overflow-hidden">
+                {event.coverImageUrl ? (
+                    <img
+                        src={event.coverImageUrl}
+                        alt={event.name}
+                        className="absolute inset-0 w-full h-full object-cover"
                     />
-                </span>
+                ) : (
+                    <span>
+                        <Activity
+                            size={36}
+                            color="var(--primary-blue)"
+                            strokeWidth={1.5}
+                        />
+                    </span>
+                )}
                 <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
                     {isFull && (
                         <span className="bg-primary-red text-surface text-tiny font-semibold px-2 py-0.5 rounded-md">
@@ -80,7 +64,7 @@ export function EventCard({ event }: EventCardProps) {
                         </span>
                     )}
                 </div>
-                <span className="absolute top-2 left-2 bg-primary-blue/10 text-primary-blue text-tiny font-semibold px-2 py-0.5 rounded-md backdrop-blur-sm">
+                <span className="absolute top-2 left-2 bg-primary-blue text-surface text-tiny font-semibold px-2 py-0.5 rounded-md">
                     {event.sport.name}
                 </span>
             </div>
@@ -110,7 +94,11 @@ export function EventCard({ event }: EventCardProps) {
                 </div>
 
                 <div className="flex items-center gap-2 mt-2.5 pt-2.5 border-t border-outline">
-                    <Avatar name={event.organizer.name} size={24} />
+                    <UserAvatar
+                        name={event.organizer.name}
+                        imageUrl={event.organizer.image}
+                        size={24}
+                    />
                     <span className="text-tiny text-secondary-text">
                         {event.organizer.name}
                     </span>
