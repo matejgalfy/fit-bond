@@ -23,16 +23,24 @@ export default defineConfig([
     {
         files: ['**/*.{ts,tsx}'],
         extends: [
+            js.configs.recommended,
             tseslint.configs.recommendedTypeChecked,
             tseslint.configs.strictTypeChecked,
             tseslint.configs.stylisticTypeChecked,
-            js.configs.recommended,
         ],
+        rules: {
+            'no-unused-vars': 'off',
+            '@typescript-eslint/no-unused-vars': [
+                'error',
+                { argsIgnorePattern: '^_', varsIgnorePattern: '^_' },
+            ],
+        },
         languageOptions: {
             ecmaVersion: 2020,
             globals: {
                 ...globals.browser,
                 ...globals.node,
+                Bun: 'readonly',
             },
             parserOptions: {
                 project: [

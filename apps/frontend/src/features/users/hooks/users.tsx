@@ -6,6 +6,7 @@ import {
     updateFullProfile,
     userQueryKeys,
 } from '../api/users-api';
+import { authClient } from '@/lib/api';
 
 export function useUserProfile(userId?: string) {
     return useQuery({
@@ -33,6 +34,9 @@ export function useUpdateFullProfile(userId?: string) {
         onSuccess: async () => {
             await queryClient.invalidateQueries({
                 queryKey: userQueryKeys.all,
+            });
+            await authClient.getSession({
+                fetchOptions: { cache: 'no-store' },
             });
         },
     });

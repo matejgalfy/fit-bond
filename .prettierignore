@@ -9,4 +9,5 @@ coverage
 *.lock
 drizzle
 .github
+CLAUDE.md
 apps/frontend/src/routeTree.gen.ts

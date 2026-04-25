@@ -20,7 +20,7 @@ export function createUsersService(model: UsersModel = defaultModel) {
                 id: rawUser.id,
                 name: rawUser.name,
                 bio: rawUser.bio,
-                profilePictureUrl: rawUser.profilePictureUrl,
+                image: rawUser.image,
                 sports: rawUser.preferredSports.map((ps) => ps.sport),
                 locations: rawUser.locations.map((ul) => ({
                     id: ul.location.id,

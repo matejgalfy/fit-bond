@@ -24,7 +24,7 @@ export const userProfileSchema = t.Object({
     id: t.String(),
     name: t.String(),
     bio: t.Union([t.String(), t.Null()]),
-    profilePictureUrl: t.Union([t.String(), t.Null()]),
+    image: t.Union([t.String(), t.Null()]),
     sports: t.Array(
         t.Object({
             id: t.String({ format: 'uuid' }),
