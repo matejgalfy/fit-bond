@@ -19,6 +19,7 @@ export const Route = createFileRoute('/pages')({
 
 function pathnameToNavId(pathname: string): string {
     if (pathname.includes('my-events')) return 'events';
+    if (pathname.includes('create-event')) return 'events';
     if (pathname.includes('notifications')) return 'notifications';
     if (pathname.includes('profile')) return 'profile';
     if (pathname.includes('discover')) return 'discover';
