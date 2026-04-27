@@ -70,7 +70,7 @@ function MyEventsPage() {
 
             <EventAddButton
                 onClick={() => {
-                    void navigate({ to: '/pages/my-events' });
+                    void navigate({ to: '/pages/create-event' });
                 }}
             />
         </div>
