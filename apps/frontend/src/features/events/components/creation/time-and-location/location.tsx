@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 
 interface LocationFieldProps {
     location: string;
-    // eslint-disable-next-line no-unused-vars
     onLocationChange: (location: string) => void;
 }
 

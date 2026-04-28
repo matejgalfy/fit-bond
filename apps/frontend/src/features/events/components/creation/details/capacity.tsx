@@ -4,7 +4,6 @@ import { Input } from '@/components/ui/input';
 
 interface CapacityFieldProps {
     capacity: string;
-    // eslint-disable-next-line no-unused-vars
     onCapacityChange: (capacity: string) => void;
 }
 

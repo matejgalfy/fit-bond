@@ -1,26 +1,31 @@
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { FormField } from '@/components/ui/form-field';
+import { ImageUpload } from '@/components/ui/image-upload';
+import { SportCombobox } from '@/features/sports/components/sport-combobox';
 
 interface CreatingEventBasicsProps {
     eventName: string;
-    sportType: string;
+    sportId: string;
     description: string;
-    // eslint-disable-next-line no-unused-vars
+    coverImageUrl: string;
     onEventNameChange: (eventName: string) => void;
-    // eslint-disable-next-line no-unused-vars
-    onSportTypeChange: (sportType: string) => void;
-    // eslint-disable-next-line no-unused-vars
+    onSportIdChange: (sportId: string) => void;
     onDescriptionChange: (description: string) => void;
+    onCoverImageUrlChange: (url: string) => void;
+    onCoverImageError?: (message: string) => void;
 }
 
 export function CreatingEventBasics({
     eventName,
-    sportType,
+    sportId,
     description,
+    coverImageUrl,
     onEventNameChange,
-    onSportTypeChange,
+    onSportIdChange,
     onDescriptionChange,
+    onCoverImageUrlChange,
+    onCoverImageError,
 }: CreatingEventBasicsProps) {
     return (
         <Card className="p-5 border-outline bg-surface shadow-sm rounded-xl gap-0">
@@ -41,15 +46,10 @@ export function CreatingEventBasics({
                 </FormField>
 
                 <FormField label="Sport type" htmlFor="sport-type" required>
-                    <Input
+                    <SportCombobox
                         id="sport-type"
-                        type="text"
-                        placeholder="e.g. Football"
-                        value={sportType}
-                        onChange={(e) => {
-                            onSportTypeChange(e.target.value);
-                        }}
-                        className="h-10 bg-background"
+                        value={sportId}
+                        onChange={onSportIdChange}
                     />
                 </FormField>
 
@@ -62,6 +62,14 @@ export function CreatingEventBasics({
                             onDescriptionChange(e.target.value);
                         }}
                         className="min-h-24 w-full resize-none rounded-md border border-outline bg-background px-3 py-2 text-regular text-primary-text shadow-sm transition-colors placeholder:text-secondary-text focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+                    />
+                </FormField>
+
+                <FormField label="Cover image">
+                    <ImageUpload
+                        currentUrl={coverImageUrl || null}
+                        onUpload={onCoverImageUrlChange}
+                        onError={onCoverImageError}
                     />
                 </FormField>
             </div>

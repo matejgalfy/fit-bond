@@ -8,6 +8,7 @@ import {
     eventParticipants,
     eventInterested,
     notifications,
+    comments,
 } from './schema';
 import { eq } from 'drizzle-orm';
 
@@ -333,6 +334,56 @@ const eventData = {
 };
 
 // ---------------------------------------------------------------------------
+// Comment data
+// ---------------------------------------------------------------------------
+
+const commentTemplates = [
+    "Can't wait for this! See you all there.",
+    'Is there parking nearby? First time at this venue.',
+    'Will there be equipment provided or should I bring my own?',
+    'What should we wear? Any dress code?',
+    'I joined last time and it was fantastic, highly recommend!',
+    'What is the exact meeting point? The location is a bit large.',
+    'Anyone else coming from the city centre? Happy to carpool.',
+    "Is this beginner friendly? I'm just starting out.",
+    'How long does it usually run? Trying to plan my day.',
+    'Just signed up — super excited!',
+    'Do we need to warm up beforehand or is that included?',
+    'Is there a WhatsApp group for participants?',
+    'Loved the last session, looking forward to this one!',
+    'Any age restrictions for this event?',
+    "Will the event go ahead if it's raining?",
+    'Perfect timing, I was looking for exactly this.',
+    'Should we bring water and snacks?',
+    'Who should I contact if I need to cancel last minute?',
+    "I've been doing this for years — happy to help newcomers!",
+    'Shared this with my friends, a few of them might join too.',
+];
+
+const commenterNames = [
+    'Jana K.',
+    'Martin S.',
+    'Lucie P.',
+    'Pavel N.',
+    'Tomáš V.',
+    'Petra H.',
+    'Ondřej F.',
+    'Klára B.',
+    'Veronika M.',
+    'Radek J.',
+    'Lukáš D.',
+    'Milan Š.',
+    'Simona K.',
+    'Jakub Č.',
+    'Marek O.',
+    'Andrea T.',
+    'Petr Ž.',
+    'Filip W.',
+    'Markéta R.',
+    'Dagmar L.',
+];
+
+// ---------------------------------------------------------------------------
 // Notification data
 // ---------------------------------------------------------------------------
 
@@ -419,6 +470,25 @@ async function getOrCreateLocation(cityStr: string) {
         })
         .returning();
     return newLoc;
+}
+
+// Stable ID consumed by the frontend create-event flow until a real
+// locations module exists.
+export const DEFAULT_LOCATION_ID = '00000000-0000-0000-0000-000000000001';
+
+async function seedDefaultLocation() {
+    const existing = await db.query.locations.findFirst({
+        where: eq(locations.id, DEFAULT_LOCATION_ID),
+    });
+    if (existing) return;
+    await db.insert(locations).values({
+        id: DEFAULT_LOCATION_ID,
+        address: 'Default location',
+        city: 'Brno',
+        country: 'Czech Republic',
+        lat: '49.195061',
+        lng: '16.606837',
+    });
 }
 
 async function getOrCreateDummyUser(name: string) {
@@ -574,6 +644,51 @@ async function seedNotifications() {
     await db.insert(notifications).values(rows);
 }
 
+async function seedComments() {
+    const allEvents = await db
+        .select({ id: events.id, organizerId: events.organizerId })
+        .from(events);
+
+    if (allEvents.length === 0) {
+        console.log('⚠️  No events found — skipping comment seeding.');
+        return;
+    }
+
+    for (const event of allEvents) {
+        const count = 2 + (allEvents.indexOf(event) % 3); // 2, 3, or 4 comments per event
+        const rows: {
+            eventId: string;
+            userId: string;
+            content: string;
+            createdAt: Date;
+        }[] = [];
+
+        for (let i = 0; i < count; i++) {
+            const commenterName =
+                commenterNames[
+                    (allEvents.indexOf(event) * count + i) %
+                        commenterNames.length
+                ];
+            const commenter = await getOrCreateDummyUser(commenterName);
+            const content =
+                commentTemplates[
+                    (allEvents.indexOf(event) * count + i) %
+                        commentTemplates.length
+                ];
+            const minutesAgo = (i + 1) * 37 + allEvents.indexOf(event) * 7;
+
+            rows.push({
+                eventId: event.id,
+                userId: commenter.id,
+                content,
+                createdAt: new Date(Date.now() - minutesAgo * 60 * 1000),
+            });
+        }
+
+        await db.insert(comments).values(rows);
+    }
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -581,8 +696,14 @@ async function seedNotifications() {
 async function main() {
     console.log('🌱 Seeding database...');
 
+    console.log('📍 Seeding default location...');
+    await seedDefaultLocation();
+
     console.log('🏟️  Seeding events...');
     await seedEvents();
+
+    console.log('💬 Seeding comments...');
+    await seedComments();
 
     console.log('🔔 Seeding notifications...');
     await seedNotifications();

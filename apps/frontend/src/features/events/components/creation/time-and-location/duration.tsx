@@ -9,11 +9,8 @@ interface DurationFieldProps {
     duration: number;
     customDuration: string;
     customDurationUnit: CustomDurationUnit;
-    // eslint-disable-next-line no-unused-vars
     onDurationChange: (duration: number) => void;
-    // eslint-disable-next-line no-unused-vars
     onCustomDurationChange: (customDuration: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onCustomDurationUnitChange: (unit: CustomDurationUnit) => void;
 }
 

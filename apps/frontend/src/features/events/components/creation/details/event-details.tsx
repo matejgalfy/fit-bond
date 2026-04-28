@@ -8,11 +8,8 @@ interface CreatingEventDetailsProps {
     capacity: string;
     skillLevel: SkillLevel;
     visibility: Visibility;
-    // eslint-disable-next-line no-unused-vars
     onCapacityChange: (capacity: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onSkillLevelChange: (skillLevel: SkillLevel) => void;
-    // eslint-disable-next-line no-unused-vars
     onVisibilityChange: (visibility: Visibility) => void;
 }
 
