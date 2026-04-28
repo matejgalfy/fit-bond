@@ -431,8 +431,7 @@ const notificationData: {
     },
 ];
 
-const imageUrl =
-    'https://loremflickr.com/cache/resized/7643_16538411157_fd1ee66671_h_800_600_nofilter.jpg';
+const imageUrl = 'http://localhost:3000/uploads/event.jpg';
 
 // ---------------------------------------------------------------------------
 // Helpers
