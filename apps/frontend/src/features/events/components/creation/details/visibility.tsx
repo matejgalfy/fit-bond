@@ -7,7 +7,6 @@ type Visibility = 'public' | 'private';
 
 interface VisibilityFieldProps {
     visibility: Visibility;
-    // eslint-disable-next-line no-unused-vars
     onVisibilityChange: (visibility: Visibility) => void;
 }
 

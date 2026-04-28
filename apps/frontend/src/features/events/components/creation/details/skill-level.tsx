@@ -5,7 +5,6 @@ import type { SkillLevel } from '../../../../../../../backend/src/modules/events
 
 interface SkillLevelFieldProps {
     skillLevel: SkillLevel;
-    // eslint-disable-next-line no-unused-vars
     onSkillLevelChange: (skillLevel: SkillLevel) => void;
 }
 

@@ -1,34 +1,34 @@
 {
-  "version": "7",
-  "dialect": "postgresql",
-  "entries": [
-    {
-      "idx": 0,
-      "version": "7",
-      "when": 1775995274429,
-      "tag": "0000_demonic_captain_midlands",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1776530838116,
-      "tag": "0001_flowery_marten_broadcloak",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1777035908680,
-      "tag": "0002_pink_hammerhead",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1777057047453,
-      "tag": "0003_tiresome_ezekiel",
-      "breakpoints": true
-    }
-  ]
+    "version": "7",
+    "dialect": "postgresql",
+    "entries": [
+        {
+            "idx": 0,
+            "version": "7",
+            "when": 1775995274429,
+            "tag": "0000_demonic_captain_midlands",
+            "breakpoints": true
+        },
+        {
+            "idx": 1,
+            "version": "7",
+            "when": 1776530838116,
+            "tag": "0001_flowery_marten_broadcloak",
+            "breakpoints": true
+        },
+        {
+            "idx": 2,
+            "version": "7",
+            "when": 1777035908680,
+            "tag": "0002_pink_hammerhead",
+            "breakpoints": true
+        },
+        {
+            "idx": 3,
+            "version": "7",
+            "when": 1777057047453,
+            "tag": "0003_tiresome_ezekiel",
+            "breakpoints": true
+        }
+    ]
 }

@@ -17,7 +17,7 @@ import {
 
 interface CreateEventValidationInput {
     eventName: string;
-    sportType: string;
+    sportId: string;
     description: string;
     eventDate: string;
     startHour: string;

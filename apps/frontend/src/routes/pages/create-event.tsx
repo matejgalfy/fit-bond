@@ -12,7 +12,14 @@ import {
     type Meridiem,
 } from '@/features/events/components/creation/time-and-location/event-time-and-location';
 import { validateCreateEventInput } from '@/features/events/validation/create-event-validation';
+import { useCreateEvent } from '@/features/events/hooks/events';
+import { buildCreateEventPayload } from '@/features/events/utils/create-event-payload';
+import { ApiError } from '@/lib/api-error';
 import type { SkillLevel } from '../../../../backend/src/modules/events/events.types';
+
+// TODO: replace with a real locations module + picker. The seed inserts a
+// row with this UUID so events created through the UI have a valid FK.
+const DEFAULT_LOCATION_ID = '00000000-0000-0000-0000-000000000001';
 
 export const Route = createFileRoute('/pages/create-event')({
     component: CreateEventPage,
@@ -21,7 +28,7 @@ export const Route = createFileRoute('/pages/create-event')({
 function CreateEventPage() {
     const navigate = useNavigate();
     const [eventName, setEventName] = useState('');
-    const [sportType, setSportType] = useState('');
+    const [sportId, setSportId] = useState('');
     const [description, setDescription] = useState('');
     const [eventDate, setEventDate] = useState('');
     const [startHour, setStartHour] = useState('');
@@ -35,14 +42,17 @@ function CreateEventPage() {
     const [skillLevel, setSkillLevel] = useState<SkillLevel>('beginner');
     const [visibility, setVisibility] = useState<Visibility>('public');
     const [capacity, setCapacity] = useState('');
+    const [coverImageUrl, setCoverImageUrl] = useState('');
     const [error, setError] = useState('');
 
-    const handleSubmit = () => {
+    const { mutateAsync: createEvent, isPending } = useCreateEvent();
+
+    const handleSubmit = async () => {
         setError('');
 
         const validationError = validateCreateEventInput({
             eventName,
-            sportType,
+            sportId,
             description,
             eventDate,
             startHour,
@@ -59,6 +69,37 @@ function CreateEventPage() {
             setError(validationError);
             return;
         }
+
+        try {
+            const payload = buildCreateEventPayload(
+                {
+                    eventName,
+                    sportId,
+                    description,
+                    eventDate,
+                    startHour,
+                    startMinute,
+                    duration,
+                    customDuration,
+                    customDurationUnit,
+                    meridiem,
+                    skillLevel,
+                    visibility,
+                    capacity,
+                    coverImageUrl,
+                },
+                DEFAULT_LOCATION_ID
+            );
+
+            await createEvent(payload);
+            await navigate({ to: '/pages/my-events' });
+        } catch (err) {
+            if (err instanceof ApiError || err instanceof Error) {
+                setError(err.message);
+                return;
+            }
+            setError('Failed to create event. Please try again.');
+        }
     };
 
     return (
@@ -73,16 +114,19 @@ function CreateEventPage() {
                 className="space-y-6"
                 onSubmit={(e) => {
                     e.preventDefault();
-                    handleSubmit();
+                    void handleSubmit();
                 }}
             >
                 <CreatingEventBasics
                     eventName={eventName}
-                    sportType={sportType}
+                    sportId={sportId}
                     description={description}
+                    coverImageUrl={coverImageUrl}
                     onEventNameChange={setEventName}
-                    onSportTypeChange={setSportType}
+                    onSportIdChange={setSportId}
                     onDescriptionChange={setDescription}
+                    onCoverImageUrlChange={setCoverImageUrl}
+                    onCoverImageError={setError}
                 />
 
                 <CreatingEventTimeLocation
@@ -120,13 +164,14 @@ function CreateEventPage() {
                 )}
 
                 <div className="flex items-center gap-2">
-                    <Button type="submit" size="sm">
-                        Publish Event
+                    <Button type="submit" size="sm" disabled={isPending}>
+                        {isPending ? 'Publishing...' : 'Publish Event'}
                     </Button>
                     <Button
                         type="button"
                         variant="outline"
                         size="sm"
+                        disabled={isPending}
                         onClick={() => {
                             void navigate({ to: '/pages/my-events' });
                         }}

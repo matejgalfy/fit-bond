@@ -12,21 +12,13 @@ interface CreatingEventTimeLocationProps {
     customDuration: string;
     customDurationUnit: CustomDurationUnit;
     meridiem: Meridiem;
-    // eslint-disable-next-line no-unused-vars
     onEventDateChange: (eventDate: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onStartHourChange: (startHour: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onStartMinuteChange: (startMinute: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onLocationChange: (location: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onDurationChange: (duration: number) => void;
-    // eslint-disable-next-line no-unused-vars
     onCustomDurationChange: (customDuration: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onCustomDurationUnitChange: (unit: CustomDurationUnit) => void;
-    // eslint-disable-next-line no-unused-vars
     onMeridiemChange: (meridiem: Meridiem) => void;
 }
 

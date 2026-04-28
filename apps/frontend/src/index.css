@@ -45,6 +45,14 @@
     --color-strong-purple: var(--strong-purple);
     --color-soft-purple: var(--soft-purple);
 
+    /* Aliases for Shadcn-default token names so auto-generated UI primitives
+       (popover, command, dialog, etc.) render against the project's palette. */
+    --color-popover: var(--surface);
+    --color-popover-foreground: var(--primary-text);
+    --color-foreground: var(--primary-text);
+    --color-muted: var(--muted-background);
+    --color-muted-foreground: var(--secondary-text);
+
     --radius-sm: calc(var(--radius) - 4px);
     --radius-md: calc(var(--radius) - 2px);
     --radius-lg: var(--radius);

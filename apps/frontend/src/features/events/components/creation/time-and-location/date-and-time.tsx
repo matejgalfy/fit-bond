@@ -11,13 +11,9 @@ interface DateAndTimeFieldsProps {
     startHour: string;
     startMinute: string;
     meridiem: Meridiem;
-    // eslint-disable-next-line no-unused-vars
     onEventDateChange: (eventDate: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onStartHourChange: (startHour: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onStartMinuteChange: (startMinute: string) => void;
-    // eslint-disable-next-line no-unused-vars
     onMeridiemChange: (meridiem: Meridiem) => void;
 }
 

@@ -1,14 +1,14 @@
 export interface CreateEventBasicsValidationInput {
     eventName: string;
-    sportType: string;
+    sportId: string;
     description: string;
 }
 
 export function hasMissingBasicsRequiredFields({
     eventName,
-    sportType,
+    sportId,
 }: CreateEventBasicsValidationInput) {
-    return !eventName.trim() || !sportType.trim();
+    return !eventName.trim() || !sportId.trim();
 }
 
 export function validateCreateEventBasics({

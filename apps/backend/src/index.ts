@@ -3,6 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysiajs/openapi';
 import { staticPlugin } from '@elysiajs/static';
 import { eventsRoutes } from './modules/events/events.routes';
+import { sportsRoutes } from './modules/sports/sports.routes';
 import { usersRoutes } from './modules/users/users.routes';
 import { commentsRoutes } from './modules/comments/comments.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
@@ -28,6 +29,7 @@ const app = new Elysia()
                 },
                 tags: [
                     { name: 'Events', description: 'Event management' },
+                    { name: 'Sports', description: 'Sports catalog' },
                     { name: 'Users', description: 'User management' },
                     { name: 'Comments', description: 'Event comments' },
                     {
@@ -42,6 +44,7 @@ const app = new Elysia()
     .use(staticPlugin({ assets: 'uploads', prefix: '/uploads' }))
     .use(uploadRoutes)
     .use(eventsRoutes)
+    .use(sportsRoutes)
     .use(usersRoutes)
     .use(commentsRoutes)
     .use(notificationsRoutes)
