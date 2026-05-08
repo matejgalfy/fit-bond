@@ -123,12 +123,14 @@ async function getOrCreateDummyUser(name: string) {
         where: eq(user.name, name),
     });
     if (existing) return existing;
+    const slug = name.replace(/\s+/g, '').replace('.', '').toLowerCase();
     const [newUser] = await db
         .insert(user)
         .values({
             id: crypto.randomUUID(),
             name,
-            email: `${name.replace(/\s+/g, '').replace('.', '').toLowerCase()}@example.com`,
+            email: `${slug}@example.com`,
+            image: `https://picsum.photos/seed/${slug}/200/200`,
             role: 'user',
         })
         .returning();
@@ -166,8 +168,6 @@ async function main() {
                 startTime: new Date(`${item.date} ${item.time}`),
                 duration: 60,
                 capacity: item.capacity,
-                currentParticipants: item.participants,
-                currentInterested: item.interested,
                 isPublic: true,
                 coverImageUrl: 'https://picsum.photos/seed/sports/400/300',
             });
@@ -194,8 +194,6 @@ async function main() {
                     startTime: new Date(`${item.date} ${item.time}`),
                     duration: 60,
                     capacity: item.capacity,
-                    currentParticipants: item.participants,
-                    currentInterested: item.interested,
                     isPublic: true,
                     coverImageUrl: 'https://picsum.photos/seed/sports/400/300',
                 })
@@ -229,8 +227,6 @@ async function main() {
                     startTime: new Date(`${item.date} ${item.time}`),
                     duration: 60,
                     capacity: item.capacity,
-                    currentParticipants: item.participants,
-                    currentInterested: item.interested,
                     isPublic: true,
                     coverImageUrl: 'https://picsum.photos/seed/sports/400/300',
                 })

@@ -7,8 +7,20 @@ import type {
     UpdateEventInput,
 } from './events.types';
 import { ServiceError } from '../../utils/errors';
+import {
+    locationsService as defaultLocationsService,
+    type LocationsService,
+} from '../locations/locations.service';
 
-export function createEventsService(model: EventsModel = defaultModel) {
+export interface EventsServiceDeps {
+    model?: EventsModel;
+    locationsService?: LocationsService;
+}
+
+export function createEventsService({
+    model = defaultModel,
+    locationsService = defaultLocationsService,
+}: EventsServiceDeps = {}) {
     return {
         async list(db: Database, filters: EventFilters) {
             // Validate that if userRelation is provided, userId must also be provided
@@ -54,7 +66,13 @@ export function createEventsService(model: EventsModel = defaultModel) {
                 );
             }
 
-            return model.create(db, organizerId, input);
+            return db.transaction(async (tx) => {
+                const location = await locationsService.findOrCreate(
+                    tx,
+                    input.location
+                );
+                return model.create(tx, organizerId, location.id, input);
+            });
         },
 
         async update(
@@ -63,7 +81,7 @@ export function createEventsService(model: EventsModel = defaultModel) {
             userId: string,
             input: UpdateEventInput
         ) {
-            const existing = await model.findRawById(db, eventId);
+            const existing = await model.findById(db, eventId);
             if (!existing) {
                 throw ServiceError.notFound('Event not found');
             }
@@ -89,7 +107,17 @@ export function createEventsService(model: EventsModel = defaultModel) {
                 );
             }
 
-            return model.update(db, eventId, input);
+            return db.transaction(async (tx) => {
+                let locationId: string | undefined;
+                if (input.location) {
+                    const location = await locationsService.findOrCreate(
+                        tx,
+                        input.location
+                    );
+                    locationId = location.id;
+                }
+                return model.update(tx, eventId, input, locationId);
+            });
         },
 
         async cancel(

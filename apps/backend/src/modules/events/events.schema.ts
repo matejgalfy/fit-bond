@@ -1,9 +1,10 @@
 import { t } from 'elysia';
+import { locationInputSchema } from '../locations/locations.schema';
 
 export const selectEventSchema = t.Object({
     id: t.String({ format: 'uuid' }),
     organizerId: t.String(),
-    locationId: t.String({ format: 'uuid' }),
+    locationId: t.String(),
     sportId: t.String({ format: 'uuid' }),
     name: t.String(),
     description: t.Optional(t.Union([t.String(), t.Null()])),
@@ -30,7 +31,7 @@ export const createEventBody = t.Object({
     name: t.String({ minLength: 1, maxLength: 200 }),
     description: t.Optional(t.String({ maxLength: 2000 })),
     sportId: t.String({ format: 'uuid' }),
-    locationId: t.String({ format: 'uuid' }),
+    location: locationInputSchema,
     skillLevel: t.Union([
         t.Literal('beginner'),
         t.Literal('intermediate'),
@@ -46,6 +47,7 @@ export const createEventBody = t.Object({
 export const updateEventBody = t.Object({
     name: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
     description: t.Optional(t.String({ maxLength: 2000 })),
+    location: t.Optional(locationInputSchema),
     skillLevel: t.Optional(
         t.Union([
             t.Literal('beginner'),

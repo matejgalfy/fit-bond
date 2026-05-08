@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { locationInputSchema } from '../locations/locations.schema';
 
 export const updateBaseUserSchema = t.Object({
     email: t.Optional(t.String({ format: 'email' })),
@@ -7,17 +8,26 @@ export const updateBaseUserSchema = t.Object({
     profilePictureUrl: t.Optional(t.String({ format: 'uri' })),
 });
 
-export const userLocationInputSchema = t.Object({
-    locationId: t.String({ format: 'uuid' }),
-    radius: t.Number({ minimum: 1, maximum: 100 }),
-    label: t.Optional(t.Union([t.String(), t.Null()])),
-    isPrimary: t.Optional(t.Boolean()),
-});
+export const userPreferredLocationSchema = t.Composite([
+    locationInputSchema,
+    t.Object({
+        radius: t.Number({ minimum: 1, maximum: 100 }),
+    }),
+]);
 
 export const updateFullProfileSchema = t.Object({
     base: t.Optional(updateBaseUserSchema),
     sportIds: t.Optional(t.Array(t.String({ format: 'uuid' }))),
-    locations: t.Optional(t.Array(userLocationInputSchema)),
+    location: t.Optional(t.Union([userPreferredLocationSchema, t.Null()])),
+});
+
+export const userProfileLocationSchema = t.Object({
+    id: t.String(),
+    fullAddress: t.String(),
+    formattedAddress: t.String(),
+    lat: t.Number(),
+    lng: t.Number(),
+    radius: t.Number(),
 });
 
 export const userProfileSchema = t.Object({
@@ -31,14 +41,7 @@ export const userProfileSchema = t.Object({
             name: t.String(),
         })
     ),
-    locations: t.Array(
-        t.Object({
-            id: t.String({ format: 'uuid' }),
-            city: t.String(),
-            radius: t.Number(),
-            isPrimary: t.Boolean(),
-        })
-    ),
+    location: t.Union([userProfileLocationSchema, t.Null()]),
 });
 
 // export const PrivateUserSchema = baseUserSchema.pick(); TODO
@@ -50,3 +53,6 @@ export const userIdParam = t.Object({
 export const userNameParam = t.Object({
     name: t.String({ minLength: 1 }),
 });
+
+export type UserPreferredLocationInput =
+    typeof userPreferredLocationSchema.static;

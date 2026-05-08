@@ -1,5 +1,5 @@
 {
-    "id": "16eb6255-59a0-4380-af53-e3c03b0c3b47",
+    "id": "28239183-cb4e-40ea-ab84-e4bba28f0bc7",
     "prevId": "00000000-0000-0000-0000-000000000000",
     "version": "7",
     "dialect": "postgresql",
@@ -343,7 +343,7 @@
                 },
                 "location_id": {
                     "name": "location_id",
-                    "type": "uuid",
+                    "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
@@ -389,13 +389,6 @@
                     "type": "integer",
                     "primaryKey": false,
                     "notNull": true
-                },
-                "current_participants": {
-                    "name": "current_participants",
-                    "type": "integer",
-                    "primaryKey": false,
-                    "notNull": true,
-                    "default": 0
                 },
                 "is_public": {
                     "name": "is_public",
@@ -485,25 +478,18 @@
             "columns": {
                 "id": {
                     "name": "id",
-                    "type": "uuid",
+                    "type": "text",
                     "primaryKey": true,
-                    "notNull": true,
-                    "default": "gen_random_uuid()"
+                    "notNull": true
                 },
-                "address": {
-                    "name": "address",
+                "full_address": {
+                    "name": "full_address",
                     "type": "text",
                     "primaryKey": false,
                     "notNull": true
                 },
-                "city": {
-                    "name": "city",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "country": {
-                    "name": "country",
+                "formatted_address": {
+                    "name": "formatted_address",
                     "type": "text",
                     "primaryKey": false,
                     "notNull": true
@@ -602,6 +588,12 @@
                     "primaryKey": false,
                     "notNull": true,
                     "default": "now()"
+                },
+                "deleted_at": {
+                    "name": "deleted_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
                 }
             },
             "indexes": {},
@@ -702,6 +694,12 @@
                     "primaryKey": false,
                     "notNull": true,
                     "default": "now()"
+                },
+                "deleted_at": {
+                    "name": "deleted_at",
+                    "type": "timestamp",
+                    "primaryKey": false,
+                    "notNull": false
                 }
             },
             "indexes": {},
@@ -903,6 +901,18 @@
                     "primaryKey": false,
                     "notNull": false
                 },
+                "preferred_location": {
+                    "name": "preferred_location",
+                    "type": "text",
+                    "primaryKey": false,
+                    "notNull": false
+                },
+                "location_radius": {
+                    "name": "location_radius",
+                    "type": "integer",
+                    "primaryKey": false,
+                    "notNull": false
+                },
                 "role": {
                     "name": "role",
                     "type": "user_role",
@@ -923,12 +933,6 @@
                     "primaryKey": false,
                     "notNull": true,
                     "default": false
-                },
-                "profile_picture_url": {
-                    "name": "profile_picture_url",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": false
                 },
                 "banned_reason": {
                     "name": "banned_reason",
@@ -958,7 +962,17 @@
                 }
             },
             "indexes": {},
-            "foreignKeys": {},
+            "foreignKeys": {
+                "user_preferred_location_locations_id_fk": {
+                    "name": "user_preferred_location_locations_id_fk",
+                    "tableFrom": "user",
+                    "tableTo": "locations",
+                    "columnsFrom": ["preferred_location"],
+                    "columnsTo": ["id"],
+                    "onDelete": "no action",
+                    "onUpdate": "no action"
+                }
+            },
             "compositePrimaryKeys": {},
             "uniqueConstraints": {
                 "user_email_unique": {
@@ -967,83 +981,6 @@
                     "columns": ["email"]
                 }
             },
-            "policies": {},
-            "checkConstraints": {},
-            "isRLSEnabled": false
-        },
-        "public.user_locations": {
-            "name": "user_locations",
-            "schema": "",
-            "columns": {
-                "id": {
-                    "name": "id",
-                    "type": "uuid",
-                    "primaryKey": true,
-                    "notNull": true,
-                    "default": "gen_random_uuid()"
-                },
-                "user_id": {
-                    "name": "user_id",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "location_id": {
-                    "name": "location_id",
-                    "type": "uuid",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "radius": {
-                    "name": "radius",
-                    "type": "integer",
-                    "primaryKey": false,
-                    "notNull": true
-                },
-                "label": {
-                    "name": "label",
-                    "type": "text",
-                    "primaryKey": false,
-                    "notNull": false
-                },
-                "is_primary": {
-                    "name": "is_primary",
-                    "type": "boolean",
-                    "primaryKey": false,
-                    "notNull": true,
-                    "default": false
-                },
-                "created_at": {
-                    "name": "created_at",
-                    "type": "timestamp",
-                    "primaryKey": false,
-                    "notNull": true,
-                    "default": "now()"
-                }
-            },
-            "indexes": {},
-            "foreignKeys": {
-                "user_locations_user_id_user_id_fk": {
-                    "name": "user_locations_user_id_user_id_fk",
-                    "tableFrom": "user_locations",
-                    "tableTo": "user",
-                    "columnsFrom": ["user_id"],
-                    "columnsTo": ["id"],
-                    "onDelete": "no action",
-                    "onUpdate": "no action"
-                },
-                "user_locations_location_id_locations_id_fk": {
-                    "name": "user_locations_location_id_locations_id_fk",
-                    "tableFrom": "user_locations",
-                    "tableTo": "locations",
-                    "columnsFrom": ["location_id"],
-                    "columnsTo": ["id"],
-                    "onDelete": "no action",
-                    "onUpdate": "no action"
-                }
-            },
-            "compositePrimaryKeys": {},
-            "uniqueConstraints": {},
             "policies": {},
             "checkConstraints": {},
             "isRLSEnabled": false
@@ -1171,6 +1108,7 @@
             "schema": "public",
             "values": [
                 "event_update",
+                "event_cancelled",
                 "participant_joined",
                 "comment",
                 "interest"

@@ -1,4 +1,4 @@
-CREATE TYPE "public"."notification_type" AS ENUM('event_update', 'participant_joined', 'comment', 'interest');--> statement-breakpoint
+CREATE TYPE "public"."notification_type" AS ENUM('event_update', 'event_cancelled', 'participant_joined', 'comment', 'interest');--> statement-breakpoint
 CREATE TYPE "public"."report_status" AS ENUM('pending', 'resolved', 'rejected');--> statement-breakpoint
 CREATE TYPE "public"."report_type" AS ENUM('user', 'event', 'comment');--> statement-breakpoint
 CREATE TYPE "public"."skill_level" AS ENUM('beginner', 'intermediate', 'advanced');--> statement-breakpoint
@@ -47,7 +47,7 @@ CREATE TABLE "event_participants" (
 CREATE TABLE "events" (
 	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
 	"organizer_id" text NOT NULL,
-	"location_id" uuid NOT NULL,
+	"location_id" text NOT NULL,
 	"sport_id" uuid NOT NULL,
 	"name" text NOT NULL,
 	"description" text,
@@ -55,7 +55,6 @@ CREATE TABLE "events" (
 	"start_time" timestamp NOT NULL,
 	"duration" integer NOT NULL,
 	"capacity" integer NOT NULL,
-	"current_participants" integer DEFAULT 0 NOT NULL,
 	"is_public" boolean DEFAULT true NOT NULL,
 	"cover_image_url" text,
 	"cancelled_at" timestamp,
@@ -66,10 +65,9 @@ CREATE TABLE "events" (
 );
 --> statement-breakpoint
 CREATE TABLE "locations" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"address" text NOT NULL,
-	"city" text NOT NULL,
-	"country" text NOT NULL,
+	"id" text PRIMARY KEY NOT NULL,
+	"full_address" text NOT NULL,
+	"formatted_address" text NOT NULL,
 	"lat" numeric(8, 6) NOT NULL,
 	"lng" numeric(9, 6) NOT NULL,
 	"deleted_at" timestamp
@@ -85,7 +83,8 @@ CREATE TABLE "notifications" (
 	"related_user_id" text,
 	"is_read" boolean DEFAULT false NOT NULL,
 	"read_at" timestamp,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "reports" (
@@ -97,7 +96,8 @@ CREATE TABLE "reports" (
 	"status" "report_status" DEFAULT 'pending' NOT NULL,
 	"resolved_by" text,
 	"resolution" text,
-	"created_at" timestamp DEFAULT now() NOT NULL
+	"created_at" timestamp DEFAULT now() NOT NULL,
+	"deleted_at" timestamp
 );
 --> statement-breakpoint
 CREATE TABLE "session" (
@@ -126,25 +126,16 @@ CREATE TABLE "user" (
 	"name" text NOT NULL,
 	"bio" text,
 	"image" text,
+	"preferred_location" text,
+	"location_radius" integer,
 	"role" "user_role" DEFAULT 'user' NOT NULL,
 	"email" text NOT NULL,
 	"email_verified" boolean DEFAULT false NOT NULL,
-	"profile_picture_url" text,
 	"banned_reason" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	"deleted_at" timestamp,
 	CONSTRAINT "user_email_unique" UNIQUE("email")
-);
---> statement-breakpoint
-CREATE TABLE "user_locations" (
-	"id" uuid PRIMARY KEY DEFAULT gen_random_uuid() NOT NULL,
-	"user_id" text NOT NULL,
-	"location_id" uuid NOT NULL,
-	"radius" integer NOT NULL,
-	"label" text,
-	"is_primary" boolean DEFAULT false NOT NULL,
-	"created_at" timestamp DEFAULT now() NOT NULL
 );
 --> statement-breakpoint
 CREATE TABLE "user_preferred_sports" (
@@ -179,8 +170,7 @@ ALTER TABLE "notifications" ADD CONSTRAINT "notifications_related_user_id_user_i
 ALTER TABLE "reports" ADD CONSTRAINT "reports_reporter_id_user_id_fk" FOREIGN KEY ("reporter_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "reports" ADD CONSTRAINT "reports_resolved_by_user_id_fk" FOREIGN KEY ("resolved_by") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "session" ADD CONSTRAINT "session_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_locations" ADD CONSTRAINT "user_locations_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "user_locations" ADD CONSTRAINT "user_locations_location_id_locations_id_fk" FOREIGN KEY ("location_id") REFERENCES "public"."locations"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "user" ADD CONSTRAINT "user_preferred_location_locations_id_fk" FOREIGN KEY ("preferred_location") REFERENCES "public"."locations"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_preferred_sports" ADD CONSTRAINT "user_preferred_sports_user_id_user_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."user"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "user_preferred_sports" ADD CONSTRAINT "user_preferred_sports_sport_id_sports_id_fk" FOREIGN KEY ("sport_id") REFERENCES "public"."sports"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "account_userId_idx" ON "account" USING btree ("user_id");--> statement-breakpoint

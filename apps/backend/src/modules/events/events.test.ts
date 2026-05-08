@@ -8,11 +8,50 @@ import type {
     CreateEventInput,
     UpdateEventInput,
 } from './events.types';
+import type { LocationsService } from '../locations/locations.service';
 
 const futureDate = new Date(Date.now() + 86400000).toISOString();
 const pastDate = new Date(Date.now() - 86400000).toISOString();
 
-function makeMockEvent(overrides: Partial<EventType> = {}): EventType {
+const sampleLocation = {
+    placeId: 'liq:42',
+    address: 'Hlavní 1',
+    city: 'Brno',
+    country: 'Czech Republic',
+    lat: 49.195061,
+    lng: 16.606837,
+};
+
+function makeMockLocationsService() {
+    return {
+        search: mock(() => Promise.resolve([])),
+        findOrCreate: mock(() =>
+            Promise.resolve({
+                id: 'loc-1',
+                placeId: sampleLocation.placeId,
+                address: sampleLocation.address,
+                city: sampleLocation.city,
+                country: sampleLocation.country,
+                lat: sampleLocation.lat,
+                lng: sampleLocation.lng,
+            })
+        ),
+    };
+}
+
+function makeFakeDb(): Database {
+    const fake = {
+        transaction: async <T>(fn: (tx: Database) => Promise<T>) => fn(fake),
+    };
+    return fake as unknown as Database;
+}
+
+type MockEvent = EventType & {
+    currentParticipants: number;
+    currentInterested: number;
+};
+
+function makeMockEvent(overrides: Partial<MockEvent> = {}): MockEvent {
     return {
         id: 'event-1',
         organizerId: 'user-1',
@@ -25,6 +64,7 @@ function makeMockEvent(overrides: Partial<EventType> = {}): EventType {
         duration: 60,
         capacity: 10,
         currentParticipants: 2,
+        currentInterested: 0,
         isPublic: true,
         coverImageUrl: null,
         cancelledAt: null,
@@ -59,15 +99,21 @@ function makeMockModel() {
     };
 }
 
-const fakeDb = {} as unknown as Database;
+const fakeDb = makeFakeDb();
 
 describe('EventsService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
+    let mockLocationsService: ReturnType<typeof makeMockLocationsService>;
     let service: ReturnType<typeof createEventsService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
-        service = createEventsService(mockModel as unknown as EventsModel);
+        mockLocationsService = makeMockLocationsService();
+        service = createEventsService({
+            model: mockModel as unknown as EventsModel,
+            locationsService:
+                mockLocationsService as unknown as LocationsService,
+        });
     });
 
     describe('list', () => {
@@ -183,7 +229,7 @@ describe('EventsService', () => {
         const validInput: CreateEventInput = {
             name: 'Morning Run',
             sportId: 'sport-1',
-            locationId: 'loc-1',
+            location: sampleLocation,
             skillLevel: 'beginner',
             startTime: futureDate,
             duration: 60,
@@ -195,21 +241,59 @@ describe('EventsService', () => {
             mockModel.create.mockResolvedValueOnce(created);
             const result = await service.create(fakeDb, 'user-1', validInput);
             expect(result).toEqual(created);
+            expect(mockLocationsService.findOrCreate).toHaveBeenCalledWith(
+                fakeDb,
+                sampleLocation
+            );
             expect(mockModel.create).toHaveBeenCalledWith(
                 fakeDb,
                 'user-1',
+                'loc-1',
                 validInput
             );
         });
 
         test('throws BAD_REQUEST when start time is in the past', async () => {
             const pastInput = { ...validInput, startTime: pastDate };
-            expect.assertions(2);
+            expect.assertions(3);
             try {
                 await service.create(fakeDb, 'user-1', pastInput);
             } catch (e) {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
                 expect((e as ServiceError).statusCode).toBe(400);
+                // findOrCreate must not run when validation fails
+                expect(
+                    mockLocationsService.findOrCreate
+                ).not.toHaveBeenCalled();
+            }
+        });
+
+        test('rolls back the transaction when model.create throws', async () => {
+            const tx = {
+                rolledBack: false,
+            };
+            const txDb = {
+                transaction: async <T>(fn: (txDb: Database) => Promise<T>) => {
+                    try {
+                        return await fn(txDb as unknown as Database);
+                    } catch (err) {
+                        tx.rolledBack = true;
+                        throw err;
+                    }
+                },
+            } as unknown as Database;
+
+            mockModel.create.mockRejectedValueOnce(new Error('insert failed'));
+
+            expect.assertions(3);
+            try {
+                await service.create(txDb, 'user-1', validInput);
+            } catch (e) {
+                expect((e as Error).message).toBe('insert failed');
+                expect(tx.rolledBack).toBe(true);
+                expect(mockLocationsService.findOrCreate).toHaveBeenCalledTimes(
+                    1
+                );
             }
         });
     });
@@ -219,7 +303,7 @@ describe('EventsService', () => {
 
         test('updates event when user is organizer', async () => {
             const existing = makeMockEvent({ organizerId: 'user-1' });
-            mockModel.findRawById.mockResolvedValueOnce(existing);
+            mockModel.findById.mockResolvedValueOnce(existing);
             const updated = makeMockEvent({ name: 'Updated Name' });
             mockModel.update.mockResolvedValueOnce(updated);
 
@@ -233,7 +317,7 @@ describe('EventsService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(null);
+            mockModel.findById.mockResolvedValueOnce(null);
             expect.assertions(1);
             try {
                 await service.update(fakeDb, 'missing', 'user-1', updateInput);
@@ -243,7 +327,7 @@ describe('EventsService', () => {
         });
 
         test('throws FORBIDDEN when user is not organizer', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
+            mockModel.findById.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'other-user' })
             );
             expect.assertions(2);
@@ -256,7 +340,7 @@ describe('EventsService', () => {
         });
 
         test('throws CONFLICT when event is cancelled', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
+            mockModel.findById.mockResolvedValueOnce(
                 makeMockEvent({
                     organizerId: 'user-1',
                     cancelledAt: new Date(),
@@ -271,7 +355,7 @@ describe('EventsService', () => {
         });
 
         test('throws BAD_REQUEST when new start time is in the past', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
+            mockModel.findById.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'user-1' })
             );
             expect.assertions(1);
@@ -285,7 +369,7 @@ describe('EventsService', () => {
         });
 
         test('throws BAD_REQUEST when capacity is below current participants', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
+            mockModel.findById.mockResolvedValueOnce(
                 makeMockEvent({
                     organizerId: 'user-1',
                     currentParticipants: 5,

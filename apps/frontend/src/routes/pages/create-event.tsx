@@ -16,10 +16,7 @@ import { useCreateEvent } from '@/features/events/hooks/events';
 import { buildCreateEventPayload } from '@/features/events/utils/create-event-payload';
 import { ApiError } from '@/lib/api-error';
 import type { SkillLevel } from '../../../../backend/src/modules/events/events.types';
-
-// TODO: replace with a real locations module + picker. The seed inserts a
-// row with this UUID so events created through the UI have a valid FK.
-const DEFAULT_LOCATION_ID = '00000000-0000-0000-0000-000000000001';
+import type { LocationSuggestion } from '../../../../backend/src/modules/locations/locations.schema';
 
 export const Route = createFileRoute('/pages/create-event')({
     component: CreateEventPage,
@@ -33,7 +30,7 @@ function CreateEventPage() {
     const [eventDate, setEventDate] = useState('');
     const [startHour, setStartHour] = useState('');
     const [startMinute, setStartMinute] = useState('');
-    const [location, setLocation] = useState('');
+    const [location, setLocation] = useState<LocationSuggestion | null>(null);
     const [duration, setDuration] = useState(60);
     const [customDuration, setCustomDuration] = useState('');
     const [customDurationUnit, setCustomDurationUnit] =
@@ -70,6 +67,11 @@ function CreateEventPage() {
             return;
         }
 
+        if (!location) {
+            setError('Please select a location.');
+            return;
+        }
+
         try {
             const payload = buildCreateEventPayload(
                 {
@@ -88,7 +90,7 @@ function CreateEventPage() {
                     capacity,
                     coverImageUrl,
                 },
-                DEFAULT_LOCATION_ID
+                location
             );
 
             await createEvent(payload);
