@@ -6,6 +6,7 @@ import { Pencil, LogOut, MapPin } from 'lucide-react';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { useUpdateFullProfile } from '../hooks/users';
+import { ProfileEditDialog } from './profile-edit-dialog';
 
 interface ProfileCardProps {
     user: UserProfile;
@@ -13,11 +14,11 @@ interface ProfileCardProps {
 }
 
 export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
-    const primaryLocation =
-        user.locations.find((l) => l.isPrimary) ?? user.locations.at(0);
+    const primaryLocation = user.location;
 
     const { mutate: updateProfile } = useUpdateFullProfile(user.id);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
+    const [editOpen, setEditOpen] = useState(false);
 
     function handleAvatarUpload(url: string) {
         updateProfile({ base: { profilePictureUrl: url } });
@@ -72,6 +73,9 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
                         <Button
                             variant="outline"
                             className="rounded-xl border-primary-blue text-primary-blue hover:bg-primary-blue/10 hover:text-primary-blue px-6 font-semibold"
+                            onClick={() => {
+                                setEditOpen(true);
+                            }}
                         >
                             <Pencil className="w-4 h-4 mr-2" />
                             Edit Profile
@@ -112,13 +116,20 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
                         <div className="inline-flex items-center px-3 py-1.5 rounded-xl bg-soft-blue font-semibold text-regular gap-2">
                             <MapPin className="w-4 h-4 text-strong-blue" />
                             <span className="text-primary-text">
-                                {primaryLocation.city} ·{' '}
+                                {primaryLocation.formattedAddress} ·{' '}
                                 {primaryLocation.radius} km radius
                             </span>
                         </div>
                     )}
                 </div>
             </CardContent>
+            {isOwner && (
+                <ProfileEditDialog
+                    user={user}
+                    open={editOpen}
+                    onOpenChange={setEditOpen}
+                />
+            )}
         </Card>
     );
 }

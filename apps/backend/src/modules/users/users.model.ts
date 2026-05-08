@@ -1,7 +1,12 @@
 import { eq, and, isNull } from 'drizzle-orm';
 import type { Database } from '../../db';
-import { user, userPreferredSports, userLocations } from '../../db/schema';
+import { user, userPreferredSports } from '../../db/schema';
 import type { UpdateFullProfileInput } from './users.types';
+
+export interface ResolvedPreferredLocation {
+    locationId: string;
+    radius: number;
+}
 
 export const usersModel = {
     // TODO createUser
@@ -17,11 +22,7 @@ export const usersModel = {
                         sport: true,
                     },
                 },
-                locations: {
-                    with: {
-                        location: true,
-                    },
-                },
+                preferredLocation: true,
             },
         });
     },
@@ -29,7 +30,9 @@ export const usersModel = {
     async updateFullProfile(
         db: Database,
         userId: string,
-        data: UpdateFullProfileInput
+        data: Omit<UpdateFullProfileInput, 'location'> & {
+            location?: ResolvedPreferredLocation | null;
+        }
     ) {
         return await db.transaction(async (tx) => {
             if (data.base) {
@@ -60,21 +63,18 @@ export const usersModel = {
                 }
             }
 
-            if (data.locations) {
+            if (data.location !== undefined) {
                 await tx
-                    .delete(userLocations)
-                    .where(eq(userLocations.userId, userId));
-                if (data.locations.length > 0) {
-                    await tx.insert(userLocations).values(
-                        data.locations.map((loc) => ({
-                            userId,
-                            locationId: loc.locationId,
-                            radius: loc.radius,
-                            label: loc.label,
-                            isPrimary: loc.isPrimary,
-                        }))
-                    );
-                }
+                    .update(user)
+                    .set({
+                        preferredLocation: data.location
+                            ? data.location.locationId
+                            : null,
+                        locationRadius: data.location
+                            ? data.location.radius
+                            : null,
+                    })
+                    .where(and(eq(user.id, userId), isNull(user.deletedAt)));
             }
 
             return { success: true };

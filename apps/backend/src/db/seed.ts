@@ -11,6 +11,8 @@ import {
     comments,
 } from './schema';
 import { eq } from 'drizzle-orm';
+import { searchAddresses, type GeocodeSuggestion } from '../lib/geocoding';
+import { locationsModel } from '../modules/locations/locations.model';
 
 type SkillLevel = 'beginner' | 'intermediate' | 'advanced';
 type NotificationType =
@@ -453,41 +455,75 @@ async function getOrCreateSport(name: string) {
     return newSport;
 }
 
-async function getOrCreateLocation(cityStr: string) {
+const BRNO_FALLBACK = {
+    lat: '49.195061',
+    lng: '16.606837',
+} as const;
+
+async function geocodeAddress(
+    query: string
+): Promise<GeocodeSuggestion | null> {
+    try {
+        const results = await searchAddresses(query, 1);
+        return results.length > 0 ? results[0] : null;
+    } catch {
+        return null;
+    }
+}
+
+async function getOrCreateLocation(fullAddress: string) {
+    const hit = await geocodeAddress(`${fullAddress}, Czech Republic`);
+    if (hit) {
+        return locationsModel.upsertByPlaceId(db, {
+            placeId: hit.placeId,
+            fullAddress: hit.fullAddress,
+            formattedAddress: hit.formattedAddress,
+            lat: hit.lat,
+            lng: hit.lng,
+        });
+    }
+
     const existing = await db.query.locations.findFirst({
-        where: eq(locations.city, cityStr),
+        where: eq(locations.full_address, fullAddress),
     });
     if (existing) return existing;
+
     const [newLoc] = await db
         .insert(locations)
         .values({
-            address: cityStr,
-            city: cityStr,
-            country: 'Czech Republic',
-            lat: '49.195061',
-            lng: '16.606837',
+            id: crypto.randomUUID(),
+            full_address: fullAddress,
+            formatted_address: fullAddress,
+            lat: BRNO_FALLBACK.lat,
+            lng: BRNO_FALLBACK.lng,
         })
         .returning();
     return newLoc;
 }
 
-// Stable ID consumed by the frontend create-event flow until a real
-// locations module exists.
-export const DEFAULT_LOCATION_ID = '00000000-0000-0000-0000-000000000001';
-
 async function seedDefaultLocation() {
-    const existing = await db.query.locations.findFirst({
-        where: eq(locations.id, DEFAULT_LOCATION_ID),
-    });
-    if (existing) return;
-    await db.insert(locations).values({
-        id: DEFAULT_LOCATION_ID,
-        address: 'Default location',
-        city: 'Brno',
-        country: 'Czech Republic',
-        lat: '49.195061',
-        lng: '16.606837',
-    });
+    const hit = await geocodeAddress('Brno, Czech Republic');
+    if (hit) {
+        await locationsModel.upsertByPlaceId(db, {
+            placeId: hit.placeId,
+            fullAddress: hit.fullAddress,
+            formattedAddress: hit.formattedAddress,
+            lat: hit.lat,
+            lng: hit.lng,
+        });
+        return;
+    }
+
+    await db
+        .insert(locations)
+        .values({
+            id: crypto.randomUUID(),
+            full_address: 'Brno, Czech Republic',
+            formatted_address: 'Brno, Czech Republic',
+            lat: BRNO_FALLBACK.lat,
+            lng: BRNO_FALLBACK.lng,
+        })
+        .onConflictDoNothing();
 }
 
 async function getOrCreateDummyUser(name: string) {
@@ -502,6 +538,7 @@ async function getOrCreateDummyUser(name: string) {
             name,
             email: `${name.replace(/[\s.]+/g, '').toLowerCase()}@example.com`,
             role: 'user',
+            image: 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
         })
         .returning();
     return newUser;
@@ -535,8 +572,6 @@ async function seedEvents() {
                 startTime: new Date(`${item.date} ${item.time}`),
                 duration: 60,
                 capacity: item.capacity,
-                currentParticipants: item.participants,
-                currentInterested: item.interested,
                 isPublic: true,
                 coverImageUrl: imageUrl,
             });
@@ -559,8 +594,6 @@ async function seedEvents() {
                     startTime: new Date(`${item.date} ${item.time}`),
                     duration: 60,
                     capacity: item.capacity,
-                    currentParticipants: item.participants,
-                    currentInterested: item.interested,
                     isPublic: true,
                     coverImageUrl: imageUrl,
                 })
@@ -589,8 +622,6 @@ async function seedEvents() {
                     startTime: new Date(`${item.date} ${item.time}`),
                     duration: 60,
                     capacity: item.capacity,
-                    currentParticipants: item.participants,
-                    currentInterested: item.interested,
                     isPublic: true,
                     coverImageUrl: imageUrl,
                 })
@@ -620,8 +651,6 @@ async function seedEvents() {
             startTime: new Date(`${item.date} ${item.time}`),
             duration: 60,
             capacity: item.capacity,
-            currentParticipants: item.participants,
-            currentInterested: item.interested,
             isPublic: true,
             coverImageUrl: imageUrl,
         });

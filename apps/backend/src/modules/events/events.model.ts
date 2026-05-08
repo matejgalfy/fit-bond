@@ -5,7 +5,6 @@ import {
     ilike,
     gte,
     lte,
-    lt,
     isNull,
     desc,
     count,
@@ -35,7 +34,6 @@ export const eventsModel = {
 
         if (filters.excludeUserInteractions) {
             conditions.push(isNull(events.cancelledAt));
-            conditions.push(lt(events.currentParticipants, events.capacity));
         }
         if (filters.sportId) {
             conditions.push(eq(events.sportId, filters.sportId));
@@ -63,7 +61,9 @@ export const eventsModel = {
             conditions.push(lte(events.startTime, new Date(filters.toDate)));
         }
         if (filters.city) {
-            conditions.push(ilike(locations.city, `%${filters.city}%`));
+            conditions.push(
+                ilike(locations.formatted_address, `%${filters.city}%`)
+            );
         }
         if (filters.date) {
             conditions.push(eq(sql`${events.startTime}::date`, filters.date));
@@ -126,11 +126,18 @@ export const eventsModel = {
                 startTime: events.startTime,
                 duration: events.duration,
                 capacity: events.capacity,
-                currentParticipants: events.currentParticipants,
                 isPublic: events.isPublic,
                 coverImageUrl: events.coverImageUrl,
                 cancelledAt: events.cancelledAt,
                 createdAt: events.createdAt,
+                currentParticipants: sql<number>`(
+                    SELECT COUNT(*)::int FROM ${eventParticipants}
+                    WHERE ${eventParticipants.eventId} = ${events.id}
+                )`.as('current_participants'),
+                currentInterested: sql<number>`(
+                    SELECT COUNT(*)::int FROM ${eventInterested}
+                    WHERE ${eventInterested.eventId} = ${events.id}
+                )`.as('current_interested'),
                 organizer: {
                     id: user.id,
                     name: user.name,
@@ -138,8 +145,7 @@ export const eventsModel = {
                 },
                 location: {
                     id: locations.id,
-                    city: locations.city,
-                    country: locations.country,
+                    formattedAddress: locations.formatted_address,
                 },
                 sport: {
                     id: sports.id,
@@ -189,13 +195,20 @@ export const eventsModel = {
                 startTime: events.startTime,
                 duration: events.duration,
                 capacity: events.capacity,
-                currentParticipants: events.currentParticipants,
                 isPublic: events.isPublic,
                 coverImageUrl: events.coverImageUrl,
                 cancelledAt: events.cancelledAt,
                 cancellationReason: events.cancellationReason,
                 createdAt: events.createdAt,
                 updatedAt: events.updatedAt,
+                currentParticipants: sql<number>`(
+                    SELECT COUNT(*)::int FROM ${eventParticipants}
+                    WHERE ${eventParticipants.eventId} = ${events.id}
+                )`.as('current_participants'),
+                currentInterested: sql<number>`(
+                    SELECT COUNT(*)::int FROM ${eventInterested}
+                    WHERE ${eventInterested.eventId} = ${events.id}
+                )`.as('current_interested'),
                 organizer: {
                     id: user.id,
                     name: user.name,
@@ -203,9 +216,8 @@ export const eventsModel = {
                 },
                 location: {
                     id: locations.id,
-                    address: locations.address,
-                    city: locations.city,
-                    country: locations.country,
+                    fullAddress: locations.full_address,
+                    formattedAddress: locations.formatted_address,
                     lat: locations.lat,
                     lng: locations.lng,
                 },
@@ -235,12 +247,17 @@ export const eventsModel = {
         return results[0];
     },
 
-    async create(db: Database, organizerId: string, input: CreateEventInput) {
+    async create(
+        db: Database,
+        organizerId: string,
+        locationId: string,
+        input: CreateEventInput
+    ) {
         const results = await db
             .insert(events)
             .values({
                 organizerId,
-                locationId: input.locationId,
+                locationId,
                 sportId: input.sportId,
                 name: input.name,
                 description: input.description,
@@ -259,7 +276,12 @@ export const eventsModel = {
         return results[0];
     },
 
-    async update(db: Database, id: string, input: UpdateEventInput) {
+    async update(
+        db: Database,
+        id: string,
+        input: UpdateEventInput,
+        locationId?: string
+    ) {
         const updateData: Record<string, unknown> = {
             updatedAt: new Date(),
         };
@@ -276,6 +298,7 @@ export const eventsModel = {
         if (input.isPublic !== undefined) updateData.isPublic = input.isPublic;
         if (input.coverImageUrl !== undefined)
             updateData.coverImageUrl = input.coverImageUrl;
+        if (locationId !== undefined) updateData.locationId = locationId;
 
         const results = await db
             .update(events)

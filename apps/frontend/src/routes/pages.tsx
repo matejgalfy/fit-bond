@@ -12,6 +12,7 @@ import {
     NAV_ITEMS,
     BOTTOM_NAV_ITEMS,
 } from '@/components/layout/navigation-item';
+import { useUserProfile } from '@/features/users/hooks/users';
 
 export const Route = createFileRoute('/pages')({
     component: PagesLayout,
@@ -30,6 +31,7 @@ function PagesLayout() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
     const { location } = useRouterState();
+    const { data: profile } = useUserProfile(session?.user.id);
 
     if (isPending) return null;
 
@@ -39,12 +41,13 @@ function PagesLayout() {
     }
 
     const activeNav = pathnameToNavId(location.pathname);
+    const navImage = profile?.image ?? session.user.image;
 
     return (
         <div className="font-sans bg-background text-primary-text min-h-screen flex flex-col transition-colors duration-300">
             <AppNavbar
-                userName={session.user.name}
-                profilePictureUrl={session.user.image}
+                userName={profile?.name ?? session.user.name}
+                profilePictureUrl={navImage}
             />
             <div className="flex flex-1">
                 <SideNav items={NAV_ITEMS} activeNav={activeNav} />

@@ -8,6 +8,7 @@ import { usersRoutes } from './modules/users/users.routes';
 import { commentsRoutes } from './modules/comments/comments.routes';
 import { notificationsRoutes } from './modules/notifications/notifications.routes';
 import { uploadRoutes } from './modules/upload/upload.routes';
+import { locationsRoutes } from './modules/locations/locations.routes';
 import { authLayer } from './auth_middleware';
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -36,6 +37,10 @@ const app = new Elysia()
                         name: 'Notifications',
                         description: 'User notification management',
                     },
+                    {
+                        name: 'Locations',
+                        description: 'Address geocoding and lookup',
+                    },
                 ],
             },
             exclude: { methods: ['OPTIONS'] },
@@ -48,6 +53,7 @@ const app = new Elysia()
     .use(usersRoutes)
     .use(commentsRoutes)
     .use(notificationsRoutes)
+    .use(locationsRoutes)
     .listen(3000);
 
 console.log('Server running on http://localhost:3000');

@@ -1,5 +1,6 @@
 import type { CreateEventBody } from '../../../../../backend/src/modules/events/events.schema';
 import type { SkillLevel } from '../../../../../backend/src/modules/events/events.types';
+import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 import type {
     CustomDurationUnit,
     Meridiem,
@@ -70,7 +71,7 @@ export function buildDurationMinutes({
 
 export function buildCreateEventPayload(
     form: CreateEventFormState,
-    locationId: string
+    location: LocationSuggestion
 ): CreateEventBody {
     const description = form.description.trim();
     const coverImageUrl = form.coverImageUrl.trim();
@@ -79,7 +80,13 @@ export function buildCreateEventPayload(
         name: form.eventName.trim(),
         ...(description.length > 0 ? { description } : {}),
         sportId: form.sportId,
-        locationId,
+        location: {
+            placeId: location.placeId,
+            fullAddress: location.fullAddress,
+            formattedAddress: location.formattedAddress,
+            lat: location.lat,
+            lng: location.lng,
+        },
         skillLevel: form.skillLevel,
         startTime: buildStartTime({
             eventDate: form.eventDate,

@@ -2,12 +2,13 @@ import { Card } from '@/components/ui/card';
 import { DateAndTimeFields, type Meridiem } from './date-and-time';
 import { DurationField, type CustomDurationUnit } from './duration';
 import { LocationField } from './location';
+import type { LocationSuggestion } from '../../../../../../../backend/src/modules/locations/locations.schema';
 
 interface CreatingEventTimeLocationProps {
     eventDate: string;
     startHour: string;
     startMinute: string;
-    location: string;
+    location: LocationSuggestion | null;
     duration: number;
     customDuration: string;
     customDurationUnit: CustomDurationUnit;
@@ -15,7 +16,7 @@ interface CreatingEventTimeLocationProps {
     onEventDateChange: (eventDate: string) => void;
     onStartHourChange: (startHour: string) => void;
     onStartMinuteChange: (startMinute: string) => void;
-    onLocationChange: (location: string) => void;
+    onLocationChange: (location: LocationSuggestion | null) => void;
     onDurationChange: (duration: number) => void;
     onCustomDurationChange: (customDuration: string) => void;
     onCustomDurationUnitChange: (unit: CustomDurationUnit) => void;

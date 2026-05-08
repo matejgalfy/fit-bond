@@ -2,12 +2,13 @@ import type {
     CustomDurationUnit,
     Meridiem,
 } from '../components/creation/time-and-location/event-time-and-location';
+import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 
 export interface CreateEventTimeAndLocationValidationInput {
     eventDate: string;
     startHour: string;
     startMinute: string;
-    location: string;
+    location: LocationSuggestion | null;
     duration: number;
     customDuration: string;
     customDurationUnit: CustomDurationUnit;
@@ -91,8 +92,16 @@ export function hasMissingTimeAndLocationRequiredFields({
         !eventDate.trim() ||
         !startHour.trim() ||
         !startMinute.trim() ||
-        !location.trim() ||
+        !isLocationValid(location) ||
         (duration === 0 && !customDuration.trim())
+    );
+}
+
+function isLocationValid(location: LocationSuggestion | null): boolean {
+    return (
+        location !== null &&
+        Number.isFinite(location.lat) &&
+        Number.isFinite(location.lng)
     );
 }
 

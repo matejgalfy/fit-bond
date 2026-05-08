@@ -1,4 +1,4 @@
-import { Activity, Clock, MapPin, Users } from 'lucide-react';
+import { Activity, Clock, MapPin, Star, Users } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import type { Event } from '../types';
@@ -32,7 +32,7 @@ export function EventCard({ event }: EventCardProps) {
     const formattedDate = formatDate(event.startTime);
     const formattedTime = formatTime(event.startTime);
     const skillLevelDisplay = getSkillLevelDisplay(event.skillLevel);
-    const location = `${event.location.city}, ${event.location.country}`;
+    const location = event.location.formattedAddress;
 
     return (
         <div className="bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
@@ -90,6 +90,9 @@ export function EventCard({ event }: EventCardProps) {
                     <span className="text-secondary-text flex items-center gap-1">
                         <Users size={13} /> {event.currentParticipants}/
                         {event.capacity} joined
+                    </span>
+                    <span className="text-secondary-text flex items-center gap-1">
+                        <Star size={13} /> {event.currentInterested} interested
                     </span>
                 </div>
 

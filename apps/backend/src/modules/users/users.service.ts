@@ -3,8 +3,20 @@ import type { UsersModel } from './users.model';
 import type { UserProfile, UpdateFullProfileInput } from './users.types';
 import { usersModel as defaultModel } from './users.model';
 import { ServiceError } from '../../utils/errors';
+import {
+    locationsService as defaultLocationsService,
+    type LocationsService,
+} from '../locations/locations.service';
 
-export function createUsersService(model: UsersModel = defaultModel) {
+export interface UsersServiceDeps {
+    model?: UsersModel;
+    locationsService?: LocationsService;
+}
+
+export function createUsersService({
+    model = defaultModel,
+    locationsService = defaultLocationsService,
+}: UsersServiceDeps = {}) {
     return {
         async getUserProfile(
             db: Database,
@@ -22,12 +34,17 @@ export function createUsersService(model: UsersModel = defaultModel) {
                 bio: rawUser.bio,
                 image: rawUser.image,
                 sports: rawUser.preferredSports.map((ps) => ps.sport),
-                locations: rawUser.locations.map((ul) => ({
-                    id: ul.location.id,
-                    city: ul.location.city,
-                    radius: ul.radius,
-                    isPrimary: ul.isPrimary,
-                })),
+                location: rawUser.preferredLocation
+                    ? {
+                          id: rawUser.preferredLocation.id,
+                          fullAddress: rawUser.preferredLocation.full_address,
+                          formattedAddress:
+                              rawUser.preferredLocation.formatted_address,
+                          lat: Number(rawUser.preferredLocation.lat),
+                          lng: Number(rawUser.preferredLocation.lng),
+                          radius: rawUser.locationRadius ?? 0,
+                      }
+                    : null,
             };
         },
 
@@ -36,7 +53,28 @@ export function createUsersService(model: UsersModel = defaultModel) {
             userId: string,
             data: UpdateFullProfileInput
         ) {
-            return await model.updateFullProfile(db, userId, data);
+            return db.transaction(async (tx) => {
+                let resolved:
+                    | { locationId: string; radius: number }
+                    | null
+                    | undefined;
+                if (data.location === null) {
+                    resolved = null;
+                } else if (data.location !== undefined) {
+                    const { radius, ...locationInput } = data.location;
+                    const location = await locationsService.findOrCreate(
+                        tx,
+                        locationInput
+                    );
+                    resolved = { locationId: location.id, radius };
+                }
+
+                return model.updateFullProfile(tx, userId, {
+                    base: data.base,
+                    sportIds: data.sportIds,
+                    location: resolved,
+                });
+            });
         },
 
         // for admin to search

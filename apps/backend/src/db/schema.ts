@@ -46,6 +46,10 @@ export const user = pgTable('user', {
     name: text('name').notNull(),
     bio: text('bio'),
     image: text('image'),
+    preferredLocation: text('preferred_location').references(
+        () => locations.id
+    ),
+    locationRadius: integer('location_radius'),
     role: userRoleEnum('role').default('user').notNull(),
     email: text('email').notNull().unique(),
     emailVerified: boolean('email_verified').default(false).notNull(),
@@ -140,10 +144,9 @@ export const sports = pgTable('sports', {
 });
 
 export const locations = pgTable('locations', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    address: text('address').notNull(),
-    city: text('city').notNull(),
-    country: text('country').notNull(),
+    id: text('id').primaryKey(),
+    full_address: text('full_address').notNull(),
+    formatted_address: text('formatted_address').notNull(),
     lat: decimal('lat', { precision: 8, scale: 6 }).notNull(),
     lng: decimal('lng', { precision: 9, scale: 6 }).notNull(),
     deletedAt: timestamp('deleted_at'),
@@ -162,26 +165,12 @@ export const userPreferredSports = pgTable(
     (table) => [primaryKey({ columns: [table.userId, table.sportId] })]
 );
 
-export const userLocations = pgTable('user_locations', {
-    id: uuid('id').primaryKey().defaultRandom(),
-    userId: text('user_id')
-        .notNull()
-        .references(() => user.id),
-    locationId: uuid('location_id')
-        .notNull()
-        .references(() => locations.id),
-    radius: integer('radius').notNull(),
-    label: text('label'),
-    isPrimary: boolean('is_primary').default(false).notNull(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-});
-
 export const events = pgTable('events', {
     id: uuid('id').primaryKey().defaultRandom(),
     organizerId: text('organizer_id')
         .notNull()
         .references(() => user.id),
-    locationId: uuid('location_id')
+    locationId: text('location_id')
         .notNull()
         .references(() => locations.id),
     sportId: uuid('sport_id')
@@ -193,8 +182,6 @@ export const events = pgTable('events', {
     startTime: timestamp('start_time').notNull(),
     duration: integer('duration').notNull(),
     capacity: integer('capacity').notNull(),
-    currentParticipants: integer('current_participants').default(0).notNull(),
-    currentInterested: integer('current_interested').default(0).notNull(),
     isPublic: boolean('is_public').default(true).notNull(),
     coverImageUrl: text('cover_image_url'),
     cancelledAt: timestamp('cancelled_at'),
@@ -281,14 +268,17 @@ export const reports = pgTable('reports', {
 });
 
 // Relations
-export const usersRelations = relations(user, ({ many }) => ({
+export const usersRelations = relations(user, ({ one, many }) => ({
     // --- Better Auth Relations ---
     sessions: many(session),
     accounts: many(account),
 
     // --- FitBond Application Relations ---
     preferredSports: many(userPreferredSports),
-    locations: many(userLocations),
+    preferredLocation: one(locations, {
+        fields: [user.preferredLocation],
+        references: [locations.id],
+    }),
     organizedEvents: many(events, { relationName: 'organizer' }),
     participatingEvents: many(eventParticipants),
     interestedEvents: many(eventInterested),
@@ -301,13 +291,12 @@ export const usersRelations = relations(user, ({ many }) => ({
     resolvedReports: many(reports, { relationName: 'resolver' }),
 }));
 
-export const sportsRelations = relations(sports, ({ many }) => ({
-    userPreferences: many(userPreferredSports),
+export const locationsRelations = relations(locations, ({ many }) => ({
+    events: many(events),
 }));
 
-export const locationsRelations = relations(locations, ({ many }) => ({
-    userLocations: many(userLocations),
-    events: many(events),
+export const sportsRelations = relations(sports, ({ many }) => ({
+    userPreferences: many(userPreferredSports),
 }));
 
 export const eventsRelations = relations(events, ({ one, many }) => ({
@@ -343,17 +332,6 @@ export const userPreferredSportsRelations = relations(
         }),
     })
 );
-
-export const userLocationsRelations = relations(userLocations, ({ one }) => ({
-    user: one(user, {
-        fields: [userLocations.userId],
-        references: [user.id],
-    }),
-    location: one(locations, {
-        fields: [userLocations.locationId],
-        references: [locations.id],
-    }),
-}));
 
 export const eventParticipantsRelations = relations(
     eventParticipants,

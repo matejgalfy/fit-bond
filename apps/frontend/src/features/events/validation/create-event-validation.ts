@@ -2,6 +2,7 @@ import type {
     CustomDurationUnit,
     Meridiem,
 } from '../components/creation/time-and-location/event-time-and-location';
+import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 import {
     hasMissingBasicsRequiredFields,
     validateCreateEventBasics,
@@ -22,7 +23,7 @@ interface CreateEventValidationInput {
     eventDate: string;
     startHour: string;
     startMinute: string;
-    location: string;
+    location: LocationSuggestion | null;
     duration: number;
     customDuration: string;
     customDurationUnit: CustomDurationUnit;
