@@ -54,5 +54,9 @@ export const userNameParam = t.Object({
     name: t.String({ minLength: 1 }),
 });
 
+export const eventIdParam = t.Object({
+    eventId: t.String({ format: 'uuid' }),
+});
+
 export type UserPreferredLocationInput =
     typeof userPreferredLocationSchema.static;

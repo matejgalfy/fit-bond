@@ -14,4 +14,8 @@ export const usersController = {
     async findUserByName(name: string) {
         return usersService.findUserByName(db, name);
     },
+
+    async getUsersByEventId(eventId: string) {
+        return usersService.getUsersByEventId(db, eventId);
+    }
 };

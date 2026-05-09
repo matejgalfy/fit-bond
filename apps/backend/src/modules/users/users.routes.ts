@@ -1,6 +1,7 @@
 import { Elysia } from 'elysia';
 import { usersController } from './users.controller';
 import {
+    eventIdParam,
     updateFullProfileSchema,
     userIdParam,
     userNameParam,
@@ -43,4 +44,15 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
                 summary: 'Find user by name',
             },
         }
-    );
+    )
+    .get(
+        '/event/:eventId',
+        ({ params: { eventId } }) => usersController.getUsersByEventId(eventId),
+        {
+            params: eventIdParam,
+            detail: {
+                tags: ['Users'],
+                summary: 'Get participants by event',
+            },
+        }
+);
