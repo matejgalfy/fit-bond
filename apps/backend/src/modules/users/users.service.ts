@@ -92,7 +92,7 @@ export function createUsersService({
 
         async getUsersByEventId(db: Database, eventId: string) {
             return model.getUsersByEventId(db, eventId);
-        }
+        },
     };
 }
 

@@ -17,5 +17,5 @@ export const usersController = {
 
     async getUsersByEventId(eventId: string) {
         return usersService.getUsersByEventId(db, eventId);
-    }
+    },
 };

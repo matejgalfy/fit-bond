@@ -146,16 +146,24 @@ export function createEventsService({
             const cancelledEvent = await model.cancel(db, eventId, reason);
 
             if (cancelledEvent) {
-                    const participants = await usersService.getUsersByEventId(db, eventId);
-                    
-                    Promise.all(
-                        participants.map((p) =>
-                            emailService.eventCancelledEmail(p.email, cancelledEvent.name)
-                        )
-                    ).catch((err) => console.error('Email sending failed:', err));
-                }
+                const participants = await usersService.getUsersByEventId(
+                    db,
+                    eventId
+                );
 
-                return cancelledEvent;
+                Promise.all(
+                    participants.map((p) =>
+                        emailService.eventCancelledEmail(
+                            p.email,
+                            cancelledEvent.name
+                        )
+                    )
+                ).catch((err: unknown) => {
+                    console.error('Email sending failed:', err);
+                });
+            }
+
+            return cancelledEvent;
         },
 
         async delete(db: Database, eventId: string, userId: string) {

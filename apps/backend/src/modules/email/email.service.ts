@@ -16,13 +16,12 @@ export const emailService = {
                 <br>
                 <p>Best regards,<br><strong>Your FitBond Team</strong></p>
                 </div>
-                `
+                `,
         });
     },
 
-    async eventCancelledEmail(recipientEmail: string, eventName: string)
-    {
-            return resend.emails.send({
+    async eventCancelledEmail(recipientEmail: string, eventName: string) {
+        return resend.emails.send({
             from: 'info@tvojadomena.sk',
             to: recipientEmail,
             subject: `${eventName} has been cancelled`,
@@ -30,7 +29,7 @@ export const emailService = {
                 <div style="font-family: Arial, sans-serif; color: #333; line-height: 1.5;">
                 <p>We are sorry, but ${eventName} has been cancelled.</p>
                 </div>
-                `
+                `,
         });
-    }
+    },
 };

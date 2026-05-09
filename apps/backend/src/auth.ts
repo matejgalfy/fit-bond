@@ -30,10 +30,13 @@ export const auth = betterAuth({
         user: {
             create: {
                 after: async (user) => {
-                    emailService.sendWelcomeEmail(user.email, user.name)
-                        .catch(err => console.error('Failed to send welcome email:', err));
-                }
-            }
-        }
-    }
+                    await emailService
+                        .sendWelcomeEmail(user.email, user.name)
+                        .catch((err: unknown) => {
+                            console.error('Failed to send welcome email:', err);
+                        });
+                },
+            },
+        },
+    },
 });

@@ -90,16 +90,16 @@ export const usersModel = {
     },
 
     async getUsersByEventId(db: Database, eventId: string) {
-    return await db
-        .select({
-            id: user.id,
-            name: user.name,
-            email: user.email,
-            image: user.image,
-        })
-        .from(eventParticipants)
-        .innerJoin(user, eq(eventParticipants.userId, user.id))
-        .where(eq(eventParticipants.eventId, eventId));
+        return await db
+            .select({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+            })
+            .from(eventParticipants)
+            .innerJoin(user, eq(eventParticipants.userId, user.id))
+            .where(eq(eventParticipants.eventId, eventId));
     },
 
     // TODO ban user

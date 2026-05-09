@@ -55,4 +55,4 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
                 summary: 'Get participants by event',
             },
         }
-);
+    );
