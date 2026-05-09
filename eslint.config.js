@@ -48,6 +48,7 @@ export default defineConfig([
                     path.join(rootDir, 'apps/frontend/tsconfig.json'),
                     path.join(rootDir, 'apps/frontend/tsconfig.app.json'),
                     path.join(rootDir, 'apps/frontend/tsconfig.node.json'),
+                    path.join(rootDir, 'apps/frontend/tsconfig.e2e.json'),
                 ],
                 tsconfigRootDir: rootDir,
             },

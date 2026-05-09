@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeEach, mock } from 'bun:test';
+import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createEventsService } from './events.service';
 import { ServiceError } from '../../utils/errors';
 import type { EventsModel } from './events.model';
@@ -24,8 +24,8 @@ const sampleLocation = {
 
 function makeMockLocationsService() {
     return {
-        search: mock(() => Promise.resolve([])),
-        findOrCreate: mock(() =>
+        search: vi.fn(() => Promise.resolve([])),
+        findOrCreate: vi.fn(() =>
             Promise.resolve({
                 id: 'loc-1',
                 placeId: sampleLocation.placeId,
@@ -78,22 +78,22 @@ function makeMockEvent(overrides: Partial<MockEvent> = {}): MockEvent {
 
 function makeMockModel() {
     return {
-        findAll: mock(() => Promise.resolve([] as unknown[])),
-        findById: mock(() =>
+        findAll: vi.fn(() => Promise.resolve([] as unknown[])),
+        findById: vi.fn(() =>
             Promise.resolve(null as Record<string, unknown> | null)
         ),
-        findRawById: mock(() => Promise.resolve(null as EventType | null)),
-        create: mock(() => Promise.resolve(makeMockEvent())),
-        update: mock(() =>
+        findRawById: vi.fn(() => Promise.resolve(null as EventType | null)),
+        create: vi.fn(() => Promise.resolve(makeMockEvent())),
+        update: vi.fn(() =>
             Promise.resolve(makeMockEvent() as EventType | null)
         ),
-        cancel: mock(() =>
+        cancel: vi.fn(() =>
             Promise.resolve(makeMockEvent() as EventType | null)
         ),
-        softDelete: mock(() =>
+        softDelete: vi.fn(() =>
             Promise.resolve(makeMockEvent() as EventType | null)
         ),
-        getStatsByUserId: mock(() =>
+        getStatsByUserId: vi.fn(() =>
             Promise.resolve({ organized: 0, joined: 0, interested: 0 })
         ),
     };

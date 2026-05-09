@@ -1,4 +1,4 @@
-import { test, expect, describe } from 'bun:test';
+import { test, expect, describe } from 'vitest';
 
 describe('Frontend App', () => {
     test('should be defined', () => {

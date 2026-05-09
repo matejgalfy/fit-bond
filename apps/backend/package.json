@@ -2,7 +2,8 @@
     "name": "backend",
     "version": "1.0.50",
     "scripts": {
-        "test": "bun test",
+        "test": "vitest",
+        "test:run": "vitest run",
         "dev": "bun run --watch src/index.ts",
         "lint": "eslint --config ../../eslint.config.js .",
         "lint:fix": "eslint --config ../../eslint.config.js --fix .",
@@ -39,7 +40,8 @@
         "globals": "^17.4.0",
         "prettier": "^3.4.2",
         "typescript": "^5.9.3",
-        "typescript-eslint": "^8.56.1"
+        "typescript-eslint": "^8.56.1",
+        "vitest": "^4.1.5"
     },
     "module": "src/index.js"
 }
