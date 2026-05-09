@@ -19,7 +19,7 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                 {items.map((item) => {
                     const active = activeNav === item.id;
                     const className = cn(
-                        'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-regular font-sans w-full text-left transition-[background,color] duration-200',
+                        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-none cursor-pointer text-regular font-sans w-full text-left transition-[background,color] duration-200',
                         active
                             ? 'bg-soft-blue text-primary-blue font-semibold'
                             : 'bg-transparent text-secondary-text font-normal'
@@ -62,7 +62,7 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
             </div>
 
             <div className="px-2 mt-4">
-                <div className="text-tiny font-semibold text-secondary-text px-3 pb-1.5 uppercase tracking-[0.5px]">
+                <div className="text-tiny font-semibold text-secondary-text px-3 pb-1.5 uppercase tracking-wider">
                     Admin
                 </div>
                 <button
@@ -70,7 +70,7 @@ export function SideNav({ items, activeNav, onChange }: SideNavProps) {
                         onChange?.('admin');
                     }}
                     className={cn(
-                        'flex items-center gap-2.5 px-3 py-2.5 rounded-[10px] border-none cursor-pointer text-regular font-sans w-full text-left transition-colors duration-200',
+                        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-none cursor-pointer text-regular font-sans w-full text-left transition-colors duration-200',
                         activeNav === 'admin'
                             ? 'bg-soft-red text-primary-red font-semibold'
                             : 'bg-transparent text-secondary-text font-normal'

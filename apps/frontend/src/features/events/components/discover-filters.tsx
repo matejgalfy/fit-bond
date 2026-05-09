@@ -59,15 +59,18 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                     {filters.search && (
                         <div className="mt-2 inline-flex items-center gap-1 bg-soft-blue text-strong-blue text-tiny px-2.5 py-1 rounded-full font-medium">
                             {filters.search}
-                            <button
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
                                 onClick={() => {
                                     updateFilter('search', '');
                                 }}
-                                className="hover:bg-primary-blue/20 rounded-full p-0.5 transition-colors cursor-pointer"
+                                className="h-5 w-5 rounded-full p-0 text-strong-blue hover:bg-primary-blue/20 hover:text-strong-blue"
                                 aria-label="Clear search"
                             >
                                 <X size={12} />
-                            </button>
+                            </Button>
                         </div>
                     )}
                 </div>

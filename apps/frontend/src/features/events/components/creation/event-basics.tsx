@@ -1,5 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/ui/form-field';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { SportCombobox } from '@/features/sports/components/sport-combobox';
@@ -54,7 +55,7 @@ export function CreatingEventBasics({
                 </FormField>
 
                 <FormField label="Description" htmlFor="event-description">
-                    <textarea
+                    <Textarea
                         id="event-description"
                         placeholder="Tell people what this event is about..."
                         value={description}

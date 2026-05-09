@@ -71,10 +71,11 @@ export function DateAndTimeFields({
                 <div className="flex gap-2">
                     <div className="relative flex-1">
                         <div className="flex h-10 items-center rounded-xl border border-outline bg-background px-3 pr-9 shadow-sm transition-colors focus-within:ring-2 focus-within:ring-primary-blue focus-within:ring-offset-2">
-                            <input
+                            <Input
                                 id="event-start-time"
                                 type="text"
                                 inputMode="numeric"
+                                autoComplete="off"
                                 aria-label="Start hour"
                                 placeholder="HH"
                                 maxLength={2}
@@ -89,12 +90,13 @@ export function DateAndTimeFields({
                                         );
                                     }
                                 }}
-                                className="w-7 bg-transparent text-center text-regular text-primary-text outline-none placeholder:text-secondary-text"
+                                className="h-auto w-7 rounded-none border-0 bg-transparent px-0 py-0 text-center text-regular text-primary-text shadow-none outline-none placeholder:text-secondary-text focus-visible:ring-0 focus-visible:ring-offset-0"
                             />
                             <span className="text-secondary-text">:</span>
-                            <input
+                            <Input
                                 type="text"
                                 inputMode="numeric"
+                                autoComplete="off"
                                 aria-label="Start minute"
                                 placeholder="MM"
                                 maxLength={2}
@@ -109,7 +111,7 @@ export function DateAndTimeFields({
                                         );
                                     }
                                 }}
-                                className="w-7 bg-transparent text-center text-regular text-primary-text outline-none placeholder:text-secondary-text"
+                                className="h-auto w-7 rounded-none border-0 bg-transparent px-0 py-0 text-center text-regular text-primary-text shadow-none outline-none placeholder:text-secondary-text focus-visible:ring-0 focus-visible:ring-offset-0"
                             />
                         </div>
                         <Clock
