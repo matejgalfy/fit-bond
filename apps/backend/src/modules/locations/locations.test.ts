@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeEach, mock } from 'bun:test';
+import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createLocationsService } from './locations.service';
 import type { LocationsModel } from './locations.model';
 import type { Database } from '../../db';
@@ -37,7 +37,7 @@ function makeSuggestion(
 describe('LocationsService', () => {
     describe('search', () => {
         test('maps geocoder results to suggestions', async () => {
-            const geocoder = mock(() =>
+            const geocoder = vi.fn(() =>
                 Promise.resolve([
                     makeSuggestion({ placeId: 'liq:1' }),
                     makeSuggestion({ placeId: 'liq:2' }),
@@ -54,7 +54,7 @@ describe('LocationsService', () => {
         });
 
         test('translates GeocodingError into ServiceError', async () => {
-            const geocoder = mock(() =>
+            const geocoder = vi.fn(() =>
                 Promise.reject(new GeocodingError('boom'))
             );
             const service = createLocationsService({ geocoder });
@@ -70,7 +70,7 @@ describe('LocationsService', () => {
 
         test('rethrows unexpected errors unchanged', async () => {
             const boom = new Error('unexpected');
-            const geocoder = mock(() => Promise.reject(boom));
+            const geocoder = vi.fn(() => Promise.reject(boom));
             const service = createLocationsService({ geocoder });
 
             expect.assertions(1);
@@ -83,12 +83,12 @@ describe('LocationsService', () => {
     });
 
     describe('findOrCreate', () => {
-        let mockModel: { upsertByPlaceId: ReturnType<typeof mock> };
+        let mockModel: { upsertByPlaceId: ReturnType<typeof vi.fn> };
         let service: ReturnType<typeof createLocationsService>;
 
         beforeEach(() => {
             mockModel = {
-                upsertByPlaceId: mock(() => Promise.resolve(makeRow())),
+                upsertByPlaceId: vi.fn(() => Promise.resolve(makeRow())),
             };
             service = createLocationsService({
                 model: mockModel as unknown as LocationsModel,
@@ -113,7 +113,7 @@ describe('LocationsService', () => {
 
         test('returns the same row when called twice with the same placeId', async () => {
             const row = makeRow();
-            mockModel.upsertByPlaceId = mock(() => Promise.resolve(row));
+            mockModel.upsertByPlaceId = vi.fn(() => Promise.resolve(row));
             service = createLocationsService({
                 model: mockModel as unknown as LocationsModel,
             });

@@ -41,7 +41,26 @@ bun run drizzle:migrate      # Create + run migration
 bun run dev                  # Vite dev server
 bun run build                # Production build
 bun run lint                 # ESLint
+bun run test                 # Vitest unit + component tests
+bun run setup:e2e            # One-time: install Playwright Chromium binary (~150 MB)
+bun run test:e2e             # Playwright E2E tests (headless)
+bun run test:e2e:ui          # Playwright E2E tests (interactive UI mode)
 ```
+
+### E2E Tests (Playwright)
+
+E2E tests live in `apps/frontend/e2e/` and use Playwright with Chromium. They run against the Vite dev server, which Playwright auto-starts via the `webServer` config in `apps/frontend/playwright.config.ts` (or reuses an existing one on port 5173).
+
+**Prerequisites (one-time per machine):**
+
+1. **Node.js** — required because Playwright on Windows + Bun has an IPC bug (`--remote-debugging-pipe` doesn't work through Bun's child process spawn, so Chromium launches but never responds). Install via `winget install OpenJS.NodeJS.LTS` (Windows) or your platform's package manager.
+2. **PowerShell execution policy** (Windows only) — `npx` is a `.ps1` script and is blocked by default. Run once:
+   ```powershell
+   Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+   ```
+3. **Chromium binary** — `cd apps/frontend && bun run setup:e2e`
+
+**Why E2E scripts use `npx` instead of `bunx`:** Only the `test:e2e*` and `setup:e2e` scripts route through `npx` (Node) to bypass the Bun-Playwright IPC bug. Everything else in the project still runs through Bun.
 
 ## Architecture
 

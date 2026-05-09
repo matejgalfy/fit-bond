@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
@@ -22,8 +22,7 @@ export const Route = createFileRoute('/auth/register')({
 
 function Register() {
     const navigate = useNavigate();
-    const { data: session, isPending: isSessionLoading } =
-        authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
 
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
@@ -31,6 +30,12 @@ function Register() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (!isPending && session?.user) {
+            void navigate({ to: '/pages/home-page', replace: true });
+        }
+    }, [isPending, navigate, session?.user]);
 
     const handleSubmit = () => {
         setError('');
@@ -72,12 +77,7 @@ function Register() {
             });
     };
 
-    if (isSessionLoading) {
-        return null;
-    }
-
-    if (session?.user) {
-        void navigate({ to: '/pages/home-page' });
+    if (isPending || session?.user) {
         return null;
     }
 

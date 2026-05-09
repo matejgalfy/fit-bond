@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeEach, mock } from 'bun:test';
+import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createSportsService } from './sports.service';
 import { ServiceError } from '../../utils/errors';
 import type { SportsModel } from './sports.model';
@@ -18,13 +18,13 @@ function makeMockSport(overrides: Partial<SportType> = {}): SportType {
 
 function makeMockModel() {
     return {
-        findAll: mock(() => Promise.resolve([] as unknown[])),
-        findById: mock(() =>
+        findAll: vi.fn(() => Promise.resolve([] as unknown[])),
+        findById: vi.fn(() =>
             Promise.resolve(null as Record<string, unknown> | null)
         ),
-        findByName: mock(() => Promise.resolve(null as SportType | null)),
-        create: mock(() => Promise.resolve(makeMockSport())),
-        softDelete: mock(() =>
+        findByName: vi.fn(() => Promise.resolve(null as SportType | null)),
+        create: vi.fn(() => Promise.resolve(makeMockSport())),
+        softDelete: vi.fn(() =>
             Promise.resolve(makeMockSport() as SportType | null)
         ),
     };

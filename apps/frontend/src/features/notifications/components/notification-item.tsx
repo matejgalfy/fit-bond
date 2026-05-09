@@ -57,7 +57,7 @@ export function NotificationItem({
                 }
             }}
             className={cn(
-                'relative w-full rounded-[12px] border bg-surface px-4 py-3.5 text-left transition-colors duration-200 cursor-pointer',
+                'relative w-full rounded-xl border bg-surface px-4 py-3.5 text-left transition-colors duration-200 cursor-pointer',
                 !notification.isRead
                     ? 'border-primary-blue/20'
                     : 'border-outline',
