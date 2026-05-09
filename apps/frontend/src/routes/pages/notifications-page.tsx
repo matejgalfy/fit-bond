@@ -79,7 +79,7 @@ function RouteComponent() {
                 ))}
 
                 {visibleNotifications.length === 0 && (
-                    <div className="rounded-[14px] border border-outline bg-surface px-5 py-10 text-center">
+                    <div className="rounded-2xl border border-outline bg-surface px-5 py-10 text-center">
                         <Bell
                             size={36}
                             className="mx-auto mb-2 text-secondary-text"

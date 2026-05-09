@@ -140,19 +140,13 @@
     box-sizing: border-box;
 }
 
-body {
-    margin: 0;
-    background-color: var(--background);
-    color: var(--primary-text);
-    font-family: var(--font-regular);
-}
-
 @layer base {
     * {
         @apply border-outline outline-primary-blue/50;
     }
     body {
-        @apply bg-background text-primary-text;
+        @apply m-0 bg-background text-primary-text;
+        font-family: var(--font-regular);
     }
     html {
         @apply font-sans;
