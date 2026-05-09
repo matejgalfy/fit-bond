@@ -15,6 +15,7 @@ FitBond is a social sports application that helps people find others to exercise
 - **Bun** (v1.0 or later) - [Install Bun](https://bun.sh)
 - **Docker & Docker Compose** - For running PostgreSQL database
 - **Git** - For version control
+- **Node.js** (v20 LTS or later) - Required only for E2E tests (Playwright). Install via `winget install OpenJS.NodeJS.LTS` on Windows, or your platform's package manager.
 
 Verify installations:
 
@@ -23,7 +24,16 @@ bun --version
 docker --version
 docker compose --version
 git --version
+node --version    # only needed if you run E2E tests
 ```
+
+**Windows users — PowerShell execution policy** (one-time, only if running E2E tests):
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+This allows `npx` (a `.ps1` script) to run, which is required for E2E tests.
 
 ## Getting Started
 
@@ -137,7 +147,52 @@ bun run dev                  # Start Vite dev server
 bun run build               # Build for production
 bun run lint                # Run ESLint
 bun run preview             # Preview production build locally
+bun test                     # Run Vitest unit + component tests
+bun run setup:e2e           # One-time: install Playwright Chromium browser (~150 MB)
+bun run test:e2e            # Run Playwright E2E tests (headless)
+bun run test:e2e:ui         # Run Playwright E2E tests (interactive UI mode)
 ```
+
+### E2E Tests (Playwright)
+
+E2E tests live in [apps/frontend/e2e/](apps/frontend/e2e/) and run against a Vite dev server that Playwright auto-starts (or reuses if already running on port 5173). Configuration: [apps/frontend/playwright.config.ts](apps/frontend/playwright.config.ts).
+
+**One-time setup per machine:**
+
+```bash
+cd apps/frontend
+bun run setup:e2e            # downloads Chromium browser
+```
+
+**Running tests:**
+
+```bash
+bun run test:e2e                          # all tests, headless
+bun run test:e2e:ui                       # interactive UI mode
+bun run test:e2e -- smoke.spec.ts         # only smoke tests (no backend needed)
+bun run test:e2e -- auth.spec.ts          # only auth flow tests
+```
+
+**Test files in [apps/frontend/e2e/](apps/frontend/e2e/):**
+
+| File                   | What it covers                                                                    | Backend required?                          |
+| ---------------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
+| `smoke.spec.ts`        | Public route rendering, navigation between login/register, form validation errors | No                                         |
+| `auth.spec.ts`         | Register a fresh user, login, wrong password, redirect of authed user             | **Yes** — needs `bun run dev:backend` + DB |
+| `navigation.spec.ts`   | Navigation between Home/Discover/My Events/Notifications/Profile after login      | **Yes**                                    |
+| `create-event.spec.ts` | Create event page render, empty-form validation, cancel button                    | **Yes**                                    |
+| `helpers/auth.ts`      | Shared helpers: `generateTestUser()`, `registerViaUI()`, `loginViaUI()`           | —                                          |
+
+> **Note on backend dependency:** Tests that exercise authenticated flows register a fresh user via the UI on each run. To run those, start the backend first:
+>
+> ```bash
+> bun run db:setup       # one-time: starts Docker Postgres + migrates + seeds
+> bun run dev:backend    # in a separate terminal
+> ```
+>
+> Then run the E2E tests in another terminal. `smoke.spec.ts` is the only file that runs without a backend.
+
+> **Note on `npx` vs `bunx`:** The `test:e2e*` and `setup:e2e` scripts internally use `npx` (Node) instead of `bunx`. This is because Playwright on Windows has an IPC bug when launched via Bun (`--remote-debugging-pipe` doesn't work through Bun's child process spawn — Chromium starts but never responds). Everything else in the project still runs through Bun. From your perspective, you always type `bun run ...` — Bun delegates to `npx` only for these specific scripts.
 
 ## Project Structure
 
@@ -280,6 +335,28 @@ bun install
 cd apps/backend
 bun run db:migrate
 ```
+
+### E2E Tests
+
+**Error: `npx : File ... cannot be loaded because running scripts is disabled`** (Windows)
+
+Run once in PowerShell:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned
+```
+
+**Error: `'npx' is not recognized`**
+
+Node.js is not installed. Install it: `winget install OpenJS.NodeJS.LTS` (Windows), then open a new terminal.
+
+**Test hangs at `page.goto`, Chromium never opens / shows blank window**
+
+You're likely running Playwright through `bunx` instead of `npx`. Confirm `apps/frontend/package.json` `test:e2e` script uses `npx playwright test`, not `bunx playwright test` or `playwright test`.
+
+**`Browser executable not found`**
+
+Run the one-time browser install: `cd apps/frontend && bun run setup:e2e`
 
 ## Contributing
 

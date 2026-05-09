@@ -1,4 +1,4 @@
-import { test, expect, describe, beforeEach, mock } from 'bun:test';
+import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createCommentsService } from './comments.service';
 import { ServiceError } from '../../utils/errors';
 import type { CommentsModel } from './comments.model';
@@ -27,17 +27,17 @@ function makeMockComment(overrides: Partial<CommentType> = {}): CommentType {
 
 function makeMockModel() {
     return {
-        findAll: mock(() => Promise.resolve([] as unknown[])),
-        findById: mock(() =>
+        findAll: vi.fn(() => Promise.resolve([] as unknown[])),
+        findById: vi.fn(() =>
             Promise.resolve(null as Record<string, unknown> | null)
         ),
-        findRawById: mock(() => Promise.resolve(null as CommentType | null)),
-        isUserEligibleToComment: mock(() => Promise.resolve(true)),
-        create: mock(() => Promise.resolve(makeMockComment())),
-        update: mock(() =>
+        findRawById: vi.fn(() => Promise.resolve(null as CommentType | null)),
+        isUserEligibleToComment: vi.fn(() => Promise.resolve(true)),
+        create: vi.fn(() => Promise.resolve(makeMockComment())),
+        update: vi.fn(() =>
             Promise.resolve(makeMockComment() as CommentType | null)
         ),
-        softDelete: mock(() =>
+        softDelete: vi.fn(() =>
             Promise.resolve(makeMockComment() as CommentType | null)
         ),
     };
