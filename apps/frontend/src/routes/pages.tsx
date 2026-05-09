@@ -4,6 +4,7 @@ import {
     useNavigate,
     useRouterState,
 } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { authClient } from '@/lib/api';
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { SideNav } from '@/components/layout/side-nav';
@@ -33,10 +34,13 @@ function PagesLayout() {
     const { location } = useRouterState();
     const { data: profile } = useUserProfile(session?.user.id);
 
-    if (isPending) return null;
+    useEffect(() => {
+        if (!isPending && !session?.user) {
+            void navigate({ to: '/auth/login', replace: true });
+        }
+    }, [isPending, navigate, session?.user]);
 
-    if (!session?.user) {
-        void navigate({ to: '/auth/login' });
+    if (isPending || !session?.user) {
         return null;
     }
 
