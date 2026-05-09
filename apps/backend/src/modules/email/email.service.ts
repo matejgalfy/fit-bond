@@ -5,7 +5,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 export const emailService = {
     async sendWelcomeEmail(recipientEmail: string, userName: string) {
         return resend.emails.send({
-            from: 'info@tvojadomena.sk',
+            from: 'onboarding@resend.dev',
             to: recipientEmail,
             subject: `Hi ${userName}, Welcome to FitBond!`,
             html: `

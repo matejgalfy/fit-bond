@@ -1,7 +1,7 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
-
 import { db } from './db';
+import { emailService } from './modules/email/email.service';
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -25,4 +25,15 @@ export const auth = betterAuth({
         },
     },
     trustedOrigins: ['http://localhost:5173'],
+
+    databaseHooks: {
+        user: {
+            create: {
+                after: async (user) => {
+                    emailService.sendWelcomeEmail(user.email, user.name)
+                        .catch(err => console.error('Failed to send welcome email:', err));
+                }
+            }
+        }
+    }
 });
