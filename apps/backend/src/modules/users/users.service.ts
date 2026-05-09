@@ -97,3 +97,4 @@ export function createUsersService({
 }
 
 export const usersService = createUsersService();
+export type UsersService = ReturnType<typeof createUsersService>;
