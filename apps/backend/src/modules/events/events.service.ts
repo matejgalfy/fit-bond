@@ -11,15 +11,19 @@ import {
     locationsService as defaultLocationsService,
     type LocationsService,
 } from '../locations/locations.service';
+import { usersService as defaultUsersService } from '../users/users.service';
+import { emailService } from '../email/email.service';
 
 export interface EventsServiceDeps {
     model?: EventsModel;
     locationsService?: LocationsService;
+    usersService?: typeof defaultUsersService;
 }
 
 export function createEventsService({
     model = defaultModel,
     locationsService = defaultLocationsService,
+    usersService = defaultUsersService,
 }: EventsServiceDeps = {}) {
     return {
         async list(db: Database, filters: EventFilters) {
@@ -139,7 +143,19 @@ export function createEventsService({
                 throw ServiceError.conflict('Event is already cancelled');
             }
 
-            return model.cancel(db, eventId, reason);
+            const cancelledEvent = await model.cancel(db, eventId, reason);
+
+            if (cancelledEvent) {
+                    const participants = await usersService.getUsersByEventId(db, eventId);
+                    
+                    Promise.all(
+                        participants.map((p) =>
+                            emailService.eventCancelledEmail(p.email, cancelledEvent.name)
+                        )
+                    ).catch((err) => console.error('Email sending failed:', err));
+                }
+
+                return cancelledEvent;
         },
 
         async delete(db: Database, eventId: string, userId: string) {
