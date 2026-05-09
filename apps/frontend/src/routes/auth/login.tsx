@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
@@ -21,13 +21,18 @@ export const Route = createFileRoute('/auth/login')({
 
 export function Login() {
     const navigate = useNavigate();
-    const { data: session, isPending: isSessionLoading } =
-        authClient.useSession();
+    const { data: session, isPending } = authClient.useSession();
 
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [isLoading, setIsLoading] = useState(false);
+
+    useEffect(() => {
+        if (!isPending && session?.user) {
+            void navigate({ to: '/pages/home-page', replace: true });
+        }
+    }, [isPending, navigate, session?.user]);
 
     const handleSubmit = () => {
         setError('');
@@ -59,12 +64,7 @@ export function Login() {
             });
     };
 
-    if (isSessionLoading) {
-        return null;
-    }
-
-    if (session?.user) {
-        void navigate({ to: '/pages/home-page' });
+    if (isPending || session?.user) {
         return null;
     }
 
@@ -128,7 +128,7 @@ export function Login() {
                         </form>
 
                         <p className="text-center text-small text-secondary-text mt-4">
-                            Don&apos;t have an account?{' '}
+                            Don't have an account?{' '}
                             <Link
                                 to="/auth/register"
                                 className="text-primary-blue font-medium cursor-pointer hover:underline"

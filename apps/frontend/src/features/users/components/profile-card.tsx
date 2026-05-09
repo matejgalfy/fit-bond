@@ -11,9 +11,18 @@ import { ProfileEditDialog } from './profile-edit-dialog';
 interface ProfileCardProps {
     user: UserProfile;
     isOwner?: boolean;
+    onLogout?: () => void | Promise<void>;
+    isLoggingOut?: boolean;
+    logoutError?: string;
 }
 
-export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
+export function ProfileCard({
+    user,
+    isOwner = true,
+    onLogout,
+    isLoggingOut = false,
+    logoutError,
+}: ProfileCardProps) {
     const primaryLocation = user.location;
 
     const { mutate: updateProfile } = useUpdateFullProfile(user.id);
@@ -83,10 +92,19 @@ export function ProfileCard({ user, isOwner = true }: ProfileCardProps) {
                         <Button
                             variant="outline"
                             className="rounded-xl border-primary-red text-primary-red hover:bg-primary-red/10 hover:text-primary-red px-6 font-semibold"
+                            onClick={() => {
+                                void onLogout?.();
+                            }}
+                            disabled={isLoggingOut || !onLogout}
                         >
                             <LogOut className="w-4 h-4 mr-2" />
-                            Log Out
+                            {isLoggingOut ? 'Logging out...' : 'Log Out'}
                         </Button>
+                        {logoutError && (
+                            <p className="basis-full text-regular text-primary-red">
+                                {logoutError}
+                            </p>
+                        )}
                     </div>
                 )}
 

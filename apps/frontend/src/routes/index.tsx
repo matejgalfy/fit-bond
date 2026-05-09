@@ -1,4 +1,5 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { useEffect } from 'react';
 import { authClient } from '@/lib/api';
 
 export const Route = createFileRoute('/')({
@@ -9,15 +10,16 @@ function IndexRedirect() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
 
-    if (isPending) {
-        return null;
-    }
+    useEffect(() => {
+        if (isPending) return;
 
-    if (session?.user) {
-        void navigate({ to: '/pages/home-page' });
-    } else {
-        void navigate({ to: '/auth/login' });
-    }
+        if (session?.user) {
+            void navigate({ to: '/pages/home-page', replace: true });
+            return;
+        }
+
+        void navigate({ to: '/auth/login', replace: true });
+    }, [isPending, navigate, session?.user]);
 
     return null;
 }

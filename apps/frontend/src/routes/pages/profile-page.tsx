@@ -2,6 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { ProfileCard } from '@/features/users/components/profile-card';
 import { useUserProfile } from '@/features/users/hooks/users';
+import { useLogout } from '@/features/auth/hooks/logout';
 
 export const Route = createFileRoute('/pages/profile-page')({
     validateSearch: (search: Record<string, unknown>): { userId?: string } => {
@@ -15,6 +16,7 @@ export const Route = createFileRoute('/pages/profile-page')({
 function ProfilePage() {
     const routeSearch = Route.useSearch() as unknown as { userId?: string };
     const searchUserId = routeSearch.userId;
+    const { logout, isLoggingOut, logoutError } = useLogout();
 
     const { data: session, isPending: isSessionPending } =
         authClient.useSession();
@@ -38,17 +40,9 @@ function ProfilePage() {
             <div className="mb-6">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     {isOwner ? (
-                        <>
-                            My{' '}
-                            <span className="text-primary-blue">Profile</span>
-                        </>
+                        <>My Profile</>
                     ) : (
-                        <>
-                            <span className="text-primary-blue">
-                                {user_data?.name}'s
-                            </span>{' '}
-                            Profile
-                        </>
+                        <>{user_data?.name}'s Profile</>
                     )}
                 </h1>
                 <p className="text-regular text-secondary-text mt-1">
@@ -75,7 +69,13 @@ function ProfilePage() {
                 </div>
             ) : (
                 <div className="flex justify-start">
-                    <ProfileCard user={user_data} isOwner={isOwner} />
+                    <ProfileCard
+                        user={user_data}
+                        isOwner={isOwner}
+                        onLogout={logout}
+                        isLoggingOut={isLoggingOut}
+                        logoutError={logoutError}
+                    />
                 </div>
             )}
         </div>
