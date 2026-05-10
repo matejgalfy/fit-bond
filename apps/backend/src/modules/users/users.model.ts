@@ -2,6 +2,7 @@ import { eq, and, isNull } from 'drizzle-orm';
 import type { Database } from '../../db';
 import { user, userPreferredSports } from '../../db/schema';
 import type { UpdateFullProfileInput } from './users.types';
+import { eventParticipants } from '../../db/schema';
 
 export interface ResolvedPreferredLocation {
     locationId: string;
@@ -86,6 +87,19 @@ export const usersModel = {
         return await db.query.user.findFirst({
             where: and(eq(user.name, name), isNull(user.deletedAt)),
         });
+    },
+
+    async getUsersByEventId(db: Database, eventId: string) {
+        return await db
+            .select({
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                image: user.image,
+            })
+            .from(eventParticipants)
+            .innerJoin(user, eq(eventParticipants.userId, user.id))
+            .where(eq(eventParticipants.eventId, eventId));
     },
 
     // TODO ban user

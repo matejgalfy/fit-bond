@@ -35,5 +35,8 @@
     "type": "module",
     "workspaces": [
         "apps/*"
-    ]
+    ],
+    "dependencies": {
+        "resend": "^6.12.3"
+    }
 }

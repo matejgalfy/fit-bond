@@ -58,9 +58,7 @@ describe('SportsService', () => {
     describe('getById', () => {
         test('returns sport when found', async () => {
             const sport = makeMockSport();
-            mockModel.findById.mockResolvedValueOnce(
-                sport as unknown as Record<string, unknown>
-            );
+            mockModel.findById.mockResolvedValueOnce(sport);
             const result = await service.getById(fakeDb, 'sport-1');
             expect(result).toEqual(sport);
         });
@@ -121,9 +119,7 @@ describe('SportsService', () => {
         });
 
         test('calls softDelete when sport exists', async () => {
-            mockModel.findById.mockResolvedValueOnce(
-                makeMockSport() as unknown as Record<string, unknown>
-            );
+            mockModel.findById.mockResolvedValueOnce(makeMockSport());
             await service.delete(fakeDb, 'sport-1');
             expect(mockModel.softDelete).toHaveBeenCalledWith(
                 fakeDb,

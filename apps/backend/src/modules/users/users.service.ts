@@ -89,7 +89,12 @@ export function createUsersService({
 
             return user;
         },
+
+        async getUsersByEventId(db: Database, eventId: string) {
+            return model.getUsersByEventId(db, eventId);
+        },
     };
 }
 
 export const usersService = createUsersService();
+export type UsersService = ReturnType<typeof createUsersService>;

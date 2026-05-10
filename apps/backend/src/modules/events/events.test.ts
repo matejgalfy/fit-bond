@@ -9,6 +9,7 @@ import type {
     UpdateEventInput,
 } from './events.types';
 import type { LocationsService } from '../locations/locations.service';
+import { UsersService } from '../users/users.service';
 
 const futureDate = new Date(Date.now() + 86400000).toISOString();
 const pastDate = new Date(Date.now() - 86400000).toISOString();
@@ -44,6 +45,12 @@ function makeFakeDb(): Database {
         transaction: async <T>(fn: (tx: Database) => Promise<T>) => fn(fake),
     };
     return fake as unknown as Database;
+}
+
+function makeMockUsersService() {
+    return {
+        getUsersByEventId: vi.fn(() => Promise.resolve([])),
+    };
 }
 
 type MockEvent = EventType & {
@@ -104,15 +111,18 @@ const fakeDb = makeFakeDb();
 describe('EventsService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
     let mockLocationsService: ReturnType<typeof makeMockLocationsService>;
+    let mockUsersService: ReturnType<typeof makeMockUsersService>;
     let service: ReturnType<typeof createEventsService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
         mockLocationsService = makeMockLocationsService();
+        mockUsersService = makeMockUsersService();
         service = createEventsService({
             model: mockModel as unknown as EventsModel,
             locationsService:
                 mockLocationsService as unknown as LocationsService,
+            usersService: mockUsersService as unknown as UsersService,
         });
     });
 
@@ -275,7 +285,7 @@ describe('EventsService', () => {
             const txDb = {
                 transaction: async <T>(fn: (txDb: Database) => Promise<T>) => {
                     try {
-                        return await fn(txDb as unknown as Database);
+                        return await fn(txDb);
                     } catch (err) {
                         tx.rolledBack = true;
                         throw err;
