@@ -1,19 +1,21 @@
 import {
     createFileRoute,
+    Navigate,
     Outlet,
-    useNavigate,
     useRouterState,
 } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import { useMemo } from 'react';
 import { authClient } from '@/lib/api';
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { SideNav } from '@/components/layout/side-nav';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import {
+    ADMIN_NAV_ITEM,
     NAV_ITEMS,
-    BOTTOM_NAV_ITEMS,
+    type NavigationSection,
 } from '@/components/layout/navigation-item';
 import { useUserProfile } from '@/features/users/hooks/users';
+import { useIsAdmin } from '@/features/admin/hooks/current-user';
 
 export const Route = createFileRoute('/pages')({
     component: PagesLayout,
@@ -29,19 +31,33 @@ function pathnameToNavId(pathname: string): string {
 }
 
 function PagesLayout() {
-    const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
     const { location } = useRouterState();
     const { data: profile } = useUserProfile(session?.user.id);
+    const isAdmin = useIsAdmin();
 
-    useEffect(() => {
-        if (!isPending && !session?.user) {
-            void navigate({ to: '/auth/login', replace: true });
-        }
-    }, [isPending, navigate, session?.user]);
+    const sections = useMemo<NavigationSection[] | undefined>(() => {
+        if (!isAdmin) return undefined;
+        return [
+            {
+                label: 'Admin',
+                accent: 'red',
+                items: [ADMIN_NAV_ITEM],
+            },
+        ];
+    }, [isAdmin]);
 
-    if (isPending || !session?.user) {
+    const bottomNavItems = useMemo(
+        () => (isAdmin ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS),
+        [isAdmin]
+    );
+
+    if (isPending) {
         return null;
+    }
+
+    if (!session?.user) {
+        return <Navigate to="/auth/login" replace />;
     }
 
     const activeNav = pathnameToNavId(location.pathname);
@@ -54,12 +70,16 @@ function PagesLayout() {
                 profilePictureUrl={navImage}
             />
             <div className="flex flex-1">
-                <SideNav items={NAV_ITEMS} activeNav={activeNav} />
+                <SideNav
+                    items={NAV_ITEMS}
+                    sections={sections}
+                    activeNav={activeNav}
+                />
                 <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
                     <Outlet />
                 </main>
             </div>
-            <MobileBottomNav items={BOTTOM_NAV_ITEMS} activeNav={activeNav} />
+            <MobileBottomNav items={bottomNavItems} activeNav={activeNav} />
         </div>
     );
 }

@@ -9,6 +9,12 @@ export interface NavigationItem {
     href?: string;
 }
 
+export interface NavigationSection {
+    label: string;
+    items: NavigationItem[];
+    accent?: 'default' | 'red';
+}
+
 export const NAV_ITEMS: NavigationItem[] = [
     { icon: Home, label: 'Home', id: 'home', href: '/pages/home-page' },
     {
@@ -41,7 +47,23 @@ export const ADMIN_NAV_ITEM: NavigationItem = {
     icon: Shield,
     label: 'Admin',
     id: 'admin',
+    href: '/admin',
 };
+
+export const ADMIN_SIDE_NAV_ITEMS: NavigationItem[] = [
+    {
+        icon: Shield,
+        label: 'Dashboard',
+        id: 'admin-dashboard',
+        href: '/admin',
+    },
+    {
+        icon: Compass,
+        label: 'Discover',
+        id: 'admin-discover',
+        href: '/admin/discover',
+    },
+];
 
 export const BOTTOM_NAV_ITEMS: NavigationItem[] = [
     ...NAV_ITEMS,

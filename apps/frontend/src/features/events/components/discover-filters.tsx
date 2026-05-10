@@ -2,6 +2,7 @@ import { Search, MapPin, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { IconInput } from '@/components/icon-input';
 import { cn } from '@/lib/utils';
 import type { SkillLevel } from '../../../../../backend/src/modules/events/events.types';
 
@@ -40,21 +41,15 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                     <label className="text-small text-secondary-text font-medium mb-1.5 block">
                         Sport
                     </label>
-                    <div className="relative">
-                        <Search
-                            size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text"
-                        />
-                        <Input
-                            type="text"
-                            placeholder="Search sport or event name..."
-                            className="pl-9 h-10 rounded-xl"
-                            value={filters.search}
-                            onChange={(e) => {
-                                updateFilter('search', e.target.value);
-                            }}
-                        />
-                    </div>
+                    <IconInput
+                        icon={Search}
+                        type="text"
+                        placeholder="Search sport or event name..."
+                        value={filters.search}
+                        onChange={(e) => {
+                            updateFilter('search', e.target.value);
+                        }}
+                    />
                     {/* Visual representation of an active tag (matching design) */}
                     {filters.search && (
                         <div className="mt-2 inline-flex items-center gap-1 bg-soft-blue text-strong-blue text-tiny px-2.5 py-1 rounded-full font-medium">
@@ -97,21 +92,15 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                     <label className="text-small text-secondary-text font-medium mb-1.5 block">
                         City
                     </label>
-                    <div className="relative">
-                        <MapPin
-                            size={16}
-                            className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text"
-                        />
-                        <Input
-                            type="text"
-                            placeholder="City or area..."
-                            className="pl-9 h-10 rounded-xl"
-                            value={filters.city}
-                            onChange={(e) => {
-                                updateFilter('city', e.target.value);
-                            }}
-                        />
-                    </div>
+                    <IconInput
+                        icon={MapPin}
+                        type="text"
+                        placeholder="City or area..."
+                        value={filters.city}
+                        onChange={(e) => {
+                            updateFilter('city', e.target.value);
+                        }}
+                    />
                 </div>
             </div>
 
