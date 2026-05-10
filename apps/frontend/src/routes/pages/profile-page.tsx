@@ -14,7 +14,7 @@ export const Route = createFileRoute('/pages/profile-page')({
 });
 
 function ProfilePage() {
-    const routeSearch = Route.useSearch();
+    const routeSearch = Route.useSearch() as unknown as { userId?: string };
     const searchUserId = routeSearch.userId;
     const { logout, isLoggingOut, logoutError } = useLogout();
 
