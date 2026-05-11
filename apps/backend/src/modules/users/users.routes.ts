@@ -2,7 +2,7 @@ import { Elysia } from 'elysia';
 import { usersController } from './users.controller';
 import {
     eventIdParam,
-    updateFullProfileSchema,
+    updateProfileSchema,
     userIdParam,
     userNameParam,
 } from './users.schema';
@@ -17,31 +17,20 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
             params: userIdParam,
             detail: {
                 tags: ['Users'],
-                summary: 'Get public profile',
+                summary: 'Get user profile',
             },
         }
     )
-    .put(
+    .patch(
         '/:userId/profile',
         ({ params: { userId }, body }) =>
             usersController.updateFullProfile(userId, body),
         {
             params: userIdParam,
-            body: updateFullProfileSchema,
+            body: updateProfileSchema,
             detail: {
                 tags: ['Users'],
-                summary: 'Update full profile',
-            },
-        }
-    )
-    .get(
-        '/name/:name',
-        ({ params: { name } }) => usersController.findUserByName(name),
-        {
-            params: userNameParam,
-            detail: {
-                tags: ['Users'],
-                summary: 'Find user by name',
+                summary: 'Update profile',
             },
         }
     )

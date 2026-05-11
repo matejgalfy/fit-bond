@@ -15,7 +15,7 @@ export const userPreferredLocationSchema = t.Composite([
     }),
 ]);
 
-export const updateFullProfileSchema = t.Object({
+export const updateProfileSchema = t.Object({
     base: t.Optional(updateBaseUserSchema),
     sportIds: t.Optional(t.Array(t.String({ format: 'uuid' }))),
     location: t.Optional(t.Union([userPreferredLocationSchema, t.Null()])),
@@ -43,8 +43,6 @@ export const userProfileSchema = t.Object({
     ),
     location: t.Union([userProfileLocationSchema, t.Null()]),
 });
-
-// export const PrivateUserSchema = baseUserSchema.pick(); TODO
 
 export const userIdParam = t.Object({
     userId: t.String(),
