@@ -1,7 +1,7 @@
 import { eq, and, isNull } from 'drizzle-orm';
 import type { Database } from '../../db';
 import { user, userPreferredSports } from '../../db/schema';
-import type { UpdateFullProfileInput } from './users.types';
+import type { UpdateProfileInput } from './users.types';
 import { eventParticipants } from '../../db/schema';
 
 export interface ResolvedPreferredLocation {
@@ -10,11 +10,7 @@ export interface ResolvedPreferredLocation {
 }
 
 export const usersModel = {
-    // TODO createUser
-
-    // TODO getPrivateUserProfileById
-
-    async getPublicUserProfileById(db: Database, userId: string) {
+    async getUserProfileById(db: Database, userId: string) {
         return await db.query.user.findFirst({
             where: and(eq(user.id, userId), isNull(user.deletedAt)),
             with: {
@@ -28,10 +24,10 @@ export const usersModel = {
         });
     },
 
-    async updateFullProfile(
+    async updateProfile(
         db: Database,
         userId: string,
-        data: Omit<UpdateFullProfileInput, 'location'> & {
+        data: Omit<UpdateProfileInput, 'location'> & {
             location?: ResolvedPreferredLocation | null;
         }
     ) {
@@ -82,13 +78,6 @@ export const usersModel = {
         });
     },
 
-    // TODO spytat sa chata, ci to je ok takto pre admina
-    async findUserByName(db: Database, name: string) {
-        return await db.query.user.findFirst({
-            where: and(eq(user.name, name), isNull(user.deletedAt)),
-        });
-    },
-
     async getUsersByEventId(db: Database, eventId: string) {
         return await db
             .select({
@@ -101,9 +90,6 @@ export const usersModel = {
             .innerJoin(user, eq(eventParticipants.userId, user.id))
             .where(eq(eventParticipants.eventId, eventId));
     },
-
-    // TODO ban user
-    // TODO unban user
 };
 
 export type UsersModel = typeof usersModel;
