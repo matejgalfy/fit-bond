@@ -7,7 +7,7 @@ export const usersController = {
         return usersService.getUserProfile(db, userId);
     },
 
-    async updateFullProfile(userId: string, data: UpdateProfileInput) {
+    async updateProfile(userId: string, data: UpdateProfileInput) {
         return usersService.updateProfile(db, userId, data);
     },
 

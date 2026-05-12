@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/ui/form-field';
 import { LocationCombobox } from '@/components/location-combobox';
-import { useUpdateFullProfile } from '../hooks/users';
+import { useUpdateProfile } from '../hooks/users';
 import { ApiError } from '@/lib/api-error';
 import { MultiSportCombobox } from '@/features/sports/components/multi-sport-combobox';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
@@ -60,7 +60,7 @@ export function ProfileEditDialog({
     );
     const [error, setError] = useState('');
 
-    const { mutateAsync: updateProfile, isPending } = useUpdateFullProfile(
+    const { mutateAsync: updateProfile, isPending } = useUpdateProfile(
         user.id
     );
 

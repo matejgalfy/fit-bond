@@ -24,7 +24,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     .patch(
         '/:userId/profile',
         ({ params: { userId }, body }) =>
-            usersController.updateFullProfile(userId, body),
+            usersController.updateProfile(userId, body),
         {
             params: userIdParam,
             body: updateProfileSchema,
