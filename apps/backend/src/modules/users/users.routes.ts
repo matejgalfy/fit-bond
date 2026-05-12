@@ -4,7 +4,6 @@ import {
     eventIdParam,
     updateProfileSchema,
     userIdParam,
-    userNameParam,
 } from './users.schema';
 import { handleServiceError } from '../../utils/error-handler';
 
