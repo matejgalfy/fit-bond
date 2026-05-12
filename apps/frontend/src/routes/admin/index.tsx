@@ -3,7 +3,11 @@ import { createFileRoute } from '@tanstack/react-router';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportsTable } from '@/features/admin/components/reports-table';
 import { ReportDetailPanel } from '@/features/admin/components/report-detail-panel';
-import { useReports, useResolveReport } from '@/features/admin/hooks/reports';
+import {
+    useRejectReport,
+    useReports,
+    useResolveReport,
+} from '@/features/admin/hooks/reports';
 import type { Report } from '@/features/admin/types';
 
 export const Route = createFileRoute('/admin/')({
@@ -19,6 +23,7 @@ type AdminTabValue = (typeof ADMIN_TAB)[keyof typeof ADMIN_TAB];
 function AdminDashboard() {
     const { data: reports } = useReports();
     const resolveReport = useResolveReport();
+    const rejectReport = useRejectReport();
     const [selectedId, setSelectedId] = useState<string>();
     const [activeTab, setActiveTab] = useState<AdminTabValue>(
         ADMIN_TAB.reports
@@ -28,7 +33,12 @@ function AdminDashboard() {
     const selectedReport: Report | undefined =
         reportList.find((report) => report.id === selectedId) ??
         (reportList.length === 0 ? undefined : reportList[0]);
-    const openCount = reportList.filter((r) => r.status === 'open').length;
+    const pendingCount = reportList.filter(
+        (r) => r.status === 'pending'
+    ).length;
+
+    const actionError =
+        resolveReport.error?.message ?? rejectReport.error?.message ?? null;
 
     return (
         <div className="max-w-280 mx-auto">
@@ -52,7 +62,7 @@ function AdminDashboard() {
                     >
                         Reports
                         <span className="rounded-full bg-muted-background px-1.5 py-0.5 text-tiny leading-none text-secondary-text group-data-[state=active]:bg-primary-blue group-data-[state=active]:text-surface">
-                            {openCount}
+                            {pendingCount}
                         </span>
                     </TabsTrigger>
                 </TabsList>
@@ -67,11 +77,14 @@ function AdminDashboard() {
 
                 <ReportDetailPanel
                     report={selectedReport}
-                    onReview={(id) => {
-                        setSelectedId(id);
+                    resolvePending={resolveReport.isPending}
+                    rejectPending={rejectReport.isPending}
+                    actionError={actionError}
+                    onResolve={(id, resolution) => {
+                        resolveReport.mutate({ id, body: { resolution } });
                     }}
-                    onResolve={(id) => {
-                        resolveReport.mutate(id);
+                    onReject={(id, resolution) => {
+                        rejectReport.mutate({ id, body: { resolution } });
                     }}
                 />
             </div>

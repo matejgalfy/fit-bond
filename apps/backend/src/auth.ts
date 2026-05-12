@@ -25,6 +25,20 @@ export const auth = betterAuth({
         },
     },
     trustedOrigins: ['http://localhost:5173'],
+    user: {
+        additionalFields: {
+            role: {
+                type: 'string',
+                defaultValue: 'user',
+                input: false,
+            },
+            bannedReason: {
+                type: 'string',
+                required: false,
+                input: false,
+            },
+        },
+    },
 
     databaseHooks: {
         user: {

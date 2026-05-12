@@ -1,14 +1,10 @@
-import { useQuery } from '@tanstack/react-query';
+import { authClient } from '@/lib/api';
 import type { UserRole } from '../types';
 
-const adminRoleQueryKey = ['admin', 'current-user-role'] as const;
-
 export function useCurrentUserRole() {
-    return useQuery<UserRole>({
-        queryKey: adminRoleQueryKey,
-        queryFn: () => Promise.resolve('admin'),
-        staleTime: Infinity,
-    });
+    const { data: session, isPending } = authClient.useSession();
+    const role = (session?.user as { role?: UserRole } | undefined)?.role;
+    return { data: role, isPending };
 }
 
 export function useIsAdmin() {
