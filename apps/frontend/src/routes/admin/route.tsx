@@ -44,13 +44,13 @@ function AdminLayout() {
 
     const activeNav = pathnameToNavId(location.pathname);
     const navImage = profile?.image ?? session.user.image;
-    const openReports = (reports ?? []).filter(
-        (report) => report.status === 'open'
+    const pendingReports = (reports ?? []).filter(
+        (report) => report.status === 'pending'
     ).length;
 
     const navItems = ADMIN_SIDE_NAV_ITEMS.map((item) =>
-        item.id === 'admin-dashboard' && openReports > 0
-            ? { ...item, badge: openReports }
+        item.id === 'admin-dashboard' && pendingReports > 0
+            ? { ...item, badge: pendingReports }
             : item
     );
 

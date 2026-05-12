@@ -1,15 +1,9 @@
+import type { AdminReport } from './api/admin-api';
+
 export type ReportTargetType = 'event' | 'comment' | 'user';
 
-export type ReportStatus = 'open' | 'reviewing' | 'resolved';
+export type ReportStatus = 'pending' | 'resolved' | 'rejected';
 
-export interface Report {
-    id: string;
-    reporterName: string;
-    targetType: ReportTargetType;
-    targetLabel: string;
-    reason: string;
-    createdAt: string;
-    status: ReportStatus;
-}
+export type Report = AdminReport;
 
 export type UserRole = 'user' | 'admin';
