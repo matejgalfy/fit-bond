@@ -6,7 +6,7 @@ import type { UserProfile } from '../../../../../backend/src/modules/users/users
 const mutateMock = vi.fn();
 
 vi.mock('../hooks/users', () => ({
-    useUpdateFullProfile: () => ({ mutate: mutateMock }),
+    useUpdateProfile: () => ({ mutate: mutateMock }),
 }));
 
 vi.mock('./profile-edit-dialog', () => ({

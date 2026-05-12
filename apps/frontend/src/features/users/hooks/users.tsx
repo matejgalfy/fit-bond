@@ -1,10 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { UpdateProfileInput } from '../../../../../backend/src/modules/users/users.types';
-import {
-    getUserProfile,
-    updateProfile,
-    userQueryKeys,
-} from '../api/users-api';
+import { getUserProfile, updateProfile, userQueryKeys } from '../api/users-api';
 import { authClient } from '@/lib/api';
 
 export function useUserProfile(userId?: string) {

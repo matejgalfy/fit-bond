@@ -17,10 +17,7 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     return data;
 }
 
-export async function updateProfile(
-    userId: string,
-    body: UpdateProfileInput
-) {
+export async function updateProfile(userId: string, body: UpdateProfileInput) {
     const { data, error } = await api.users({ userId }).profile.patch(body);
     throwIfError(error, 'Failed to update profile');
     return data;

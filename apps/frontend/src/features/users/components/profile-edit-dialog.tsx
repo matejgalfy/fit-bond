@@ -60,9 +60,7 @@ export function ProfileEditDialog({
     );
     const [error, setError] = useState('');
 
-    const { mutateAsync: updateProfile, isPending } = useUpdateProfile(
-        user.id
-    );
+    const { mutateAsync: updateProfile, isPending } = useUpdateProfile(user.id);
 
     useEffect(() => {
         if (!open) return;
