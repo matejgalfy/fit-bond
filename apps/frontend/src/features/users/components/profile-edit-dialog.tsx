@@ -49,16 +49,15 @@ export function ProfileEditDialog({
 
     const [name, setName] = useState(user.name);
     const [bio, setBio] = useState(user.bio ?? '');
+    const [sportIds, setSportIds] = useState<string[]>(
+        user.sports.map((s) => s.id)
+    );
     const [location, setLocation] = useState<LocationSuggestion | null>(
         primary ? locationToSuggestion(primary) : null
     );
     const [radius, setRadius] = useState<string>(
         primary ? String(primary.radius) : String(DEFAULT_RADIUS)
     );
-    const [sportIds, setSportIds] = useState<string[]>(
-        user.sports.map((s) => s.id)
-    );
-
     const [error, setError] = useState('');
 
     const { mutateAsync: updateProfile, isPending } = useUpdateFullProfile(
@@ -69,9 +68,9 @@ export function ProfileEditDialog({
         if (!open) return;
         setName(user.name);
         setBio(user.bio ?? '');
+        setSportIds(user.sports.map((s) => s.id));
         setLocation(primary ? locationToSuggestion(primary) : null);
         setRadius(primary ? String(primary.radius) : String(DEFAULT_RADIUS));
-        setSportIds(user.sports.map(s => s.id));
         setError('');
     }, [open, user, primary]);
 
@@ -99,7 +98,7 @@ export function ProfileEditDialog({
                     name: trimmedName,
                     bio: bio.trim(),
                 },
-                sportIds: sportIds,
+                sportIds,
                 location: location
                     ? {
                           placeId: location.placeId,
@@ -123,7 +122,7 @@ export function ProfileEditDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
+            <DialogContent className="sm:max-w-md">
                 <DialogHeader>
                     <DialogTitle>Edit profile</DialogTitle>
                     <DialogDescription>
@@ -136,7 +135,7 @@ export function ProfileEditDialog({
                         e.preventDefault();
                         void submit();
                     }}
-                    className="space-y-4"
+                    className="space-y-3"
                 >
                     <FormField label="Name" htmlFor="profile-name" required>
                         <Input
@@ -158,7 +157,7 @@ export function ProfileEditDialog({
                                 setBio(e.target.value);
                             }}
                             maxLength={500}
-                            rows={3}
+                            rows={2}
                             className="bg-background"
                         />
                     </FormField>
@@ -193,7 +192,7 @@ export function ProfileEditDialog({
                                 setRadius(e.target.value);
                             }}
                             disabled={!location}
-                            className="h-10 bg-background"
+                            className="h-10 w-full bg-background"
                         />
                     </FormField>
 

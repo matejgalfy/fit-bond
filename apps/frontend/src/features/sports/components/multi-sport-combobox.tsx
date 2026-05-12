@@ -33,7 +33,8 @@ export function MultiSportCombobox({
     const [open, setOpen] = useState(false);
     const { data: sports, isLoading } = useSports();
 
-    const selectedSports = sports?.filter((sport) => values.includes(sport.id)) || [];
+    const selectedSports =
+        sports?.filter((sport) => values.includes(sport.id)) || [];
 
     const toggleSport = (sportId: string) => {
         const newValues = values.includes(sportId)
@@ -60,21 +61,31 @@ export function MultiSportCombobox({
                 >
                     <div className="flex flex-wrap gap-1">
                         {isLoading ? (
-                            <span className="text-secondary-text">Loading sports...</span>
+                            <span className="text-secondary-text">
+                                Loading sports...
+                            </span>
                         ) : selectedSports.length > 0 ? (
                             selectedSports.map((sport) => (
-                                <Badge key={sport.id} variant="secondary" className="mr-1">
+                                <Badge
+                                    key={sport.id}
+                                    variant="secondary"
+                                    className="mr-1"
+                                >
                                     {sport.name}
                                     <span
                                         className="ml-1 cursor-pointer hover:text-primary-red"
-                                        onClick={(e) => removeSport(e, sport.id)}
+                                        onClick={(e) =>
+                                            removeSport(e, sport.id)
+                                        }
                                     >
                                         <X className="size-3" />
                                     </span>
                                 </Badge>
                             ))
                         ) : (
-                            <span className="text-secondary-text">{placeholder}</span>
+                            <span className="text-secondary-text">
+                                {placeholder}
+                            </span>
                         )}
                     </div>
                     <ChevronsUpDown className="size-4 shrink-0 text-secondary-text" />
@@ -100,7 +111,9 @@ export function MultiSportCombobox({
                                         <Check
                                             className={cn(
                                                 'mr-2 size-4',
-                                                isSelected ? 'opacity-100' : 'opacity-0'
+                                                isSelected
+                                                    ? 'opacity-100'
+                                                    : 'opacity-0'
                                             )}
                                         />
                                         {sport.name}
