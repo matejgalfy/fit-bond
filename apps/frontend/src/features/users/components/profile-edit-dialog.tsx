@@ -15,10 +15,7 @@ import { FormField } from '@/components/ui/form-field';
 import { LocationCombobox } from '@/components/location-combobox';
 import { useUpdateFullProfile } from '../hooks/users';
 import { ApiError } from '@/lib/api-error';
-import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
-import { SportCombobox } from '@/features/sports/components/sport-combobox';
-import { useSports } from '@/features/sports/hooks/sports';
+import { MultiSportCombobox } from '@/features/sports/components/multi-sport-combobox';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 
@@ -58,7 +55,10 @@ export function ProfileEditDialog({
     const [radius, setRadius] = useState<string>(
         primary ? String(primary.radius) : String(DEFAULT_RADIUS)
     );
-    const [sports, setSports] = useState(user.sports);
+    const [sportIds, setSportIds] = useState<string[]>(
+        user.sports.map((s) => s.id)
+    );
+
     const [error, setError] = useState('');
 
     const { mutateAsync: updateProfile, isPending } = useUpdateFullProfile(
@@ -71,7 +71,7 @@ export function ProfileEditDialog({
         setBio(user.bio ?? '');
         setLocation(primary ? locationToSuggestion(primary) : null);
         setRadius(primary ? String(primary.radius) : String(DEFAULT_RADIUS));
-        setSports(user.sports ?? []);
+        setSportIds(user.sports.map(s => s.id));
         setError('');
     }, [open, user, primary]);
 
@@ -99,6 +99,7 @@ export function ProfileEditDialog({
                     name: trimmedName,
                     bio: bio.trim(),
                 },
+                sportIds: sportIds,
                 location: location
                     ? {
                           placeId: location.placeId,
@@ -122,7 +123,7 @@ export function ProfileEditDialog({
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="sm:max-w-md">
+            <DialogContent className="sm:max-w-md max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle>Edit profile</DialogTitle>
                     <DialogDescription>
@@ -159,6 +160,14 @@ export function ProfileEditDialog({
                             maxLength={500}
                             rows={3}
                             className="bg-background"
+                        />
+                    </FormField>
+
+                    <FormField label="My sports" htmlFor="profile-sports">
+                        <MultiSportCombobox
+                            id="profile-sports"
+                            values={sportIds}
+                            onChange={setSportIds}
                         />
                     </FormField>
 
