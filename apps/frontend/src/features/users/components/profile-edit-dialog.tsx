@@ -54,6 +54,7 @@ export function ProfileEditDialog({
     const [radius, setRadius] = useState<string>(
         primary ? String(primary.radius) : String(DEFAULT_RADIUS)
     );
+    const [sports, setSports] = useState(user.sports);
     const [error, setError] = useState('');
 
     const { mutateAsync: updateProfile, isPending } = useUpdateFullProfile(
@@ -66,6 +67,7 @@ export function ProfileEditDialog({
         setBio(user.bio ?? '');
         setLocation(primary ? locationToSuggestion(primary) : null);
         setRadius(primary ? String(primary.radius) : String(DEFAULT_RADIUS));
+        setSports(user.sports ?? []);
         setError('');
     }, [open, user, primary]);
 
