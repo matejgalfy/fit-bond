@@ -1,55 +1,40 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { Report } from '../types';
+import {
+    keepPreviousData,
+    useMutation,
+    useQuery,
+    useQueryClient,
+} from '@tanstack/react-query';
+import type {
+    AdminReportQueryFilters,
+    RejectReportBody,
+    ResolveReportBody,
+} from '../../../../../backend/src/modules/reports/reports.schema';
+import {
+    adminQueryKeys,
+    getAdminReport,
+    listAdminReports,
+    rejectAdminReport,
+    resolveAdminReport,
+} from '../api/admin-api';
 
-const reportQueryKeys = {
-    all: ['admin', 'reports'] as const,
-    list: () => [...reportQueryKeys.all, 'list'] as const,
-    detail: (id: string) => [...reportQueryKeys.all, 'detail', id] as const,
-};
+export function useReports(filters?: AdminReportQueryFilters) {
+    return useQuery({
+        queryKey: adminQueryKeys.reports(filters),
+        queryFn: () => listAdminReports(filters),
+        placeholderData: keepPreviousData,
+    });
+}
 
-const MOCK_REPORTS: Report[] = [
-    {
-        id: 'r-1',
-        reporterName: 'Jana K.',
-        targetType: 'event',
-        targetLabel: 'Spam Fitness Event',
-        reason: 'Spam',
-        createdAt: '2026-03-21',
-        status: 'open',
-    },
-    {
-        id: 'r-2',
-        reporterName: 'Eva M.',
-        targetType: 'comment',
-        targetLabel: '"This is terrible..."',
-        reason: 'Inappropriate',
-        createdAt: '2026-03-20',
-        status: 'open',
-    },
-    {
-        id: 'r-3',
-        reporterName: 'Petr S.',
-        targetType: 'event',
-        targetLabel: 'Illegal Gathering',
-        reason: 'Other',
-        createdAt: '2026-03-18',
-        status: 'open',
-    },
-    {
-        id: 'r-4',
-        reporterName: 'Lucie D.',
-        targetType: 'user',
-        targetLabel: 'SpamBot99',
-        reason: 'Spam',
-        createdAt: '2026-03-17',
-        status: 'open',
-    },
-];
-
-export function useReports() {
-    return useQuery<Report[]>({
-        queryKey: reportQueryKeys.list(),
-        queryFn: () => Promise.resolve(MOCK_REPORTS),
+export function useReport(id?: string) {
+    return useQuery({
+        queryKey: adminQueryKeys.reportDetail(id ?? 'missing'),
+        queryFn: () => {
+            if (!id) {
+                throw new Error('Missing report id');
+            }
+            return getAdminReport(id);
+        },
+        enabled: Boolean(id),
     });
 }
 
@@ -57,13 +42,36 @@ export function useResolveReport() {
     const queryClient = useQueryClient();
 
     return useMutation({
-        mutationFn: (id: string) => Promise.resolve(id),
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
-                queryKey: reportQueryKeys.all,
-            });
+        mutationFn: ({ id, body }: { id: string; body: ResolveReportBody }) =>
+            resolveAdminReport(id, body),
+        onSuccess: async (_data, variables) => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: [...adminQueryKeys.all, 'reports'],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: adminQueryKeys.reportDetail(variables.id),
+                }),
+            ]);
         },
     });
 }
 
-export { reportQueryKeys };
+export function useRejectReport() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        mutationFn: ({ id, body }: { id: string; body: RejectReportBody }) =>
+            rejectAdminReport(id, body),
+        onSuccess: async (_data, variables) => {
+            await Promise.all([
+                queryClient.invalidateQueries({
+                    queryKey: [...adminQueryKeys.all, 'reports'],
+                }),
+                queryClient.invalidateQueries({
+                    queryKey: adminQueryKeys.reportDetail(variables.id),
+                }),
+            ]);
+        },
+    });
+}

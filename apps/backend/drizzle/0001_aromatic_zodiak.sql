@@ -1,0 +1,1 @@
+ALTER TABLE "reports" ALTER COLUMN "target_id" SET DATA TYPE text USING "target_id"::text;

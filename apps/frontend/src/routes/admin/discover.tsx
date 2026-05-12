@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { EventsBrowser } from '@/features/events/components/events-browser';
+import { AdminEventsBrowser } from '@/features/admin/components/admin-events-browser';
 import { AdminUsersSearch } from '@/features/admin/components/admin-users-search';
 
 export const Route = createFileRoute('/admin/discover')({
@@ -59,7 +59,7 @@ function AdminDiscoverPage() {
                 </TabsList>
 
                 <TabsContent value={DISCOVER_TAB.events}>
-                    <EventsBrowser />
+                    <AdminEventsBrowser />
                 </TabsContent>
                 <TabsContent value={DISCOVER_TAB.users}>
                     <AdminUsersSearch />

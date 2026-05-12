@@ -258,7 +258,7 @@ export const reports = pgTable('reports', {
         .notNull()
         .references(() => user.id),
     reportType: reportTypeEnum('report_type').notNull(),
-    targetId: uuid('target_id').notNull(),
+    targetId: text('target_id').notNull(),
     reason: text('reason').notNull(),
     status: reportStatusEnum('status').default('pending').notNull(),
     resolvedBy: text('resolved_by').references(() => user.id),
