@@ -34,7 +34,7 @@ export function MultiSportCombobox({
     const { data: sports, isLoading } = useSports();
 
     const selectedSports =
-        sports?.filter((sport) => values.includes(sport.id)) || [];
+        sports?.filter((sport) => values.includes(sport.id)) ?? [];
 
     const toggleSport = (sportId: string) => {
         const newValues = values.includes(sportId)
@@ -74,9 +74,9 @@ export function MultiSportCombobox({
                                     {sport.name}
                                     <span
                                         className="ml-1 cursor-pointer hover:text-primary-red"
-                                        onClick={(e) =>
-                                            removeSport(e, sport.id)
-                                        }
+                                        onClick={(e) => {
+                                            removeSport(e, sport.id);
+                                        }}
                                     >
                                         <X className="size-3" />
                                     </span>
@@ -106,7 +106,9 @@ export function MultiSportCombobox({
                                     <CommandItem
                                         key={sport.id}
                                         value={sport.name}
-                                        onSelect={() => toggleSport(sport.id)}
+                                        onSelect={() => {
+                                            toggleSport(sport.id);
+                                        }}
                                     >
                                         <Check
                                             className={cn(
