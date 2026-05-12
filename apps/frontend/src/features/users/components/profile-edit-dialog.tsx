@@ -15,6 +15,7 @@ import { FormField } from '@/components/ui/form-field';
 import { LocationCombobox } from '@/components/location-combobox';
 import { useUpdateFullProfile } from '../hooks/users';
 import { ApiError } from '@/lib/api-error';
+import { MultiSportCombobox } from '@/features/sports/components/multi-sport-combobox';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 
@@ -48,6 +49,9 @@ export function ProfileEditDialog({
 
     const [name, setName] = useState(user.name);
     const [bio, setBio] = useState(user.bio ?? '');
+    const [sportIds, setSportIds] = useState<string[]>(
+        user.sports.map((s) => s.id)
+    );
     const [location, setLocation] = useState<LocationSuggestion | null>(
         primary ? locationToSuggestion(primary) : null
     );
@@ -64,6 +68,7 @@ export function ProfileEditDialog({
         if (!open) return;
         setName(user.name);
         setBio(user.bio ?? '');
+        setSportIds(user.sports.map((s) => s.id));
         setLocation(primary ? locationToSuggestion(primary) : null);
         setRadius(primary ? String(primary.radius) : String(DEFAULT_RADIUS));
         setError('');
@@ -93,6 +98,7 @@ export function ProfileEditDialog({
                     name: trimmedName,
                     bio: bio.trim(),
                 },
+                sportIds,
                 location: location
                     ? {
                           placeId: location.placeId,
@@ -129,7 +135,7 @@ export function ProfileEditDialog({
                         e.preventDefault();
                         void submit();
                     }}
-                    className="space-y-4"
+                    className="space-y-3 w-full min-w-0"
                 >
                     <FormField label="Name" htmlFor="profile-name" required>
                         <Input
@@ -151,8 +157,16 @@ export function ProfileEditDialog({
                                 setBio(e.target.value);
                             }}
                             maxLength={500}
-                            rows={3}
+                            rows={2}
                             className="bg-background"
+                        />
+                    </FormField>
+
+                    <FormField label="My sports" htmlFor="profile-sports">
+                        <MultiSportCombobox
+                            id="profile-sports"
+                            values={sportIds}
+                            onChange={setSportIds}
                         />
                     </FormField>
 
@@ -178,7 +192,7 @@ export function ProfileEditDialog({
                                 setRadius(e.target.value);
                             }}
                             disabled={!location}
-                            className="h-10 bg-background"
+                            className="h-10 w-full bg-background"
                         />
                     </FormField>
 
