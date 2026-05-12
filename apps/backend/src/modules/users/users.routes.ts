@@ -1,10 +1,6 @@
 import { Elysia } from 'elysia';
 import { usersController } from './users.controller';
-import {
-    eventIdParam,
-    updateProfileSchema,
-    userIdParam,
-} from './users.schema';
+import { eventIdParam, updateProfileSchema, userIdParam } from './users.schema';
 import { handleServiceError } from '../../utils/error-handler';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
