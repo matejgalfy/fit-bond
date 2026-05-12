@@ -1,11 +1,6 @@
 import { Elysia } from 'elysia';
 import { usersController } from './users.controller';
-import {
-    eventIdParam,
-    updateFullProfileSchema,
-    userIdParam,
-    userNameParam,
-} from './users.schema';
+import { eventIdParam, updateProfileSchema, userIdParam } from './users.schema';
 import { handleServiceError } from '../../utils/error-handler';
 
 export const usersRoutes = new Elysia({ prefix: '/users' })
@@ -17,31 +12,20 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
             params: userIdParam,
             detail: {
                 tags: ['Users'],
-                summary: 'Get public profile',
+                summary: 'Get user profile',
             },
         }
     )
-    .put(
+    .patch(
         '/:userId/profile',
         ({ params: { userId }, body }) =>
-            usersController.updateFullProfile(userId, body),
+            usersController.updateProfile(userId, body),
         {
             params: userIdParam,
-            body: updateFullProfileSchema,
+            body: updateProfileSchema,
             detail: {
                 tags: ['Users'],
-                summary: 'Update full profile',
-            },
-        }
-    )
-    .get(
-        '/name/:name',
-        ({ params: { name } }) => usersController.findUserByName(name),
-        {
-            params: userNameParam,
-            detail: {
-                tags: ['Users'],
-                summary: 'Find user by name',
+                summary: 'Update profile',
             },
         }
     )

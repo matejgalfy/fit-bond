@@ -1,6 +1,6 @@
 import { type Database } from '../../db';
 import type { UsersModel } from './users.model';
-import type { UserProfile, UpdateFullProfileInput } from './users.types';
+import type { UserProfile, UpdateProfileInput } from './users.types';
 import { usersModel as defaultModel } from './users.model';
 import { ServiceError } from '../../utils/errors';
 import {
@@ -22,7 +22,7 @@ export function createUsersService({
             db: Database,
             userId: string
         ): Promise<UserProfile> {
-            const rawUser = await model.getPublicUserProfileById(db, userId);
+            const rawUser = await model.getUserProfileById(db, userId);
 
             if (!rawUser) {
                 throw ServiceError.notFound('User not found');
@@ -48,10 +48,10 @@ export function createUsersService({
             };
         },
 
-        async updateFullProfile(
+        async updateProfile(
             db: Database,
             userId: string,
-            data: UpdateFullProfileInput
+            data: UpdateProfileInput
         ) {
             return db.transaction(async (tx) => {
                 let resolved:
@@ -69,25 +69,12 @@ export function createUsersService({
                     resolved = { locationId: location.id, radius };
                 }
 
-                return model.updateFullProfile(tx, userId, {
+                return model.updateProfile(tx, userId, {
                     base: data.base,
                     sportIds: data.sportIds,
                     location: resolved,
                 });
             });
-        },
-
-        // for admin to search
-        // TODO add partial name matching, multiple results
-        // admin role check
-        async findUserByName(db: Database, name: string) {
-            const user = await model.findUserByName(db, name);
-
-            if (!user) {
-                throw ServiceError.notFound('User not found');
-            }
-
-            return user;
         },
 
         async getUsersByEventId(db: Database, eventId: string) {

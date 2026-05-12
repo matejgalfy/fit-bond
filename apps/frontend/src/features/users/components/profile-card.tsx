@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Pencil, LogOut, MapPin } from 'lucide-react';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { useUpdateFullProfile } from '../hooks/users';
+import { useUpdateProfile } from '../hooks/users';
 import { ProfileEditDialog } from './profile-edit-dialog';
 
 interface ProfileCardProps {
@@ -25,7 +25,7 @@ export function ProfileCard({
 }: ProfileCardProps) {
     const primaryLocation = user.location;
 
-    const { mutate: updateProfile } = useUpdateFullProfile(user.id);
+    const { mutate: updateProfile } = useUpdateProfile(user.id);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [editOpen, setEditOpen] = useState(false);
 

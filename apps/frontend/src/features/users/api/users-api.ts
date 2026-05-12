@@ -2,7 +2,7 @@ import { api } from '@/lib/api';
 import { throwIfError } from '@/lib/api-error';
 import type {
     UserProfile,
-    UpdateFullProfileInput,
+    UpdateProfileInput,
 } from '../../../../../backend/src/modules/users/users.types';
 
 export const userQueryKeys = {
@@ -17,17 +17,8 @@ export async function getUserProfile(userId: string): Promise<UserProfile> {
     return data;
 }
 
-export async function updateFullProfile(
-    userId: string,
-    body: UpdateFullProfileInput
-) {
-    const { data, error } = await api.users({ userId }).profile.put(body);
+export async function updateProfile(userId: string, body: UpdateProfileInput) {
+    const { data, error } = await api.users({ userId }).profile.patch(body);
     throwIfError(error, 'Failed to update profile');
-    return data;
-}
-
-export async function findUserByName(name: string) {
-    const { data, error } = await api.users.name({ name }).get();
-    throwIfError(error, 'Failed to find user');
     return data;
 }
