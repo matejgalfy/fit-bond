@@ -135,7 +135,7 @@ export function ProfileEditDialog({
                         e.preventDefault();
                         void submit();
                     }}
-                    className="space-y-3"
+                    className="space-y-3 w-full min-w-0"
                 >
                     <FormField label="Name" htmlFor="profile-name" required>
                         <Input
