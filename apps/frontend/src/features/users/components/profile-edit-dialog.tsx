@@ -15,6 +15,10 @@ import { FormField } from '@/components/ui/form-field';
 import { LocationCombobox } from '@/components/location-combobox';
 import { useUpdateFullProfile } from '../hooks/users';
 import { ApiError } from '@/lib/api-error';
+import { Badge } from '@/components/ui/badge';
+import { X } from 'lucide-react';
+import { SportCombobox } from '@/features/sports/components/sport-combobox';
+import { useSports } from '@/features/sports/hooks/sports';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 
