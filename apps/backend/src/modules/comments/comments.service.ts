@@ -10,7 +10,7 @@ import { ServiceError } from '../../utils/errors';
 
 export interface CommentActor {
     id: string;
-    role: 'user' | 'admin';
+    role: string;
 }
 
 export function createCommentsService(model: CommentsModel = defaultModel) {

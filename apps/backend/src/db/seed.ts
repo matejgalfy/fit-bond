@@ -9,6 +9,7 @@ import {
     eventInterested,
     notifications,
     comments,
+    reports,
 } from './schema';
 import { eq } from 'drizzle-orm';
 import { searchAddresses, type GeocodeSuggestion } from '../lib/geocoding';
@@ -21,6 +22,8 @@ type NotificationType =
     | 'participant_joined'
     | 'event_cancelled'
     | 'event_update';
+type ReportType = 'event' | 'comment' | 'user';
+type ReportStatus = 'pending' | 'resolved' | 'rejected';
 
 // ---------------------------------------------------------------------------
 // Event data
@@ -433,6 +436,86 @@ const notificationData: {
     },
 ];
 
+// ---------------------------------------------------------------------------
+// Report data
+// ---------------------------------------------------------------------------
+
+interface ReportTemplate {
+    targetType: ReportType;
+    /** For 'user' targets, the name of the reported user (a commenter). For
+     *  'event'/'comment' targets, the index into the matched list. */
+    target: string | number;
+    reporter: string;
+    reason: string;
+    status: ReportStatus;
+    /** Required when status is 'resolved' or 'rejected'. */
+    resolution?: string;
+    /** Hours ago the report was created. */
+    hoursAgo: number;
+}
+
+const reportTemplates: ReportTemplate[] = [
+    {
+        targetType: 'event',
+        target: 0,
+        reporter: 'Jana K.',
+        reason: 'This event looks like spam — same title posted twice.',
+        status: 'pending',
+        hoursAgo: 4,
+    },
+    {
+        targetType: 'event',
+        target: 1,
+        reporter: 'Martin S.',
+        reason: 'Inappropriate location, this is private property.',
+        status: 'pending',
+        hoursAgo: 12,
+    },
+    {
+        targetType: 'comment',
+        target: 0,
+        reporter: 'Lucie P.',
+        reason: 'Comment contains offensive language.',
+        status: 'pending',
+        hoursAgo: 26,
+    },
+    {
+        targetType: 'comment',
+        target: 1,
+        reporter: 'Pavel N.',
+        reason: 'Off-topic advertising in a sports event thread.',
+        status: 'pending',
+        hoursAgo: 40,
+    },
+    {
+        targetType: 'user',
+        target: 'Filip W.',
+        reporter: 'Tomáš V.',
+        reason: 'User keeps harassing me in DMs.',
+        status: 'pending',
+        hoursAgo: 6,
+    },
+    {
+        targetType: 'event',
+        target: 2,
+        reporter: 'Petra H.',
+        reason: 'Duplicate of a previously cancelled event.',
+        status: 'resolved',
+        resolution: 'Verified duplicate, event removed.',
+        hoursAgo: 72,
+    },
+    {
+        targetType: 'user',
+        target: 'Radek J.',
+        reporter: 'Ondřej F.',
+        reason: 'Suspected fake account, never shows up.',
+        status: 'rejected',
+        resolution:
+            'Investigated — no evidence of impersonation, recent activity is legitimate.',
+        hoursAgo: 96,
+    },
+];
+
 const imageUrl = 'http://localhost:3000/uploads/event.jpg';
 
 // ---------------------------------------------------------------------------
@@ -717,6 +800,82 @@ async function seedComments() {
     }
 }
 
+async function seedReports() {
+    const allEvents = await db
+        .select({ id: events.id, name: events.name })
+        .from(events);
+    const allComments = await db
+        .select({ id: comments.id, content: comments.content })
+        .from(comments);
+
+    if (allEvents.length === 0) {
+        console.log('⚠️  No events found — skipping report seeding.');
+        return;
+    }
+
+    const rows: {
+        reporterId: string;
+        reportType: ReportType;
+        targetId: string;
+        reason: string;
+        status: ReportStatus;
+        resolvedBy: string | null;
+        resolution: string | null;
+        createdAt: Date;
+    }[] = [];
+
+    let resolverId: string | null = null;
+    for (const tpl of reportTemplates) {
+        const reporter = await getOrCreateDummyUser(tpl.reporter);
+
+        let targetId: string | null = null;
+        if (tpl.targetType === 'event') {
+            const idx =
+                typeof tpl.target === 'number'
+                    ? tpl.target % allEvents.length
+                    : 0;
+            targetId = allEvents[idx]?.id ?? null;
+        } else if (tpl.targetType === 'comment') {
+            if (allComments.length === 0) continue;
+            const idx =
+                typeof tpl.target === 'number'
+                    ? tpl.target % allComments.length
+                    : 0;
+            targetId = allComments[idx]?.id ?? null;
+        } else {
+            const target = await getOrCreateDummyUser(String(tpl.target));
+            targetId = target.id;
+        }
+
+        if (!targetId) continue;
+
+        if (tpl.status !== 'pending') {
+            resolverId ??= await (async () => {
+                const admin = await db.query.user.findFirst({
+                    where: eq(user.role, 'admin'),
+                });
+                return admin?.id ?? reporter.id;
+            })();
+        }
+
+        rows.push({
+            reporterId: reporter.id,
+            reportType: tpl.targetType,
+            targetId,
+            reason: tpl.reason,
+            status: tpl.status,
+            resolvedBy: tpl.status === 'pending' ? null : resolverId,
+            resolution:
+                tpl.status === 'pending' ? null : (tpl.resolution ?? null),
+            createdAt: new Date(Date.now() - tpl.hoursAgo * 60 * 60 * 1000),
+        });
+    }
+
+    if (rows.length === 0) return;
+    await db.insert(reports).values(rows);
+    console.log(`  Inserted ${String(rows.length)} reports.`);
+}
+
 // ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
@@ -735,6 +894,9 @@ async function main() {
 
     console.log('🔔 Seeding notifications...');
     await seedNotifications();
+
+    console.log('🚩 Seeding reports...');
+    await seedReports();
 
     console.log('✅ Seeding complete!');
     process.exit(0);

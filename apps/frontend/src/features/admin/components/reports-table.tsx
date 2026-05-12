@@ -6,8 +6,9 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { TypeBadge } from './type-badge';
-import type { Report } from '../types';
+import type { Report, ReportStatus } from '../types';
 
 interface ReportsTableProps {
     reports: Report[];
@@ -15,7 +16,20 @@ interface ReportsTableProps {
     onSelect: (_id: string) => void;
 }
 
-const HEADERS = ['Reporter', 'Type', 'Target', 'Reason', 'Date'] as const;
+const HEADERS = [
+    'Reporter',
+    'Type',
+    'Target',
+    'Reason',
+    'Status',
+    'Date',
+] as const;
+
+const STATUS_STYLES: Record<ReportStatus, string> = {
+    pending: 'bg-soft-orange text-strong-orange',
+    resolved: 'bg-soft-green text-strong-green',
+    rejected: 'bg-muted text-muted-foreground',
+};
 
 export function ReportsTable({
     reports,
@@ -52,16 +66,23 @@ export function ReportsTable({
                             className="cursor-pointer"
                         >
                             <TableCell className="px-4 py-3 text-primary-text">
-                                {report.reporterName}
+                                {report.reporterName ?? 'Unknown'}
                             </TableCell>
                             <TableCell className="px-4 py-3">
-                                <TypeBadge type={report.targetType} />
+                                <TypeBadge type={report.reportType} />
                             </TableCell>
                             <TableCell className="px-4 py-3 text-primary-text">
-                                {report.targetLabel}
+                                {report.targetLabel ?? '<deleted>'}
                             </TableCell>
                             <TableCell className="px-4 py-3 text-primary-text">
                                 {report.reason}
+                            </TableCell>
+                            <TableCell className="px-4 py-3">
+                                <Badge
+                                    className={`rounded-md ${STATUS_STYLES[report.status]}`}
+                                >
+                                    {report.status}
+                                </Badge>
                             </TableCell>
                             <TableCell className="px-4 py-3 text-secondary-text">
                                 {formatDate(report.createdAt)}
@@ -74,9 +95,9 @@ export function ReportsTable({
     );
 }
 
-function formatDate(iso: string): string {
-    const date = new Date(iso);
-    if (Number.isNaN(date.getTime())) return iso;
+function formatDate(value: Date | string): string {
+    const date = value instanceof Date ? value : new Date(value);
+    if (Number.isNaN(date.getTime())) return String(value);
     return date.toLocaleDateString('en-US', {
         month: 'short',
         day: 'numeric',
