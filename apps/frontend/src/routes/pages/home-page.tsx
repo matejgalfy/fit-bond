@@ -12,18 +12,18 @@ export const Route = createFileRoute('/pages/home-page')({
 
 function HomePage() {
     const { data: session } = authClient.useSession();
-    const { data: profile } = useUserProfile(session?.user?.id);
+    const { data: profile } = useUserProfile(session?.user.id);
 
     const apiFilters = useMemo(() => {
         return {
-            userId: session?.user?.id,
+            userId: session?.user.id,
             excludeUserInteractions: true,
-            sportIds: profile?.sports?.map(s => s.id) || undefined,
-            lat: profile?.location?.lat || undefined,
-            lng: profile?.location?.lng || undefined,
-            radius: profile?.location?.radius || undefined,
+            sportIds: profile?.sports.map((s) => s.id) ?? undefined,
+            lat: profile?.location?.lat ?? undefined,
+            lng: profile?.location?.lng ?? undefined,
+            radius: profile?.location?.radius ?? undefined,
         };
-    }, [session?.user?.id, profile]);
+    }, [session?.user.id, profile]);
 
     const { data: backendEvents } = useEvents(apiFilters);
 

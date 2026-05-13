@@ -12,7 +12,7 @@ import {
     exists,
     ne,
     sql,
-    inArray
+    inArray,
 } from 'drizzle-orm';
 import type { Database } from '../../db';
 import {
@@ -39,9 +39,13 @@ export const eventsModel = {
         if (filters.sportIds && filters.sportIds.length > 0) {
             conditions.push(inArray(events.sportId, filters.sportIds));
         }
-        
+
         // AI saying that it isn't effective
-        if (filters.lat !== undefined && filters.lng !== undefined && filters.radius !== undefined) {
+        if (
+            filters.lat !== undefined &&
+            filters.lng !== undefined &&
+            filters.radius !== undefined
+        ) {
             const distance = sql<number>`(
                 6371 * acos(
                     cos(radians(${filters.lat})) * cos(radians(${locations.lat})) *

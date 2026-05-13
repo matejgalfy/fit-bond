@@ -11,6 +11,7 @@ import {
     not,
     exists,
     ne,
+    inArray,
     sql,
 } from 'drizzle-orm';
 import type { Database } from '../../db';
@@ -137,8 +138,8 @@ export const adminModel = {
         if (!filters.includePrivate) {
             conditions.push(eq(events.isPublic, true));
         }
-        if (filters.sportId) {
-            conditions.push(eq(events.sportId, filters.sportId));
+        if (filters.sportIds && filters.sportIds.length > 0) {
+            conditions.push(inArray(events.sportId, filters.sportIds));
         }
         if (filters.skillLevel) {
             conditions.push(eq(events.skillLevel, filters.skillLevel));
