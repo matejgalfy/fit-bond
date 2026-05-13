@@ -12,6 +12,7 @@ import {
     exists,
     ne,
     sql,
+    inArray
 } from 'drizzle-orm';
 import type { Database } from '../../db';
 import {
@@ -35,9 +36,22 @@ export const eventsModel = {
         if (filters.excludeUserInteractions) {
             conditions.push(isNull(events.cancelledAt));
         }
-        if (filters.sportId) {
-            conditions.push(eq(events.sportId, filters.sportId));
+        if (filters.sportIds && filters.sportIds.length > 0) {
+            conditions.push(inArray(events.sportId, filters.sportIds));
         }
+        
+        // AI saying that it isn't effective
+        if (filters.lat !== undefined && filters.lng !== undefined && filters.radius !== undefined) {
+            const distance = sql<number>`(
+                6371 * acos(
+                    cos(radians(${filters.lat})) * cos(radians(${locations.lat})) *
+                    cos(radians(${locations.lng}) - radians(${filters.lng})) +
+                    sin(radians(${filters.lat})) * sin(radians(${locations.lat}))
+                )
+            )`;
+            conditions.push(lte(distance, filters.radius));
+        }
+
         if (filters.skillLevel) {
             conditions.push(eq(events.skillLevel, filters.skillLevel));
         }
