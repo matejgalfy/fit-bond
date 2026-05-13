@@ -168,10 +168,7 @@ export function ProfileEditDialog({
                         />
                     </FormField>
 
-                    <FormField
-                        label="Preferred location"
-                        htmlFor="profile-location"
-                    >
+                    <FormField label="Preferred location" htmlFor="profile-location">
                         <LocationCombobox
                             id="profile-location"
                             value={location}

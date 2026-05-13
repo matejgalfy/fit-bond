@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, ChevronsUpDown, MapPin } from 'lucide-react';
+import { Check, ChevronsUpDown, MapPin, X } from 'lucide-react';
 import {
     Command,
     CommandEmpty,
@@ -44,6 +44,7 @@ export function LocationCombobox({
         emptyText = 'No matches';
     }
 
+    // TODO maybe create a shared component for X button
     return (
         <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
@@ -65,7 +66,22 @@ export function LocationCombobox({
                             {value?.displayName ?? placeholder}
                         </span>
                     </span>
-                    <ChevronsUpDown className="size-4 shrink-0 text-secondary-text" />
+                    <div className="flex items-center gap-1 shrink-0">
+                        {value && (
+                            <button
+                                type="button"
+                                aria-label="Clear selection"
+                                className="p-0.5 rounded-sm text-secondary-text hover:text-primary-red transition-colors"
+                                onClick={(e) => {
+                                    e.stopPropagation();
+                                    onChange(null);
+                                }}
+                            >
+                                <X className="size-4" />
+                            </button>
+                        )}
+                        <ChevronsUpDown className="size-4 text-secondary-text pointer-events-none" />
+                    </div>
                 </button>
             </PopoverTrigger>
             <PopoverContent
