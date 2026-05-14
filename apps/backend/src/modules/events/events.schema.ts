@@ -67,7 +67,10 @@ export const cancelEventBody = t.Object({
 });
 
 export const eventQueryFilters = t.Object({
-    sportId: t.Optional(t.String({ format: 'uuid' })),
+    sportIds: t.Optional(t.Array(t.String({ format: 'uuid' }))),
+    lat: t.Optional(t.Numeric()),
+    lng: t.Optional(t.Numeric()),
+    radius: t.Optional(t.Numeric()),
     skillLevel: t.Optional(
         t.Union([
             t.Literal('beginner'),

@@ -118,11 +118,16 @@ bun run dev:frontend
 ### Root Level (Monorepo)
 
 ```bash
-bun install               # Install all dependencies
+bun install              # Install all dependencies
 bun run dev              # Start both frontend and backend
 bun run dev:backend      # Start backend server
 bun run dev:frontend     # Start frontend development server
 bun format               # Format code with Prettier
+
+# Force kill process
+Get-NetTCPConnection -LocalPort 5173 | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force }                        # (Windows)
+lsof -ti :5173 | xargs kill -9  # (UNIX)
+
 ```
 
 ### Backend Commands
