@@ -1,4 +1,5 @@
 import { Activity, Clock, MapPin, Star, Users } from 'lucide-react';
+import { useNavigate } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import type { Event } from '../types';
@@ -27,6 +28,7 @@ function getSkillLevelDisplay(skillLevel: string): string {
 }
 
 export function EventCard({ event }: EventCardProps) {
+    const navigate = useNavigate();
     const isFull = event.currentParticipants >= event.capacity;
     const isCancelled = event.cancelledAt !== null;
     const formattedDate = formatDate(event.startTime);
@@ -34,8 +36,20 @@ export function EventCard({ event }: EventCardProps) {
     const skillLevelDisplay = getSkillLevelDisplay(event.skillLevel);
     const location = event.location.formattedAddress;
 
+    const openEventDetail = () => {
+        void navigate({
+            to: '/pages/event-detail-page',
+            search: { eventId: event.id },
+        });
+    };
+
     return (
-        <div className="bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]">
+        <div
+            onClick={openEventDetail}
+            className={cn(
+                'bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]'
+            )}
+        >
             <div className="h-30 flex items-center justify-center relative bg-linear-to-br from-soft-blue to-primary-blue/20 overflow-hidden">
                 {event.coverImageUrl ? (
                     <img
@@ -47,7 +61,7 @@ export function EventCard({ event }: EventCardProps) {
                     <span>
                         <Activity
                             size={36}
-                            color="var(--primary-blue)"
+                            className="text-primary-blue"
                             strokeWidth={1.5}
                         />
                     </span>
