@@ -631,6 +631,17 @@ async function getOrCreateDummyUser(name: string) {
 // Seeding
 // ---------------------------------------------------------------------------
 
+// The hardcoded eventData dates are anchored to early 2026. Shift every
+// event by a constant delta so the spread is preserved but re-centred on the
+// current date: the earliest event lands ~14 days ago, leaving a mix of
+// recent (history) and upcoming (joinable) events whenever the seed is run.
+const SEED_EPOCH_MS = new Date('Mar 27, 2026 00:00').getTime();
+const SEED_SHIFT_MS = Date.now() - 14 * 24 * 60 * 60 * 1000 - SEED_EPOCH_MS;
+
+function seedStartTime(date: string, time: string) {
+    return new Date(new Date(`${date} ${time}`).getTime() + SEED_SHIFT_MS);
+}
+
 async function seedEvents() {
     const allUsers = await db.select().from(user);
 
@@ -652,7 +663,7 @@ async function seedEvents() {
                 name: item.name,
                 description: `A ${item.sport} event organised by ${u.name}.`,
                 skillLevel: item.skill,
-                startTime: new Date(`${item.date} ${item.time}`),
+                startTime: seedStartTime(item.date, item.time),
                 duration: 60,
                 capacity: item.capacity,
                 isPublic: true,
@@ -674,7 +685,7 @@ async function seedEvents() {
                     name: item.name,
                     description: `A ${item.sport} event.`,
                     skillLevel: item.skill,
-                    startTime: new Date(`${item.date} ${item.time}`),
+                    startTime: seedStartTime(item.date, item.time),
                     duration: 60,
                     capacity: item.capacity,
                     isPublic: true,
@@ -702,7 +713,7 @@ async function seedEvents() {
                     name: item.name,
                     description: `A ${item.sport} event.`,
                     skillLevel: item.skill,
-                    startTime: new Date(`${item.date} ${item.time}`),
+                    startTime: seedStartTime(item.date, item.time),
                     duration: 60,
                     capacity: item.capacity,
                     isPublic: true,
@@ -731,7 +742,7 @@ async function seedEvents() {
             name: item.name,
             description: `A ${item.sport} event open to everyone.`,
             skillLevel: item.skill,
-            startTime: new Date(`${item.date} ${item.time}`),
+            startTime: seedStartTime(item.date, item.time),
             duration: 60,
             capacity: item.capacity,
             isPublic: true,
