@@ -288,9 +288,7 @@ describe('ParticipationService', () => {
                 await service.markInterest(fakeDb, 'event-1', 'user-1');
             } catch (e) {
                 expect((e as ServiceError).code).toBe('CONFLICT');
-                expect((e as ServiceError).message).toContain(
-                    'already joined'
-                );
+                expect((e as ServiceError).message).toContain('already joined');
             }
         });
 

@@ -30,7 +30,10 @@ export const participationModel = {
             .from(eventInterested)
             .innerJoin(user, eq(eventInterested.userId, user.id))
             .where(
-                and(eq(eventInterested.eventId, eventId), isNull(user.deletedAt))
+                and(
+                    eq(eventInterested.eventId, eventId),
+                    isNull(user.deletedAt)
+                )
             );
     },
 

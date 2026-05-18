@@ -42,9 +42,7 @@ export async function markInterest(eventId: string) {
 }
 
 export async function unmarkInterest(eventId: string) {
-    const { data, error } = await api
-        .events({ id: eventId })
-        .interest.delete();
+    const { data, error } = await api.events({ id: eventId }).interest.delete();
     throwIfError(error, 'Failed to unmark interest');
     return data;
 }

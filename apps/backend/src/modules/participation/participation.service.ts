@@ -57,10 +57,7 @@ export function createParticipationService({
                 );
             }
 
-            const participantCount = await model.countParticipants(
-                db,
-                eventId
-            );
+            const participantCount = await model.countParticipants(db, eventId);
             if (participantCount >= event.capacity) {
                 throw ServiceError.conflict('Event is full');
             }
@@ -102,9 +99,7 @@ export function createParticipationService({
                 );
             }
             if (await model.isInterested(db, eventId, userId)) {
-                throw ServiceError.conflict(
-                    'You have already marked interest'
-                );
+                throw ServiceError.conflict('You have already marked interest');
             }
 
             await model.addInterested(db, eventId, userId);

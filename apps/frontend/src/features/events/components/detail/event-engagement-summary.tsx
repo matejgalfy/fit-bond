@@ -41,9 +41,7 @@ function UserList({ users, isPending, isError, emptyText }: UserListProps) {
     }
 
     if (!users || users.length === 0) {
-        return (
-            <p className="m-0 text-tiny text-tertiary-text">{emptyText}</p>
-        );
+        return <p className="m-0 text-tiny text-tertiary-text">{emptyText}</p>;
     }
 
     return (

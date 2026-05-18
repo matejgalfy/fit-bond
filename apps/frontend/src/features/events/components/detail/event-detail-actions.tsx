@@ -39,10 +39,7 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
     const isFull = event.currentParticipants >= event.capacity;
 
     const anyPending =
-        join.isPending ||
-        leave.isPending ||
-        mark.isPending ||
-        unmark.isPending;
+        join.isPending || leave.isPending || mark.isPending || unmark.isPending;
 
     return (
         <div className="mt-5 flex flex-wrap items-center gap-2">
