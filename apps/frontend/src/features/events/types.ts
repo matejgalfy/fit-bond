@@ -5,3 +5,8 @@ export type EventsGetData = Awaited<ReturnType<typeof api.events.get>>['data'];
 
 export type EventListResponse = Extract<NonNullable<EventsGetData>, unknown[]>;
 export type Event = EventListResponse[number];
+
+export type ParticipantsGetData = Awaited<
+    ReturnType<ReturnType<typeof api.events>['participants']['get']>
+>['data'];
+export type Participant = NonNullable<ParticipantsGetData>[number];
