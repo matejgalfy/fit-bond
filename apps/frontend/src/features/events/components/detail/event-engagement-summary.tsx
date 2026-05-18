@@ -1,9 +1,65 @@
 import { Heart, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import type { Event } from '../../types';
+import { UserAvatar } from '@/components/ui/user-avatar';
+import type { Event, Participant } from '../../types';
+import {
+    useEventInterested,
+    useEventParticipants,
+} from '../../hooks/participation';
 
 interface EventEngagementSummaryProps {
     event: Event;
+}
+
+interface UserListProps {
+    users?: Participant[];
+    isPending: boolean;
+    isError: boolean;
+    emptyText: string;
+}
+
+function UserList({ users, isPending, isError, emptyText }: UserListProps) {
+    if (isPending) {
+        return (
+            <div className="mt-1 flex gap-2">
+                {[1, 2, 3].map((item) => (
+                    <div
+                        key={item}
+                        className="h-7 w-7 animate-pulse rounded-full bg-muted-background"
+                    />
+                ))}
+            </div>
+        );
+    }
+
+    if (isError) {
+        return (
+            <p className="m-0 text-tiny text-tertiary-text">
+                Could not load users.
+            </p>
+        );
+    }
+
+    if (!users || users.length === 0) {
+        return <p className="m-0 text-tiny text-tertiary-text">{emptyText}</p>;
+    }
+
+    return (
+        <ul className="m-0 mt-1 flex list-none flex-wrap gap-3 p-0">
+            {users.map((user) => (
+                <li key={user.id} className="flex items-center gap-1.5">
+                    <UserAvatar
+                        name={user.name}
+                        imageUrl={user.image}
+                        size={28}
+                    />
+                    <span className="text-tiny text-secondary-text">
+                        {user.name}
+                    </span>
+                </li>
+            ))}
+        </ul>
+    );
 }
 
 export function EventEngagementSummary({ event }: EventEngagementSummaryProps) {
@@ -11,6 +67,9 @@ export function EventEngagementSummary({ event }: EventEngagementSummaryProps) {
         event.capacity - event.currentParticipants,
         0
     );
+
+    const participants = useEventParticipants(event.id);
+    const interested = useEventInterested(event.id);
 
     return (
         <section className="mt-7 grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -34,6 +93,12 @@ export function EventEngagementSummary({ event }: EventEngagementSummaryProps) {
                         ? 'Event is full'
                         : `${String(remainingSpots)} spots remaining`}
                 </p>
+                <UserList
+                    users={participants.data}
+                    isPending={participants.isPending}
+                    isError={participants.isError}
+                    emptyText="No participants yet."
+                />
             </Card>
 
             <Card size="sm" className="rounded-xl px-4 py-3">
@@ -51,9 +116,12 @@ export function EventEngagementSummary({ event }: EventEngagementSummaryProps) {
                         </p>
                     </div>
                 </div>
-                <p className="m-0 text-tiny text-tertiary-text">
-                    User list will appear when participation data is available.
-                </p>
+                <UserList
+                    users={interested.data}
+                    isPending={interested.isPending}
+                    isError={interested.isError}
+                    emptyText="No one has marked interest yet."
+                />
             </Card>
         </section>
     );
