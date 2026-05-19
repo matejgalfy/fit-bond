@@ -21,16 +21,24 @@ export const eventsController = {
         return eventsService.create(db, user.id, data);
     },
 
-    async update(id: string, user: { id: string }, data: UpdateEventBody) {
-        return eventsService.update(db, id, user.id, data);
+    async update(
+        id: string,
+        user: { id: string; role?: string },
+        data: UpdateEventBody
+    ) {
+        return eventsService.update(db, id, user, data);
     },
 
-    async cancel(id: string, user: { id: string }, data: CancelEventBody) {
-        return eventsService.cancel(db, id, user.id, data.reason);
+    async cancel(
+        id: string,
+        user: { id: string; role?: string },
+        data: CancelEventBody
+    ) {
+        return eventsService.cancel(db, id, user, data.reason);
     },
 
-    async delete(id: string, user: { id: string }) {
-        await eventsService.delete(db, id, user.id);
+    async delete(id: string, user: { id: string; role?: string }) {
+        await eventsService.delete(db, id, user);
         return { success: true };
     },
 
