@@ -2,6 +2,7 @@ import { Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/ui/form-field';
 import { Input } from '@/components/ui/input';
+import { DatePicker } from '@/components/date-picker';
 import { cn } from '@/lib/utils';
 
 type Meridiem = 'AM' | 'PM';
@@ -56,14 +57,12 @@ export function DateAndTimeFields({
     return (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <FormField label="Date" htmlFor="event-date" required>
-                <Input
+                <DatePicker
                     id="event-date"
-                    type="date"
                     value={eventDate}
-                    onChange={(e) => {
-                        onEventDateChange(e.target.value);
-                    }}
-                    className="h-10 rounded-xl w-full block bg-background text-primary-text"
+                    onChange={onEventDateChange}
+                    required
+                    className="bg-background hover:bg-background"
                 />
             </FormField>
 
