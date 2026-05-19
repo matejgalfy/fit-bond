@@ -11,7 +11,8 @@ const pastDate = new Date(Date.now() - 86400000);
 
 function makeFakeDb(): Database {
     const fake = {
-        transaction: async <T>(fn: (tx: Database) => Promise<T>) => fn(fake),
+        transaction: async <T>(fn: (tx: Database) => Promise<T>) =>
+            fn(fake as unknown as Database),
     };
     return fake as unknown as Database;
 }

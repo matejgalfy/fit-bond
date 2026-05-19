@@ -14,6 +14,7 @@ import {
 
 interface CreateEventSearch {
     eventId?: string;
+    from?: 'my-events';
 }
 
 export const Route = createFileRoute('/pages/create-event')({
@@ -21,6 +22,7 @@ export const Route = createFileRoute('/pages/create-event')({
         return {
             eventId:
                 typeof search.eventId === 'string' ? search.eventId : undefined,
+            from: search.from === 'my-events' ? 'my-events' : undefined,
         };
     },
     component: CreateEventPage,
@@ -28,7 +30,7 @@ export const Route = createFileRoute('/pages/create-event')({
 
 function CreateEventPage() {
     const navigate = useNavigate();
-    const { eventId }: CreateEventSearch = Route.useSearch();
+    const { eventId, from }: CreateEventSearch = Route.useSearch();
     const isEditMode = Boolean(eventId);
 
     const { data: event, isPending: eventPending, isError } = useEvent(eventId);
@@ -101,7 +103,10 @@ function CreateEventPage() {
                         await updateEvent(payload);
                         await navigate({
                             to: '/pages/event-detail-page',
-                            search: { eventId },
+                            search: {
+                                eventId,
+                                ...(from ? { from } : {}),
+                            },
                         });
                         return;
                     }
@@ -113,7 +118,10 @@ function CreateEventPage() {
                     if (isEditMode) {
                         void navigate({
                             to: '/pages/event-detail-page',
-                            search: { eventId },
+                            search: {
+                                eventId,
+                                ...(from ? { from } : {}),
+                            },
                         });
                         return;
                     }

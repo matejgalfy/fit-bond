@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Check, Heart, LogOut, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { Heart, LogOut, Pencil, Trash2, UserPlus } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { authClient } from '@/lib/api';
@@ -19,9 +19,13 @@ import { canManageEvent } from '../../utils/event-permissions';
 
 interface EventDetailActionsProps {
     event: Event;
+    detailSource?: 'my-events';
 }
 
-export function EventDetailActions({ event }: EventDetailActionsProps) {
+export function EventDetailActions({
+    event,
+    detailSource,
+}: EventDetailActionsProps) {
     const navigate = useNavigate();
     const [managementError, setManagementError] = useState('');
     const { data: session } = authClient.useSession();
@@ -99,12 +103,17 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                     <Button
                         variant="outline"
                         disabled={anyPending}
-                        className="hover:bg-soft-orange hover:text-strong-orange"
+                        className="w-full border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                         onClick={() => {
                             setManagementError('');
                             void navigate({
                                 to: '/pages/create-event',
-                                search: { eventId: event.id },
+                                search: {
+                                    eventId: event.id,
+                                    ...(detailSource
+                                        ? { from: detailSource }
+                                        : {}),
+                                },
                             });
                         }}
                     >
@@ -114,7 +123,7 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                     <Button
                         variant="outline"
                         disabled={anyPending}
-                        className="hover:bg-soft-red hover:text-primary-red"
+                        className="w-full border-primary-red text-primary-red hover:bg-soft-red hover:text-primary-red sm:w-auto"
                         onClick={() => {
                             void handleDeleteEvent();
                         }}
@@ -136,6 +145,7 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                         <Button
                             variant="outline"
                             disabled={anyPending}
+                            className="w-full border-primary-red text-primary-red hover:bg-soft-red hover:text-primary-red sm:w-auto"
                             onClick={() => {
                                 leave.mutate();
                             }}
@@ -163,13 +173,14 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                     {!isJoined &&
                         (isInterested ? (
                             <Button
-                                variant="secondary"
+                                variant="outline"
                                 disabled={anyPending}
+                                className="w-full border-primary-orange bg-soft-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                                 onClick={() => {
                                     unmark.mutate();
                                 }}
                             >
-                                <Check />
+                                <Heart fill="currentColor" />
                                 Interested
                             </Button>
                         ) : (
@@ -178,6 +189,7 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                                 disabled={
                                     anyPending || isCancelled || hasStarted
                                 }
+                                className="w-full border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                                 onClick={() => {
                                     mark.mutate();
                                 }}

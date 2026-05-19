@@ -12,6 +12,7 @@ import { EventCommentsSection } from '@/features/comments/components/event-comme
 
 interface EventDetailSearch {
     eventId?: string;
+    from?: 'my-events';
 }
 
 export const Route = createFileRoute('/pages/event-detail-page')({
@@ -19,13 +20,14 @@ export const Route = createFileRoute('/pages/event-detail-page')({
         return {
             eventId:
                 typeof search.eventId === 'string' ? search.eventId : undefined,
+            from: search.from === 'my-events' ? 'my-events' : undefined,
         };
     },
     component: EventDetailPage,
 });
 
 function EventDetailPage() {
-    const { eventId }: EventDetailSearch = Route.useSearch();
+    const { eventId, from }: EventDetailSearch = Route.useSearch();
     const { data: event, isPending, isError } = useEvent(eventId);
 
     if (isPending) {
@@ -76,7 +78,7 @@ function EventDetailPage() {
             <EventDetailCover event={event} />
             <EventDetailHeader event={event} />
             <EventDetailInfoGrid event={event} />
-            <EventDetailActions event={event} />
+            <EventDetailActions event={event} detailSource={from} />
             <EventDetailDescription event={event} />
             <EventEngagementSummary event={event} />
             <EventCommentsSection eventId={event.id} />

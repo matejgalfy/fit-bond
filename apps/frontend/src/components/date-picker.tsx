@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Popover,
@@ -197,22 +197,6 @@ export function DatePicker({
                         );
                     })}
                 </div>
-
-                {selectedDate && (
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="mt-3 w-full text-secondary-text hover:bg-soft-red hover:text-primary-red"
-                        onClick={() => {
-                            onChange('');
-                            setOpen(false);
-                        }}
-                    >
-                        <X />
-                        Clear date
-                    </Button>
-                )}
             </PopoverContent>
         </Popover>
     );
