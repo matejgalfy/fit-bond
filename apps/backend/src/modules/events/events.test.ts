@@ -16,9 +16,8 @@ const pastDate = new Date(Date.now() - 86400000).toISOString();
 
 const sampleLocation = {
     placeId: 'liq:42',
-    address: 'Hlavní 1',
-    city: 'Brno',
-    country: 'Czech Republic',
+    fullAddress: 'Hlavni 1, Brno, Czech Republic',
+    formattedAddress: 'Hlavni 1, Brno',
     lat: 49.195061,
     lng: 16.606837,
 };
@@ -29,10 +28,8 @@ function makeMockLocationsService() {
         findOrCreate: vi.fn(() =>
             Promise.resolve({
                 id: 'loc-1',
-                placeId: sampleLocation.placeId,
-                address: sampleLocation.address,
-                city: sampleLocation.city,
-                country: sampleLocation.country,
+                fullAddress: sampleLocation.fullAddress,
+                formattedAddress: sampleLocation.formattedAddress,
                 lat: sampleLocation.lat,
                 lng: sampleLocation.lng,
             })
@@ -42,7 +39,8 @@ function makeMockLocationsService() {
 
 function makeFakeDb(): Database {
     const fake = {
-        transaction: async <T>(fn: (tx: Database) => Promise<T>) => fn(fake),
+        transaction: async <T>(fn: (tx: Database) => Promise<T>) =>
+            fn(fake as unknown as Database),
     };
     return fake as unknown as Database;
 }
@@ -326,6 +324,22 @@ describe('EventsService', () => {
             expect(result).toEqual(updated);
         });
 
+        test('updates event when actor is admin', async () => {
+            const existing = makeMockEvent({ organizerId: 'user-1' });
+            mockModel.findById.mockResolvedValueOnce(existing);
+            const updated = makeMockEvent({ name: 'Updated Name' });
+            mockModel.update.mockResolvedValueOnce(updated);
+
+            const result = await service.update(
+                fakeDb,
+                'event-1',
+                { id: 'admin-1', role: 'admin' },
+                updateInput
+            );
+
+            expect(result).toEqual(updated);
+        });
+
         test('throws NOT_FOUND when event does not exist', async () => {
             mockModel.findById.mockResolvedValueOnce(null);
             expect.assertions(1);
@@ -418,6 +432,28 @@ describe('EventsService', () => {
             );
         });
 
+        test('cancels event when actor is admin', async () => {
+            mockModel.findRawById.mockResolvedValueOnce(
+                makeMockEvent({ organizerId: 'user-1' })
+            );
+            const cancelled = makeMockEvent({ cancelledAt: new Date() });
+            mockModel.cancel.mockResolvedValueOnce(cancelled);
+
+            const result = await service.cancel(
+                fakeDb,
+                'event-1',
+                { id: 'admin-1', role: 'admin' },
+                'Policy violation'
+            );
+
+            expect(result).toEqual(cancelled);
+            expect(mockModel.cancel).toHaveBeenCalledWith(
+                fakeDb,
+                'event-1',
+                'Policy violation'
+            );
+        });
+
         test('throws NOT_FOUND when event does not exist', async () => {
             mockModel.findRawById.mockResolvedValueOnce(null);
             expect.assertions(1);
@@ -462,6 +498,22 @@ describe('EventsService', () => {
                 makeMockEvent({ organizerId: 'user-1' })
             );
             await service.delete(fakeDb, 'event-1', 'user-1');
+            expect(mockModel.softDelete).toHaveBeenCalledWith(
+                fakeDb,
+                'event-1'
+            );
+        });
+
+        test('soft-deletes event when actor is admin', async () => {
+            mockModel.findRawById.mockResolvedValueOnce(
+                makeMockEvent({ organizerId: 'user-1' })
+            );
+
+            await service.delete(fakeDb, 'event-1', {
+                id: 'admin-1',
+                role: 'admin',
+            });
+
             expect(mockModel.softDelete).toHaveBeenCalledWith(
                 fakeDb,
                 'event-1'

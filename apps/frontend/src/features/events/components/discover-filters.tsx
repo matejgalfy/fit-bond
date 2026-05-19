@@ -1,8 +1,8 @@
 import { Search, MapPin, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { IconInput } from '@/components/icon-input';
+import { DatePicker } from '@/components/date-picker';
 import { cn } from '@/lib/utils';
 import type { SkillLevel } from '../../../../../backend/src/modules/events/events.types';
 
@@ -75,16 +75,12 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                     <label className="text-small text-secondary-text font-medium mb-1.5 block">
                         Date
                     </label>
-                    <div className="relative">
-                        <Input
-                            type="date"
-                            className="h-10 rounded-xl w-full block text-primary-text"
-                            value={filters.date}
-                            onChange={(e) => {
-                                updateFilter('date', e.target.value);
-                            }}
-                        />
-                    </div>
+                    <DatePicker
+                        value={filters.date}
+                        onChange={(value) => {
+                            updateFilter('date', value);
+                        }}
+                    />
                 </div>
 
                 {/* Location Input */}

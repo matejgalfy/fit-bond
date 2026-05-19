@@ -20,6 +20,19 @@ export interface EventsServiceDeps {
     usersService?: typeof defaultUsersService;
 }
 
+interface EventActor {
+    id: string;
+    role?: string;
+}
+
+function normalizeActor(actor: string | EventActor): EventActor {
+    return typeof actor === 'string' ? { id: actor } : actor;
+}
+
+function canManageEvent(organizerId: string, actor: EventActor) {
+    return organizerId === actor.id || actor.role === 'admin';
+}
+
 export function createEventsService({
     model = defaultModel,
     locationsService = defaultLocationsService,
@@ -82,16 +95,17 @@ export function createEventsService({
         async update(
             db: Database,
             eventId: string,
-            userId: string,
+            actorInput: string | EventActor,
             input: UpdateEventInput
         ) {
+            const actor = normalizeActor(actorInput);
             const existing = await model.findById(db, eventId);
             if (!existing) {
                 throw ServiceError.notFound('Event not found');
             }
-            if (existing.organizerId !== userId) {
+            if (!canManageEvent(existing.organizerId, actor)) {
                 throw ServiceError.forbidden(
-                    'Only the organizer can update this event'
+                    'Only the organizer or an admin can update this event'
                 );
             }
             if (existing.cancelledAt) {
@@ -127,16 +141,17 @@ export function createEventsService({
         async cancel(
             db: Database,
             eventId: string,
-            userId: string,
+            actorInput: string | EventActor,
             reason?: string
         ) {
+            const actor = normalizeActor(actorInput);
             const existing = await model.findRawById(db, eventId);
             if (!existing) {
                 throw ServiceError.notFound('Event not found');
             }
-            if (existing.organizerId !== userId) {
+            if (!canManageEvent(existing.organizerId, actor)) {
                 throw ServiceError.forbidden(
-                    'Only the organizer can cancel this event'
+                    'Only the organizer or an admin can cancel this event'
                 );
             }
             if (existing.cancelledAt) {
@@ -166,14 +181,19 @@ export function createEventsService({
             return cancelledEvent;
         },
 
-        async delete(db: Database, eventId: string, userId: string) {
+        async delete(
+            db: Database,
+            eventId: string,
+            actorInput: string | EventActor
+        ) {
+            const actor = normalizeActor(actorInput);
             const existing = await model.findRawById(db, eventId);
             if (!existing) {
                 throw ServiceError.notFound('Event not found');
             }
-            if (existing.organizerId !== userId) {
+            if (!canManageEvent(existing.organizerId, actor)) {
                 throw ServiceError.forbidden(
-                    'Only the organizer can delete this event'
+                    'Only the organizer or an admin can delete this event'
                 );
             }
 

@@ -1,187 +1,134 @@
-import { useState } from 'react';
-import { createFileRoute, useNavigate } from '@tanstack/react-router';
+import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
-import { CreatingEventBasics } from '@/features/events/components/creation/event-basics';
+import { EmptyState } from '@/components/empty-state';
+import { EventForm } from '@/features/events/components/creation/event-form';
 import {
-    CreatingEventDetails,
-    type Visibility,
-} from '@/features/events/components/creation/details/event-details';
+    useCreateEvent,
+    useEvent,
+    useUpdateEvent,
+} from '@/features/events/hooks/events';
 import {
-    CreatingEventTimeLocation,
-    type CustomDurationUnit,
-    type Meridiem,
-} from '@/features/events/components/creation/time-and-location/event-time-and-location';
-import { validateCreateEventInput } from '@/features/events/validation/create-event-validation';
-import { useCreateEvent } from '@/features/events/hooks/events';
-import { buildCreateEventPayload } from '@/features/events/utils/create-event-payload';
-import { ApiError } from '@/lib/api-error';
-import type { SkillLevel } from '../../../../backend/src/modules/events/events.types';
-import type { LocationSuggestion } from '../../../../backend/src/modules/locations/locations.schema';
+    buildEventFormState,
+    buildEventLocationSuggestion,
+} from '@/features/events/utils/event-form-state';
+
+interface CreateEventSearch {
+    eventId?: string;
+    from?: 'my-events';
+}
 
 export const Route = createFileRoute('/pages/create-event')({
+    validateSearch: (search): CreateEventSearch => {
+        return {
+            eventId:
+                typeof search.eventId === 'string' ? search.eventId : undefined,
+            from: search.from === 'my-events' ? 'my-events' : undefined,
+        };
+    },
     component: CreateEventPage,
 });
 
 function CreateEventPage() {
     const navigate = useNavigate();
-    const [eventName, setEventName] = useState('');
-    const [sportId, setSportId] = useState('');
-    const [description, setDescription] = useState('');
-    const [eventDate, setEventDate] = useState('');
-    const [startHour, setStartHour] = useState('');
-    const [startMinute, setStartMinute] = useState('');
-    const [location, setLocation] = useState<LocationSuggestion | null>(null);
-    const [duration, setDuration] = useState(60);
-    const [customDuration, setCustomDuration] = useState('');
-    const [customDurationUnit, setCustomDurationUnit] =
-        useState<CustomDurationUnit>('min');
-    const [meridiem, setMeridiem] = useState<Meridiem>('AM');
-    const [skillLevel, setSkillLevel] = useState<SkillLevel>('beginner');
-    const [visibility, setVisibility] = useState<Visibility>('public');
-    const [capacity, setCapacity] = useState('');
-    const [coverImageUrl, setCoverImageUrl] = useState('');
-    const [error, setError] = useState('');
+    const { eventId, from }: CreateEventSearch = Route.useSearch();
+    const isEditMode = Boolean(eventId);
 
+    const { data: event, isPending: eventPending, isError } = useEvent(eventId);
     const { mutateAsync: createEvent, isPending } = useCreateEvent();
+    const { mutateAsync: updateEvent, isPending: isUpdating } =
+        useUpdateEvent(eventId);
 
-    const handleSubmit = async () => {
-        setError('');
+    const isFormPending = isPending || isUpdating;
 
-        const validationError = validateCreateEventInput({
-            eventName,
-            sportId,
-            description,
-            eventDate,
-            startHour,
-            startMinute,
-            location,
-            duration,
-            customDuration,
-            customDurationUnit,
-            meridiem,
-            capacity,
-        });
+    if (isEditMode && eventPending) {
+        return (
+            <div className="max-w-180 mx-auto animate-pulse">
+                <div className="mb-6 h-8 w-40 rounded-md bg-muted-background" />
+                <div className="space-y-6">
+                    <div className="h-70 rounded-xl bg-muted-background" />
+                    <div className="h-58 rounded-xl bg-muted-background" />
+                    <div className="h-48 rounded-xl bg-muted-background" />
+                </div>
+            </div>
+        );
+    }
 
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
-
-        if (!location) {
-            setError('Please select a location.');
-            return;
-        }
-
-        try {
-            const payload = buildCreateEventPayload(
-                {
-                    eventName,
-                    sportId,
-                    description,
-                    eventDate,
-                    startHour,
-                    startMinute,
-                    duration,
-                    customDuration,
-                    customDurationUnit,
-                    meridiem,
-                    skillLevel,
-                    visibility,
-                    capacity,
-                    coverImageUrl,
-                },
-                location
-            );
-
-            await createEvent(payload);
-            await navigate({ to: '/pages/my-events' });
-        } catch (err) {
-            if (err instanceof ApiError || err instanceof Error) {
-                setError(err.message);
-                return;
-            }
-            setError('Failed to create event. Please try again.');
-        }
-    };
+    if (isEditMode && (isError || !event)) {
+        return (
+            <div className="max-w-180 mx-auto">
+                <EmptyState>
+                    <div className="flex flex-col items-center gap-4">
+                        <div>
+                            <h1 className="font-heading text-subheading font-semibold text-primary-text">
+                                Failed to load event
+                            </h1>
+                            <p className="mt-1 text-regular text-secondary-text">
+                                The event may no longer exist or could not be
+                                loaded right now.
+                            </p>
+                        </div>
+                        <Button variant="outline" asChild>
+                            <Link to="/pages/my-events">Back to my events</Link>
+                        </Button>
+                    </div>
+                </EmptyState>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-180 mx-auto">
             <div className="mb-6">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
-                    Create New Event
+                    {isEditMode ? 'Edit Event' : 'Create New Event'}
                 </h1>
             </div>
 
-            <form
-                className="space-y-6"
-                onSubmit={(e) => {
-                    e.preventDefault();
-                    void handleSubmit();
+            <EventForm
+                key={event?.id ?? 'create'}
+                initialState={event ? buildEventFormState(event) : undefined}
+                initialLocation={
+                    event ? buildEventLocationSuggestion(event) : undefined
+                }
+                isPending={isFormPending}
+                submitLabel={isEditMode ? 'Save Event' : 'Publish Event'}
+                pendingLabel={isEditMode ? 'Saving...' : 'Publishing...'}
+                fallbackErrorMessage={
+                    isEditMode
+                        ? 'Failed to save event. Please try again.'
+                        : 'Failed to create event. Please try again.'
+                }
+                onSubmit={async (payload) => {
+                    if (isEditMode) {
+                        await updateEvent(payload);
+                        await navigate({
+                            to: '/pages/event-detail-page',
+                            search: {
+                                eventId,
+                                ...(from ? { from } : {}),
+                            },
+                        });
+                        return;
+                    }
+
+                    await createEvent(payload);
+                    await navigate({ to: '/pages/my-events' });
                 }}
-            >
-                <CreatingEventBasics
-                    eventName={eventName}
-                    sportId={sportId}
-                    description={description}
-                    coverImageUrl={coverImageUrl}
-                    onEventNameChange={setEventName}
-                    onSportIdChange={setSportId}
-                    onDescriptionChange={setDescription}
-                    onCoverImageUrlChange={setCoverImageUrl}
-                    onCoverImageError={setError}
-                />
+                onCancel={() => {
+                    if (isEditMode) {
+                        void navigate({
+                            to: '/pages/event-detail-page',
+                            search: {
+                                eventId,
+                                ...(from ? { from } : {}),
+                            },
+                        });
+                        return;
+                    }
 
-                <CreatingEventTimeLocation
-                    eventDate={eventDate}
-                    startHour={startHour}
-                    startMinute={startMinute}
-                    location={location}
-                    duration={duration}
-                    customDuration={customDuration}
-                    customDurationUnit={customDurationUnit}
-                    meridiem={meridiem}
-                    onEventDateChange={setEventDate}
-                    onStartHourChange={setStartHour}
-                    onStartMinuteChange={setStartMinute}
-                    onLocationChange={setLocation}
-                    onDurationChange={setDuration}
-                    onCustomDurationChange={setCustomDuration}
-                    onCustomDurationUnitChange={setCustomDurationUnit}
-                    onMeridiemChange={setMeridiem}
-                />
-
-                <CreatingEventDetails
-                    capacity={capacity}
-                    skillLevel={skillLevel}
-                    visibility={visibility}
-                    onCapacityChange={setCapacity}
-                    onSkillLevelChange={setSkillLevel}
-                    onVisibilityChange={setVisibility}
-                />
-
-                {error && (
-                    <p className="text-regular text-primary-red text-center">
-                        {error}
-                    </p>
-                )}
-
-                <div className="flex items-center gap-2">
-                    <Button type="submit" size="sm" disabled={isPending}>
-                        {isPending ? 'Publishing...' : 'Publish Event'}
-                    </Button>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        disabled={isPending}
-                        onClick={() => {
-                            void navigate({ to: '/pages/my-events' });
-                        }}
-                    >
-                        Cancel
-                    </Button>
-                </div>
-            </form>
+                    void navigate({ to: '/pages/my-events' });
+                }}
+            />
         </div>
     );
 }

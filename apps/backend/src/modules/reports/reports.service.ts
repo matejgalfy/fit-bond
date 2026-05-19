@@ -42,6 +42,11 @@ export function createReportsService({
                     if (!target) {
                         throw ServiceError.notFound('Event not found');
                     }
+                    if (target.organizerId === reporterId) {
+                        throw ServiceError.badRequest(
+                            'Cannot report your own event'
+                        );
+                    }
                     break;
                 }
                 case 'comment': {
@@ -51,6 +56,11 @@ export function createReportsService({
                     );
                     if (!target) {
                         throw ServiceError.notFound('Comment not found');
+                    }
+                    if (target.userId === reporterId) {
+                        throw ServiceError.badRequest(
+                            'Cannot report your own comment'
+                        );
                     }
                     break;
                 }

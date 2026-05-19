@@ -21,9 +21,27 @@ export const Route = createFileRoute('/pages')({
     component: PagesLayout,
 });
 
-function pathnameToNavId(pathname: string): string {
+interface PageSearchState {
+    from?: string;
+}
+
+function getPageSearchState(search: unknown): PageSearchState {
+    if (typeof search !== 'object' || search === null || !('from' in search)) {
+        return {};
+    }
+
+    const from = search.from;
+    return {
+        from: typeof from === 'string' ? from : undefined,
+    };
+}
+
+function pathnameToNavId(pathname: string, search: PageSearchState): string {
     if (pathname.includes('my-events')) return 'events';
     if (pathname.includes('create-event')) return 'events';
+    if (pathname.includes('event-detail-page') && search.from === 'my-events') {
+        return 'events';
+    }
     if (pathname.includes('notifications')) return 'notifications';
     if (pathname.includes('profile')) return 'profile';
     if (pathname.includes('discover')) return 'discover';
@@ -60,7 +78,10 @@ function PagesLayout() {
         return <Navigate to="/auth/login" replace />;
     }
 
-    const activeNav = pathnameToNavId(location.pathname);
+    const activeNav = pathnameToNavId(
+        location.pathname,
+        getPageSearchState(location.search)
+    );
     const navImage = profile?.image ?? session.user.image;
 
     return (

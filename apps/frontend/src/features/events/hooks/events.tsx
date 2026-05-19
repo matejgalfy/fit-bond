@@ -121,8 +121,19 @@ export function useDeleteEvent(id?: string) {
 
             return deleteEvent(id);
         },
-        onSuccess: async () => {
-            await queryClient.invalidateQueries({
+        onSuccess: () => {
+            if (id) {
+                queryClient.removeQueries({
+                    queryKey: eventQueryKeys.detail(id),
+                });
+                queryClient.setQueriesData<Event[]>(
+                    { queryKey: eventQueryKeys.lists() },
+                    (events) =>
+                        events?.filter((event) => event.id !== id) ?? events
+                );
+            }
+
+            void queryClient.invalidateQueries({
                 queryKey: eventQueryKeys.all,
             });
         },
