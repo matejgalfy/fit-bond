@@ -10,6 +10,7 @@ import type {
 } from './events.types';
 import type { LocationsService } from '../locations/locations.service';
 import { UsersService } from '../users/users.service';
+import type { NotificationsService } from '../notifications/notifications.service';
 
 const futureDate = new Date(Date.now() + 86400000).toISOString();
 const pastDate = new Date(Date.now() - 86400000).toISOString();
@@ -47,7 +48,15 @@ function makeFakeDb(): Database {
 
 function makeMockUsersService() {
     return {
-        getUsersByEventId: vi.fn(() => Promise.resolve([])),
+        getUsersByEventId: vi.fn(() =>
+            Promise.resolve([] as { id: string; name: string; email: string }[])
+        ),
+    };
+}
+
+function makeMockNotifications() {
+    return {
+        createMany: vi.fn(() => Promise.resolve([])),
     };
 }
 
@@ -110,17 +119,23 @@ describe('EventsService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
     let mockLocationsService: ReturnType<typeof makeMockLocationsService>;
     let mockUsersService: ReturnType<typeof makeMockUsersService>;
+    let mockNotifications: ReturnType<typeof makeMockNotifications>;
     let service: ReturnType<typeof createEventsService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
         mockLocationsService = makeMockLocationsService();
         mockUsersService = makeMockUsersService();
+        mockNotifications = makeMockNotifications();
         service = createEventsService({
             model: mockModel as unknown as EventsModel,
             locationsService:
                 mockLocationsService as unknown as LocationsService,
             usersService: mockUsersService as unknown as UsersService,
+            notifications: mockNotifications as unknown as Pick<
+                NotificationsService,
+                'createMany'
+            >,
         });
     });
 
@@ -408,6 +423,60 @@ describe('EventsService', () => {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
             }
         });
+
+        test('notifies participants on a significant change, excluding the actor', async () => {
+            mockModel.findById.mockResolvedValueOnce(
+                makeMockEvent({ organizerId: 'user-1', name: 'Morning Run' })
+            );
+            mockUsersService.getUsersByEventId.mockResolvedValueOnce([
+                { id: 'p1', name: 'A', email: 'a@x.com' },
+                { id: 'user-1', name: 'Org', email: 'o@x.com' },
+            ]);
+
+            await service.update(fakeDb, 'event-1', 'user-1', {
+                startTime: futureDate,
+            });
+
+            expect(mockNotifications.createMany).toHaveBeenCalledWith(fakeDb, [
+                {
+                    userId: 'p1',
+                    type: 'event_update',
+                    title: 'Event updated',
+                    message:
+                        'Morning Run has been updated. Check the new details.',
+                    eventId: 'event-1',
+                    relatedUserId: 'user-1',
+                },
+            ]);
+        });
+
+        test('does not notify when only the description changes', async () => {
+            mockModel.findById.mockResolvedValueOnce(
+                makeMockEvent({ organizerId: 'user-1' })
+            );
+
+            await service.update(fakeDb, 'event-1', 'user-1', {
+                description: 'typo fix',
+            });
+
+            expect(mockNotifications.createMany).not.toHaveBeenCalled();
+        });
+
+        test('update still succeeds when notification creation fails', async () => {
+            mockModel.findById.mockResolvedValueOnce(
+                makeMockEvent({ organizerId: 'user-1' })
+            );
+            const updated = makeMockEvent({ name: 'Updated' });
+            mockModel.update.mockResolvedValueOnce(updated);
+            mockNotifications.createMany.mockRejectedValueOnce(
+                new Error('db down')
+            );
+
+            const result = await service.update(fakeDb, 'event-1', 'user-1', {
+                startTime: futureDate,
+            });
+            expect(result).toEqual(updated);
+        });
     });
 
     describe('cancel', () => {
@@ -489,6 +558,32 @@ describe('EventsService', () => {
             } catch (e) {
                 expect((e as ServiceError).code).toBe('CONFLICT');
             }
+        });
+
+        test('notifies participants that the event was cancelled', async () => {
+            mockModel.findRawById.mockResolvedValueOnce(
+                makeMockEvent({ organizerId: 'user-1' })
+            );
+            mockModel.cancel.mockResolvedValueOnce(
+                makeMockEvent({ name: 'Morning Run', cancelledAt: new Date() })
+            );
+            mockUsersService.getUsersByEventId.mockResolvedValue([
+                { id: 'p1', name: 'A', email: 'a@x.com' },
+                { id: 'user-1', name: 'Org', email: 'o@x.com' },
+            ]);
+
+            await service.cancel(fakeDb, 'event-1', 'user-1', 'Rain');
+
+            expect(mockNotifications.createMany).toHaveBeenCalledWith(fakeDb, [
+                {
+                    userId: 'p1',
+                    type: 'event_cancelled',
+                    title: 'Event cancelled',
+                    message: 'Morning Run has been cancelled.',
+                    eventId: 'event-1',
+                    relatedUserId: 'user-1',
+                },
+            ]);
         });
     });
 

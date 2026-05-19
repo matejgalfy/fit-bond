@@ -78,6 +78,16 @@ export const usersModel = {
         });
     },
 
+    async getUserNameById(db: Database, userId: string) {
+        const results = await db
+            .select({ id: user.id, name: user.name })
+            .from(user)
+            .where(and(eq(user.id, userId), isNull(user.deletedAt)));
+
+        if (results.length === 0) return null;
+        return results[0];
+    },
+
     async getUsersByEventId(db: Database, eventId: string) {
         return await db
             .select({

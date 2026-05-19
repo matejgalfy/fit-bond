@@ -2,6 +2,7 @@ import type { Database } from '../../db';
 import type { NotificationsModel } from './notifications.model';
 import { notificationsModel as defaultModel } from './notifications.model';
 import type {
+    CreateNotificationInput,
     NotificationFilters,
     PaginationFilters,
 } from './notifications.types';
@@ -11,6 +12,14 @@ export function createNotificationsService(
     model: NotificationsModel = defaultModel
 ) {
     return {
+        async create(db: Database, input: CreateNotificationInput) {
+            return model.create(db, input);
+        },
+
+        async createMany(db: Database, inputs: CreateNotificationInput[]) {
+            return model.createMany(db, inputs);
+        },
+
         async list(db: Database, userId: string, filters: NotificationFilters) {
             return model.findAll(db, userId, filters);
         },
@@ -79,3 +88,6 @@ export function createNotificationsService(
 }
 
 export const notificationsService = createNotificationsService();
+export type NotificationsService = ReturnType<
+    typeof createNotificationsService
+>;

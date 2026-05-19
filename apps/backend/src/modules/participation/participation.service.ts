@@ -8,15 +8,28 @@ import {
     eventsModel as defaultEventsModel,
     type EventsModel,
 } from '../events/events.model';
+import {
+    usersModel as defaultUsersModel,
+    type UsersModel,
+} from '../users/users.model';
+import {
+    notificationsService as defaultNotifications,
+    type NotificationsService,
+} from '../notifications/notifications.service';
+import type { NotificationType } from '../notifications/notifications.types';
 
 export interface ParticipationServiceDeps {
     model?: ParticipationModel;
     eventsModel?: Pick<EventsModel, 'findRawById'>;
+    usersModel?: Pick<UsersModel, 'getUserNameById'>;
+    notifications?: Pick<NotificationsService, 'create'>;
 }
 
 export function createParticipationService({
     model = defaultModel,
     eventsModel = defaultEventsModel,
+    usersModel = defaultUsersModel,
+    notifications = defaultNotifications,
 }: ParticipationServiceDeps = {}) {
     async function requireEvent(db: Database, eventId: string) {
         const event = await eventsModel.findRawById(db, eventId);
@@ -24,6 +37,30 @@ export function createParticipationService({
             throw ServiceError.notFound('Event not found');
         }
         return event;
+    }
+
+    async function notifyOrganizer(
+        db: Database,
+        event: { id: string; organizerId: string; name: string },
+        actorId: string,
+        type: NotificationType['type'],
+        title: string,
+        verb: string
+    ) {
+        try {
+            const actor = await usersModel.getUserNameById(db, actorId);
+            const actorName = actor?.name ?? 'Someone';
+            await notifications.create(db, {
+                userId: event.organizerId,
+                type,
+                title,
+                message: `${actorName} ${verb} your event ${event.name}.`,
+                eventId: event.id,
+                relatedUserId: actorId,
+            });
+        } catch (err: unknown) {
+            console.error('Notification creation failed:', err);
+        }
     }
 
     return {
@@ -63,6 +100,14 @@ export function createParticipationService({
             }
 
             await model.addParticipant(db, eventId, userId);
+            await notifyOrganizer(
+                db,
+                event,
+                userId,
+                'participant_joined',
+                'New participant joined',
+                'joined'
+            );
             return { success: true };
         },
 
@@ -103,6 +148,14 @@ export function createParticipationService({
             }
 
             await model.addInterested(db, eventId, userId);
+            await notifyOrganizer(
+                db,
+                event,
+                userId,
+                'interest',
+                'Someone is interested in your event',
+                'is interested in'
+            );
             return { success: true };
         },
 
