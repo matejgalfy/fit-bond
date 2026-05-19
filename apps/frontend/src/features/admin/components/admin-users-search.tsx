@@ -31,7 +31,8 @@ interface AdminUserRow {
     image: string | null;
     bio: string | null;
     role: 'user' | 'admin';
-    bannedReason: string | null;
+    banned: boolean | null;
+    banReason: string | null;
     deletedAt: Date | string | null;
 }
 
@@ -136,7 +137,7 @@ function UserRow({ user, selected, onSelect }: UserRowProps) {
                             Admin
                         </Badge>
                     )}
-                    {user.bannedReason && (
+                    {user.banned && (
                         <Badge variant="destructive" className="rounded-md">
                             Banned
                         </Badge>
@@ -166,7 +167,7 @@ function UserModerationPanel({ user }: UserModerationPanelProps) {
     const deleteMutation = useDeleteAdminUser();
 
     const isDeleted = Boolean(user.deletedAt);
-    const isBanned = Boolean(user.bannedReason);
+    const isBanned = Boolean(user.banned);
 
     const actionError =
         banMutation.error ??
@@ -196,7 +197,7 @@ function UserModerationPanel({ user }: UserModerationPanelProps) {
                 )}
                 {isBanned && (
                     <p className="text-small text-destructive m-0">
-                        Banned: {user.bannedReason}
+                        Banned{user.banReason ? `: ${user.banReason}` : ''}
                     </p>
                 )}
                 <div className="flex flex-wrap gap-2">
@@ -260,7 +261,7 @@ function UserModerationPanel({ user }: UserModerationPanelProps) {
                 pending={banMutation.isPending}
                 onConfirm={(reason) => {
                     banMutation.mutate(
-                        { id: user.id, body: { reason } },
+                        { id: user.id, reason },
                         {
                             onSuccess: () => {
                                 setBanDialogOpen(false);

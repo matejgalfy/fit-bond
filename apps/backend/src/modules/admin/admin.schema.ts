@@ -23,10 +23,6 @@ export const adminEventQueryFilters = t.Composite([
     }),
 ]);
 
-export const banUserBody = t.Object({
-    reason: t.String({ minLength: 1, maxLength: 500 }),
-});
-
 export const updateUserAdminBody = t.Object({
     name: t.Optional(t.String({ minLength: 1, maxLength: 200 })),
     bio: t.Optional(t.Union([t.String({ maxLength: 1000 }), t.Null()])),
@@ -36,5 +32,4 @@ export const updateUserAdminBody = t.Object({
 
 export type AdminUserQueryFilters = typeof adminUserQueryFilters.static;
 export type AdminEventQueryFilters = typeof adminEventQueryFilters.static;
-export type BanUserBody = typeof banUserBody.static;
 export type UpdateUserAdminBody = typeof updateUserAdminBody.static;

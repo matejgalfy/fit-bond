@@ -4,7 +4,6 @@ import {
     adminUserIdParam,
     adminUserQueryFilters,
     adminEventQueryFilters,
-    banUserBody,
     updateUserAdminBody,
 } from './admin.schema';
 import {
@@ -70,34 +69,6 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                             summary: 'Update user (admin)',
                             description:
                                 'Edit name, bio, image, or role of any user.',
-                        },
-                    }
-                )
-                .post(
-                    '/users/:id/ban',
-                    ({ params, body }) =>
-                        adminController.banUser(params.id, body),
-                    {
-                        params: adminUserIdParam,
-                        body: banUserBody,
-                        detail: {
-                            tags: ['Admin'],
-                            summary: 'Ban a user',
-                            description:
-                                'Permanently ban a user by setting their banned reason. Returns 409 if the user is already banned.',
-                        },
-                    }
-                )
-                .post(
-                    '/users/:id/unban',
-                    ({ params }) => adminController.unbanUser(params.id),
-                    {
-                        params: adminUserIdParam,
-                        detail: {
-                            tags: ['Admin'],
-                            summary: 'Unban a user',
-                            description:
-                                'Clear the banned reason from a user, reinstating their access. Returns 409 if the user is not banned.',
                         },
                     }
                 )

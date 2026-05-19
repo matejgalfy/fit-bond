@@ -15,6 +15,13 @@
       "when": 1778348883224,
       "tag": "0001_aromatic_zodiak",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1779187366907,
+      "tag": "0002_amusing_matthew_murdock",
+      "breakpoints": true
     }
   ]
 }

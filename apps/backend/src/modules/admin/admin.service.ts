@@ -28,38 +28,6 @@ export function createAdminService({
             return found;
         },
 
-        async banUser(db: Database, id: string, reason: string) {
-            const existing = await model.findUserById(db, id);
-            if (!existing) {
-                throw ServiceError.notFound('User not found');
-            }
-            if (existing.bannedReason) {
-                throw ServiceError.conflict('User is already banned');
-            }
-
-            const updated = await model.setBannedReason(db, id, reason);
-            if (!updated) {
-                throw ServiceError.notFound('User not found');
-            }
-            return updated;
-        },
-
-        async unbanUser(db: Database, id: string) {
-            const existing = await model.findUserById(db, id);
-            if (!existing) {
-                throw ServiceError.notFound('User not found');
-            }
-            if (!existing.bannedReason) {
-                throw ServiceError.conflict('User is not banned');
-            }
-
-            const updated = await model.setBannedReason(db, id, null);
-            if (!updated) {
-                throw ServiceError.notFound('User not found');
-            }
-            return updated;
-        },
-
         async updateUser(
             db: Database,
             id: string,
