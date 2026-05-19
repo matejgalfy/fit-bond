@@ -2,11 +2,40 @@ import { eq, and, isNull, desc } from 'drizzle-orm';
 import type { Database } from '../../db';
 import { notifications } from '../../db/schema';
 import type {
+    CreateNotificationInput,
     NotificationFilters,
     PaginationFilters,
 } from './notifications.types';
 
+const returnColumns = {
+    id: notifications.id,
+    userId: notifications.userId,
+    type: notifications.type,
+    title: notifications.title,
+    message: notifications.message,
+    eventId: notifications.eventId,
+    relatedUserId: notifications.relatedUserId,
+    isRead: notifications.isRead,
+    readAt: notifications.readAt,
+    createdAt: notifications.createdAt,
+};
+
 export const notificationsModel = {
+    async create(db: Database, input: CreateNotificationInput) {
+        const results = await db
+            .insert(notifications)
+            .values(input)
+            .returning(returnColumns);
+
+        if (results.length === 0) return null;
+        return results[0];
+    },
+
+    async createMany(db: Database, inputs: CreateNotificationInput[]) {
+        if (inputs.length === 0) return [];
+        return db.insert(notifications).values(inputs).returning(returnColumns);
+    },
+
     async findAll(db: Database, userId: string, filters: NotificationFilters) {
         const conditions = [
             eq(notifications.userId, userId),

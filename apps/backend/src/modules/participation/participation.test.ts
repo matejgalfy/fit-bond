@@ -4,6 +4,8 @@ import { ServiceError } from '../../utils/errors';
 import type { ParticipationModel } from './participation.model';
 import type { EventsModel } from '../events/events.model';
 import type { EventType } from '../events/events.types';
+import type { UsersModel } from '../users/users.model';
+import type { NotificationsService } from '../notifications/notifications.service';
 import type { Database } from '../../db';
 
 const futureDate = new Date(Date.now() + 86400000);
@@ -62,21 +64,50 @@ function makeMockEventsModel() {
     };
 }
 
+function makeMockUsersModel() {
+    return {
+        getUserNameById: vi.fn(() =>
+            Promise.resolve({ id: 'user-1', name: 'Marek R.' } as {
+                id: string;
+                name: string;
+            } | null)
+        ),
+    };
+}
+
+function makeMockNotifications() {
+    return {
+        create: vi.fn(() => Promise.resolve(null)),
+    };
+}
+
 const fakeDb = makeFakeDb();
 
 describe('ParticipationService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
     let mockEventsModel: ReturnType<typeof makeMockEventsModel>;
+    let mockUsersModel: ReturnType<typeof makeMockUsersModel>;
+    let mockNotifications: ReturnType<typeof makeMockNotifications>;
     let service: ReturnType<typeof createParticipationService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
         mockEventsModel = makeMockEventsModel();
+        mockUsersModel = makeMockUsersModel();
+        mockNotifications = makeMockNotifications();
         service = createParticipationService({
             model: mockModel as unknown as ParticipationModel,
             eventsModel: mockEventsModel as unknown as Pick<
                 EventsModel,
                 'findRawById'
+            >,
+            usersModel: mockUsersModel as unknown as Pick<
+                UsersModel,
+                'getUserNameById'
+            >,
+            notifications: mockNotifications as unknown as Pick<
+                NotificationsService,
+                'create'
             >,
         });
     });
@@ -210,6 +241,26 @@ describe('ParticipationService', () => {
             expect(mockModel.addParticipant).toHaveBeenCalledTimes(1);
             expect(mockModel.addInterested).not.toHaveBeenCalled();
         });
+
+        test('notifies the organizer that a participant joined', async () => {
+            await service.join(fakeDb, 'event-1', 'user-1');
+            expect(mockNotifications.create).toHaveBeenCalledWith(fakeDb, {
+                userId: 'organizer-1',
+                type: 'participant_joined',
+                title: 'New participant joined',
+                message: 'Marek R. joined your event Morning Run.',
+                eventId: 'event-1',
+                relatedUserId: 'user-1',
+            });
+        });
+
+        test('join still succeeds when notification creation fails', async () => {
+            mockNotifications.create.mockRejectedValueOnce(
+                new Error('db down')
+            );
+            const result = await service.join(fakeDb, 'event-1', 'user-1');
+            expect(result).toEqual({ success: true });
+        });
     });
 
     describe('leave', () => {
@@ -301,6 +352,18 @@ describe('ParticipationService', () => {
             } catch (e) {
                 expect((e as ServiceError).code).toBe('CONFLICT');
             }
+        });
+
+        test('notifies the organizer that a user is interested', async () => {
+            await service.markInterest(fakeDb, 'event-1', 'user-1');
+            expect(mockNotifications.create).toHaveBeenCalledWith(fakeDb, {
+                userId: 'organizer-1',
+                type: 'interest',
+                title: 'Someone is interested in your event',
+                message: 'Marek R. is interested in your event Morning Run.',
+                eventId: 'event-1',
+                relatedUserId: 'user-1',
+            });
         });
     });
 

@@ -7,13 +7,37 @@ import type {
     UpdateCommentInput,
 } from './comments.types';
 import { ServiceError } from '../../utils/errors';
+import {
+    eventsModel as defaultEventsModel,
+    type EventsModel,
+} from '../events/events.model';
+import {
+    usersModel as defaultUsersModel,
+    type UsersModel,
+} from '../users/users.model';
+import {
+    notificationsService as defaultNotifications,
+    type NotificationsService,
+} from '../notifications/notifications.service';
 
 export interface CommentActor {
     id: string;
     role: string;
 }
 
-export function createCommentsService(model: CommentsModel = defaultModel) {
+export interface CommentsServiceDeps {
+    model?: CommentsModel;
+    eventsModel?: Pick<EventsModel, 'findRawById'>;
+    usersModel?: Pick<UsersModel, 'getUserNameById'>;
+    notifications?: Pick<NotificationsService, 'create'>;
+}
+
+export function createCommentsService({
+    model = defaultModel,
+    eventsModel = defaultEventsModel,
+    usersModel = defaultUsersModel,
+    notifications = defaultNotifications,
+}: CommentsServiceDeps = {}) {
     return {
         async list(db: Database, filters: CommentFilters) {
             return model.findAll(db, filters);
@@ -59,7 +83,27 @@ export function createCommentsService(model: CommentsModel = defaultModel) {
                 }
             }
 
-            return model.create(db, userId, eventId, input);
+            const comment = await model.create(db, userId, eventId, input);
+
+            try {
+                const event = await eventsModel.findRawById(db, eventId);
+                if (event && event.organizerId !== userId) {
+                    const author = await usersModel.getUserNameById(db, userId);
+                    const authorName = author?.name ?? 'Someone';
+                    await notifications.create(db, {
+                        userId: event.organizerId,
+                        type: 'comment',
+                        title: 'New comment on your event',
+                        message: `${authorName} commented on ${event.name}.`,
+                        eventId,
+                        relatedUserId: userId,
+                    });
+                }
+            } catch (err: unknown) {
+                console.error('Notification creation failed:', err);
+            }
+
+            return comment;
         },
 
         async update(
