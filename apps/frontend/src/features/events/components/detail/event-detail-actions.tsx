@@ -56,12 +56,6 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                 </>
             )}
 
-            {session?.user && isOrganizer && (
-                <p className="m-0 mr-1 text-small text-secondary-text">
-                    You&apos;re organizing this event.
-                </p>
-            )}
-
             {session?.user && !isOrganizer && (
                 <>
                     {isJoined ? (
@@ -121,7 +115,7 @@ export function EventDetailActions({ event }: EventDetailActionsProps) {
                 </>
             )}
 
-            <ReportEventDialog eventId={event.id} />
+            {!isOrganizer && <ReportEventDialog eventId={event.id} />}
         </div>
     );
 }

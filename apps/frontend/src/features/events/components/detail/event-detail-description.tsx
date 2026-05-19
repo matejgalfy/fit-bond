@@ -12,7 +12,7 @@ export function EventDetailDescription({ event }: EventDetailDescriptionProps) {
     }
 
     return (
-        <section className="mt-7">
+        <section className="mt-4">
             <h2 className="m-0 font-heading text-subheading font-semibold text-primary-text">
                 About this event
             </h2>

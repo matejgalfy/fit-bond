@@ -94,6 +94,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                             comment={comment}
                             replies={repliesByParentId.get(comment.id) ?? []}
                             eventId={eventId}
+                            currentUserId={session.user.id}
                             currentUserName={session.user.name}
                             currentUserImage={userImage}
                         />

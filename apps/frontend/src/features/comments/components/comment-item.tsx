@@ -11,6 +11,7 @@ interface CommentItemProps {
     comment: Comment;
     replies: Comment[];
     eventId: string;
+    currentUserId: string;
     currentUserName: string;
     currentUserImage?: string | null;
 }
@@ -19,10 +20,12 @@ export function CommentItem({
     comment,
     replies,
     eventId,
+    currentUserId,
     currentUserName,
     currentUserImage,
 }: CommentItemProps) {
     const [replyOpen, setReplyOpen] = useState(false);
+    const isOwnComment = comment.author.id === currentUserId;
 
     return (
         <article className="flex gap-3">
@@ -58,7 +61,9 @@ export function CommentItem({
                         <Reply />
                         Reply
                     </Button>
-                    <ReportCommentDialog commentId={comment.id} />
+                    {!isOwnComment && (
+                        <ReportCommentDialog commentId={comment.id} />
+                    )}
                 </div>
 
                 {replyOpen && (
@@ -102,11 +107,13 @@ export function CommentItem({
                                     <p className="m-0 whitespace-pre-wrap text-tiny leading-5 text-primary-text">
                                         {reply.content}
                                     </p>
-                                    <div className="mt-0.5">
-                                        <ReportCommentDialog
-                                            commentId={reply.id}
-                                        />
-                                    </div>
+                                    {reply.author.id !== currentUserId && (
+                                        <div className="mt-0.5">
+                                            <ReportCommentDialog
+                                                commentId={reply.id}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </article>
                         ))}

@@ -62,7 +62,10 @@ function makeMockModel() {
 function makeMockEventsModel() {
     return {
         findRawById: vi.fn(() =>
-            Promise.resolve({ id: 'event-1' } as unknown as never)
+            Promise.resolve({
+                id: 'event-1',
+                organizerId: 'user-2',
+            } as unknown as never)
         ),
     };
 }
@@ -70,7 +73,10 @@ function makeMockEventsModel() {
 function makeMockCommentsModel() {
     return {
         findRawById: vi.fn(() =>
-            Promise.resolve({ id: 'comment-1' } as unknown as never)
+            Promise.resolve({
+                id: 'comment-1',
+                userId: 'user-2',
+            } as unknown as never)
         ),
     };
 }
@@ -206,6 +212,42 @@ describe('ReportsService', () => {
             } catch (e) {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
                 expect(mockAdmin.findUserById).not.toHaveBeenCalled();
+            }
+        });
+
+        test('throws BAD_REQUEST when reporting own event', async () => {
+            mockEvents.findRawById.mockResolvedValueOnce({
+                id: 'event-1',
+                organizerId: 'user-1',
+            } as unknown as never);
+            expect.assertions(2);
+            try {
+                await service.create(fakeDb, 'user-1', {
+                    reportType: 'event',
+                    targetId: 'event-1',
+                    reason: 'x',
+                });
+            } catch (e) {
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
+                expect(mockModel.create).not.toHaveBeenCalled();
+            }
+        });
+
+        test('throws BAD_REQUEST when reporting own comment', async () => {
+            mockComments.findRawById.mockResolvedValueOnce({
+                id: 'comment-1',
+                userId: 'user-1',
+            } as unknown as never);
+            expect.assertions(2);
+            try {
+                await service.create(fakeDb, 'user-1', {
+                    reportType: 'comment',
+                    targetId: 'comment-1',
+                    reason: 'x',
+                });
+            } catch (e) {
+                expect((e as ServiceError).code).toBe('BAD_REQUEST');
+                expect(mockModel.create).not.toHaveBeenCalled();
             }
         });
 
