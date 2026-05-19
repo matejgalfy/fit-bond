@@ -2,6 +2,7 @@ import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db';
 import { emailService } from './modules/email/email.service';
+import { admin } from 'better-auth/plugins';
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
@@ -24,17 +25,13 @@ export const auth = betterAuth({
             clientSecret: clientSecret,
         },
     },
+    plugins: [admin()],
     trustedOrigins: ['http://localhost:5173'],
     user: {
         additionalFields: {
             role: {
                 type: 'string',
                 defaultValue: 'user',
-                input: false,
-            },
-            bannedReason: {
-                type: 'string',
-                required: false,
                 input: false,
             },
         },

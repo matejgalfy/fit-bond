@@ -20,7 +20,9 @@ function makeMockUser(overrides: Partial<UserType> = {}): UserType {
         role: 'user',
         email: 'alice@example.com',
         emailVerified: true,
-        bannedReason: null,
+        banned: false,
+        banReason: null,
+        banExpires: null,
         createdAt: new Date(),
         updatedAt: new Date(),
         deletedAt: null,
@@ -32,9 +34,6 @@ function makeMockModel() {
     return {
         searchUsers: vi.fn(() => Promise.resolve([] as unknown[])),
         findUserById: vi.fn(() => Promise.resolve(null as UserType | null)),
-        setBannedReason: vi.fn(() =>
-            Promise.resolve(makeMockUser() as UserType | null)
-        ),
         updateUser: vi.fn(() =>
             Promise.resolve(makeMockUser() as UserType | null)
         ),
@@ -90,84 +89,6 @@ describe('AdminService', () => {
                 await service.getUser(fakeDb, 'missing');
             } catch (e) {
                 expect(e).toBeInstanceOf(ServiceError);
-                expect((e as ServiceError).code).toBe('NOT_FOUND');
-            }
-        });
-    });
-
-    describe('banUser', () => {
-        test('bans an unbanned user', async () => {
-            mockModel.findUserById.mockResolvedValueOnce(makeMockUser());
-            const banned = makeMockUser({ bannedReason: 'spam' });
-            mockModel.setBannedReason.mockResolvedValueOnce(banned);
-
-            const result = await service.banUser(fakeDb, 'user-1', 'spam');
-            expect(result).toEqual(banned);
-            expect(mockModel.setBannedReason).toHaveBeenCalledWith(
-                fakeDb,
-                'user-1',
-                'spam'
-            );
-        });
-
-        test('throws NOT_FOUND when user does not exist', async () => {
-            mockModel.findUserById.mockResolvedValueOnce(null);
-            expect.assertions(1);
-            try {
-                await service.banUser(fakeDb, 'missing', 'spam');
-            } catch (e) {
-                expect((e as ServiceError).code).toBe('NOT_FOUND');
-            }
-        });
-
-        test('throws CONFLICT when user is already banned', async () => {
-            mockModel.findUserById.mockResolvedValueOnce(
-                makeMockUser({ bannedReason: 'previous offense' })
-            );
-            expect.assertions(2);
-            try {
-                await service.banUser(fakeDb, 'user-1', 'new reason');
-            } catch (e) {
-                expect((e as ServiceError).code).toBe('CONFLICT');
-                expect(mockModel.setBannedReason).not.toHaveBeenCalled();
-            }
-        });
-    });
-
-    describe('unbanUser', () => {
-        test('unbans a banned user', async () => {
-            mockModel.findUserById.mockResolvedValueOnce(
-                makeMockUser({ bannedReason: 'spam' })
-            );
-            const unbanned = makeMockUser({ bannedReason: null });
-            mockModel.setBannedReason.mockResolvedValueOnce(unbanned);
-
-            const result = await service.unbanUser(fakeDb, 'user-1');
-            expect(result).toEqual(unbanned);
-            expect(mockModel.setBannedReason).toHaveBeenCalledWith(
-                fakeDb,
-                'user-1',
-                null
-            );
-        });
-
-        test('throws CONFLICT when user is not banned', async () => {
-            mockModel.findUserById.mockResolvedValueOnce(makeMockUser());
-            expect.assertions(2);
-            try {
-                await service.unbanUser(fakeDb, 'user-1');
-            } catch (e) {
-                expect((e as ServiceError).code).toBe('CONFLICT');
-                expect(mockModel.setBannedReason).not.toHaveBeenCalled();
-            }
-        });
-
-        test('throws NOT_FOUND when user does not exist', async () => {
-            mockModel.findUserById.mockResolvedValueOnce(null);
-            expect.assertions(1);
-            try {
-                await service.unbanUser(fakeDb, 'missing');
-            } catch (e) {
                 expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
         });

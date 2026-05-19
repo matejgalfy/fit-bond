@@ -3,7 +3,6 @@ import { throwIfError } from '@/lib/api-error';
 import type {
     AdminUserQueryFilters,
     AdminEventQueryFilters,
-    BanUserBody,
     UpdateUserAdminBody,
 } from '../../../../../backend/src/modules/admin/admin.schema';
 import type {
@@ -41,18 +40,6 @@ export async function getAdminUser(id: string) {
 export async function updateAdminUser(id: string, body: UpdateUserAdminBody) {
     const { data, error } = await api.admin.users({ id }).patch(body);
     throwIfError(error, 'Failed to update user');
-    return data;
-}
-
-export async function banAdminUser(id: string, body: BanUserBody) {
-    const { data, error } = await api.admin.users({ id }).ban.post(body);
-    throwIfError(error, 'Failed to ban user');
-    return data;
-}
-
-export async function unbanAdminUser(id: string) {
-    const { data, error } = await api.admin.users({ id }).unban.post();
-    throwIfError(error, 'Failed to unban user');
     return data;
 }
 

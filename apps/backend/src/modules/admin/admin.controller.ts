@@ -5,7 +5,6 @@ import { reportsService } from '../reports/reports.service';
 import type {
     AdminUserQueryFilters,
     AdminEventQueryFilters,
-    BanUserBody,
     UpdateUserAdminBody,
 } from './admin.schema';
 import type {
@@ -21,14 +20,6 @@ export const adminController = {
 
     async getUser(id: string) {
         return adminService.getUser(db, id);
-    },
-
-    async banUser(id: string, data: BanUserBody) {
-        return adminService.banUser(db, id, data.reason);
-    },
-
-    async unbanUser(id: string) {
-        return adminService.unbanUser(db, id);
     },
 
     async updateUser(id: string, data: UpdateUserAdminBody) {

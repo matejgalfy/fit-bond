@@ -6,7 +6,6 @@ import {
     gte,
     lte,
     isNull,
-    isNotNull,
     desc,
     not,
     exists,
@@ -50,9 +49,12 @@ export const adminModel = {
             conditions.push(eq(user.role, filters.role));
         }
         if (filters.banned === true) {
-            conditions.push(isNotNull(user.bannedReason));
+            conditions.push(eq(user.banned, true));
         } else if (filters.banned === false) {
-            conditions.push(isNull(user.bannedReason));
+            const notBanned = or(isNull(user.banned), eq(user.banned, false));
+            if (notBanned) {
+                conditions.push(notBanned);
+            }
         }
 
         const limit = filters.limit ?? 20;
@@ -66,7 +68,9 @@ export const adminModel = {
                 image: user.image,
                 bio: user.bio,
                 role: user.role,
-                bannedReason: user.bannedReason,
+                banned: user.banned,
+                banReason: user.banReason,
+                banExpires: user.banExpires,
                 createdAt: user.createdAt,
                 updatedAt: user.updatedAt,
                 deletedAt: user.deletedAt,
@@ -80,20 +84,6 @@ export const adminModel = {
 
     async findUserById(db: Database, id: string) {
         const results = await db.select().from(user).where(eq(user.id, id));
-        if (results.length === 0) return null;
-        return results[0];
-    },
-
-    async setBannedReason(
-        db: Database,
-        id: string,
-        bannedReason: string | null
-    ) {
-        const results = await db
-            .update(user)
-            .set({ bannedReason, updatedAt: new Date() })
-            .where(eq(user.id, id))
-            .returning();
         if (results.length === 0) return null;
         return results[0];
     },
@@ -235,7 +225,7 @@ export const adminModel = {
                     id: user.id,
                     name: user.name,
                     image: user.image,
-                    bannedReason: user.bannedReason,
+                    banned: user.banned,
                 },
                 location: {
                     id: locations.id,

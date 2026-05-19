@@ -6,18 +6,16 @@ import {
 } from '@tanstack/react-query';
 import type {
     AdminUserQueryFilters,
-    BanUserBody,
     UpdateUserAdminBody,
 } from '../../../../../backend/src/modules/admin/admin.schema';
 import {
     adminQueryKeys,
-    banAdminUser,
     deleteAdminUser,
     getAdminUser,
     listAdminUsers,
-    unbanAdminUser,
     updateAdminUser,
 } from '../api/admin-api';
+import { authClient } from '@/lib/api';
 
 export function useAdminUsers(filters?: AdminUserQueryFilters) {
     return useQuery({
@@ -58,8 +56,15 @@ function useInvalidateAdminUsers() {
 export function useBanUser() {
     const invalidate = useInvalidateAdminUsers();
     return useMutation({
-        mutationFn: ({ id, body }: { id: string; body: BanUserBody }) =>
-            banAdminUser(id, body),
+        mutationFn: async ({ id, reason }: { id: string; reason: string }) => {
+            const { error } = await authClient.admin.banUser({
+                userId: id,
+                banReason: reason,
+            });
+            if (error) {
+                throw new Error(error.message ?? 'Failed to ban user');
+            }
+        },
         onSuccess: async (_data, variables) => {
             await invalidate(variables.id);
         },
@@ -69,7 +74,14 @@ export function useBanUser() {
 export function useUnbanUser() {
     const invalidate = useInvalidateAdminUsers();
     return useMutation({
-        mutationFn: ({ id }: { id: string }) => unbanAdminUser(id),
+        mutationFn: async ({ id }: { id: string }) => {
+            const { error } = await authClient.admin.unbanUser({
+                userId: id,
+            });
+            if (error) {
+                throw new Error(error.message ?? 'Failed to unban user');
+            }
+        },
         onSuccess: async (_data, variables) => {
             await invalidate(variables.id);
         },
