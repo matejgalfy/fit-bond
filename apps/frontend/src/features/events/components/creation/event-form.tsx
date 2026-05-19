@@ -10,10 +10,7 @@ import {
 } from '../../utils/create-event-payload';
 import { validateCreateEventInput } from '../../validation/create-event-validation';
 import { CreatingEventBasics } from './event-basics';
-import {
-    CreatingEventDetails,
-    type Visibility,
-} from './details/event-details';
+import { CreatingEventDetails, type Visibility } from './details/event-details';
 import {
     CreatingEventTimeLocation,
     type CustomDurationUnit,

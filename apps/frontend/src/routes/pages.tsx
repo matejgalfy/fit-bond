@@ -28,10 +28,7 @@ interface PageSearchState {
 function pathnameToNavId(pathname: string, search: PageSearchState): string {
     if (pathname.includes('my-events')) return 'events';
     if (pathname.includes('create-event')) return 'events';
-    if (
-        pathname.includes('event-detail-page') &&
-        search.from === 'my-events'
-    ) {
+    if (pathname.includes('event-detail-page') && search.from === 'my-events') {
         return 'events';
     }
     if (pathname.includes('notifications')) return 'notifications';
@@ -70,10 +67,7 @@ function PagesLayout() {
         return <Navigate to="/auth/login" replace />;
     }
 
-    const activeNav = pathnameToNavId(
-        location.pathname,
-        location.search
-    );
+    const activeNav = pathnameToNavId(location.pathname, location.search);
     const navImage = profile?.image ?? session.user.image;
 
     return (

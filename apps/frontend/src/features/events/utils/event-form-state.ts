@@ -46,9 +46,7 @@ function getDurationFields(duration: number) {
     };
 }
 
-export function buildEventLocationSuggestion(
-    event: Event
-): LocationSuggestion {
+export function buildEventLocationSuggestion(event: Event): LocationSuggestion {
     const location = event.location as EditableLocation;
 
     return {
