@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
-import { notificationsController } from './notifications.controller';
+import { notificationsService } from './notifications.service';
+import { db } from '../../db';
 import {
     notificationQueryFilters,
     paginationQueryFilters,
@@ -14,7 +15,7 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     .onError(handleServiceError)
     .get(
         '/',
-        ({ query, user }) => notificationsController.list(user.id, query),
+        ({ query, user }) => notificationsService.list(db, user.id, query),
         {
             auth: true,
             query: notificationQueryFilters,
@@ -28,7 +29,7 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     )
     .get(
         '/unread',
-        ({ query, user }) => notificationsController.listUnread(user.id, query),
+        ({ query, user }) => notificationsService.listUnread(db, user.id, query),
         {
             auth: true,
             query: paginationQueryFilters,
@@ -42,7 +43,10 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     )
     .post(
         '/mark-all-read',
-        ({ user }) => notificationsController.markAllRead(user),
+        async ({ user }) => {
+            await notificationsService.markAllRead(db, user.id);
+            return { success: true };
+        },
         {
             auth: true,
             detail: {
@@ -55,7 +59,7 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     )
     .post(
         '/:id/read',
-        ({ params, user }) => notificationsController.markRead(params.id, user),
+        ({ params, user }) => notificationsService.markRead(db, params.id, user.id),
         {
             auth: true,
             params: notificationIdParam,
@@ -69,7 +73,7 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     .patch(
         '/:id',
         ({ params, user, body }) =>
-            notificationsController.update(params.id, user, body),
+            notificationsService.update(db, params.id, user.id, body.isRead),
         {
             auth: true,
             params: notificationIdParam,
@@ -83,7 +87,10 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     )
     .delete(
         '/:id',
-        ({ params, user }) => notificationsController.delete(params.id, user),
+        async ({ params, user }) => {
+            await notificationsService.delete(db, params.id, user.id);
+            return { success: true };
+        },
         {
             auth: true,
             params: notificationIdParam,
