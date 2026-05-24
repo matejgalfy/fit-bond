@@ -115,8 +115,7 @@ Each module in `apps/backend/src/modules/<name>/` follows a layered architecture
 | `<name>.schema.ts` | Elysia `t` schemas for request/response validation |
 | `<name>.model.ts` | Drizzle ORM queries — all functions accept `db: Database` parameter |
 | `<name>.service.ts` | Business logic — uses factory pattern `createXxxService(model?)` for testable DI |
-| `<name>.controller.ts` | HTTP adapter — extracts auth user from context, injects `db`, calls service |
-| `<name>.routes.ts` | Elysia plugin with route definitions and `onError` hook |
+| `<name>.routes.ts` | Elysia plugin with route definitions and `onError` hook, injects `db`, calls service|
 | `<name>.test.ts` | Unit tests using `bun:test` with mocked model layer |
 
 Routes are registered in `apps/backend/src/index.ts` via `.use(xxxRoutes)`.
@@ -151,7 +150,7 @@ Pass schemas to routes via options: `{ body: createEventBody, params: eventIdPar
 Services throw typed errors that routes catch:
 
 ```typescript
-export class EventsServiceError extends Error {
+export class ServiceError extends Error {
     public readonly code: 'NOT_FOUND' | 'FORBIDDEN' | 'CONFLICT' | 'BAD_REQUEST';
     public readonly statusCode: number;
 }
@@ -205,11 +204,3 @@ Use `expect.assertions(n)` with try/catch for error-throwing tests (avoids ESLin
 - Run `bun format` before committing
 - Soft deletes use `deletedAt` timestamp fields
 - Array results use `results.length === 0 ? null : results[0]` pattern (not `.at(0)` — ESLint can't resolve Drizzle types with `.at()`)
-
-## Modules Status
-
-| Module | Status |
-|--------|--------|
-| events | ✅ Implemented (CRUD, cancel, filtering, tests) |
-| auth | ✅ Implemented (better-auth — email/password + Google OAuth) |
-| admin, comments, notifications, participation, profile, reports | Stub files only |
