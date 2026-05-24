@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
-import { participationController } from './participation.controller';
+import { participationService } from './participation.service';
+import { db } from '../../db';
 import { eventIdParam, participantsResponse } from './participation.schema';
 import { handleServiceError } from '../../utils/error-handler';
 import { authLayer } from '../../auth_middleware';
@@ -9,7 +10,7 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     .onError(handleServiceError)
     .get(
         '/:id/participants',
-        ({ params }) => participationController.listParticipants(params.id),
+        ({ params }) => participationService.listParticipants(db, params.id),
         {
             params: eventIdParam,
             response: participantsResponse,
@@ -23,7 +24,7 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     )
     .get(
         '/:id/interested',
-        ({ params }) => participationController.listInterested(params.id),
+        ({ params }) => participationService.listInterested(db, params.id),
         {
             params: eventIdParam,
             response: participantsResponse,
@@ -37,7 +38,7 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     )
     .post(
         '/:id/join',
-        ({ params, user }) => participationController.join(params.id, user),
+        ({ params, user }) => participationService.join(db, params.id, user.id),
         {
             auth: true,
             params: eventIdParam,
@@ -51,7 +52,7 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     )
     .delete(
         '/:id/join',
-        ({ params, user }) => participationController.leave(params.id, user),
+        ({ params, user }) => participationService.leave(db, params.id, user.id),
         {
             auth: true,
             params: eventIdParam,
@@ -66,7 +67,7 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     .post(
         '/:id/interest',
         ({ params, user }) =>
-            participationController.markInterest(params.id, user),
+            participationService.markInterest(db, params.id, user.id),
         {
             auth: true,
             params: eventIdParam,
@@ -81,7 +82,7 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     .delete(
         '/:id/interest',
         ({ params, user }) =>
-            participationController.unmarkInterest(params.id, user),
+            participationService.unmarkInterest(db, params.id, user.id),
         {
             auth: true,
             params: eventIdParam,
