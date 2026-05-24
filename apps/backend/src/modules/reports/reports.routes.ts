@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
-import { reportsController } from './reports.controller';
+import { reportsService } from './reports.service';
+import { db } from '../../db';
 import { createReportBody, myReportsQuery } from './reports.schema';
 import { handleServiceError } from '../../utils/error-handler';
 import { authLayer } from '../../auth_middleware';
@@ -7,7 +8,7 @@ import { authLayer } from '../../auth_middleware';
 export const reportsRoutes = new Elysia({ prefix: '/reports' })
     .use(authLayer)
     .onError(handleServiceError)
-    .post('/', ({ user, body }) => reportsController.create(user, body), {
+    .post('/', ({ user, body }) => reportsService.create(db, user.id, body), {
         auth: true,
         body: createReportBody,
         detail: {
@@ -17,7 +18,7 @@ export const reportsRoutes = new Elysia({ prefix: '/reports' })
                 'Submit a moderation report against an event, comment, or another user. The same reporter cannot file multiple pending reports against the same target.',
         },
     })
-    .get('/me', ({ user, query }) => reportsController.listMine(user, query), {
+    .get('/me', ({ user, query }) => reportsService.listMine(db, user.id, query), {
         auth: true,
         query: myReportsQuery,
         detail: {
