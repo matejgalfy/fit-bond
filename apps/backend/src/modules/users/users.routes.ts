@@ -32,7 +32,8 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     )
     .get(
         '/event/:eventId',
-        ({ params: { eventId } }) => usersService.getUsersByEventId(db, eventId),
+        ({ params: { eventId } }) =>
+            usersService.getUsersByEventId(db, eventId),
         {
             params: eventIdParam,
             detail: {

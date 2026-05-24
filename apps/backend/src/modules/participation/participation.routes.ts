@@ -52,7 +52,8 @@ export const participationRoutes = new Elysia({ prefix: '/events' })
     )
     .delete(
         '/:id/join',
-        ({ params, user }) => participationService.leave(db, params.id, user.id),
+        ({ params, user }) =>
+            participationService.leave(db, params.id, user.id),
         {
             auth: true,
             params: eventIdParam,

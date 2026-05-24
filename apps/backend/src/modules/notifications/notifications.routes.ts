@@ -29,7 +29,8 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     )
     .get(
         '/unread',
-        ({ query, user }) => notificationsService.listUnread(db, user.id, query),
+        ({ query, user }) =>
+            notificationsService.listUnread(db, user.id, query),
         {
             auth: true,
             query: paginationQueryFilters,
@@ -59,7 +60,8 @@ export const notificationsRoutes = new Elysia({ prefix: '/notifications' })
     )
     .post(
         '/:id/read',
-        ({ params, user }) => notificationsService.markRead(db, params.id, user.id),
+        ({ params, user }) =>
+            notificationsService.markRead(db, params.id, user.id),
         {
             auth: true,
             params: notificationIdParam,

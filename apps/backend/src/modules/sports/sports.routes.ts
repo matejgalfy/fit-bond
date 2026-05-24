@@ -34,16 +34,20 @@ export const sportsRoutes = new Elysia({ prefix: '/sports' })
                 'Create a new sport. Requires authentication. Sport names must be unique.',
         },
     })
-    .delete('/:id', async ({ params }) => {
-        await sportsService.delete(db, params.id);
-        return { success: true };
-    }, {
-        auth: true,
-        params: sportIdParam,
-        detail: {
-            tags: ['Sports'],
-            summary: 'Delete sport',
-            description:
-                'Soft-delete a sport. Requires authentication. Existing events that reference the sport are preserved.',
+    .delete(
+        '/:id',
+        async ({ params }) => {
+            await sportsService.delete(db, params.id);
+            return { success: true };
         },
-    });
+        {
+            auth: true,
+            params: sportIdParam,
+            detail: {
+                tags: ['Sports'],
+                summary: 'Delete sport',
+                description:
+                    'Soft-delete a sport. Requires authentication. Existing events that reference the sport are preserved.',
+            },
+        }
+    );

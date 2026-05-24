@@ -18,13 +18,17 @@ export const reportsRoutes = new Elysia({ prefix: '/reports' })
                 'Submit a moderation report against an event, comment, or another user. The same reporter cannot file multiple pending reports against the same target.',
         },
     })
-    .get('/me', ({ user, query }) => reportsService.listMine(db, user.id, query), {
-        auth: true,
-        query: myReportsQuery,
-        detail: {
-            tags: ['Reports'],
-            summary: 'List my reports',
-            description:
-                'Retrieve a paginated list of reports submitted by the authenticated user, optionally filtered by status.',
-        },
-    });
+    .get(
+        '/me',
+        ({ user, query }) => reportsService.listMine(db, user.id, query),
+        {
+            auth: true,
+            query: myReportsQuery,
+            detail: {
+                tags: ['Reports'],
+                summary: 'List my reports',
+                description:
+                    'Retrieve a paginated list of reports submitted by the authenticated user, optionally filtered by status.',
+            },
+        }
+    );
