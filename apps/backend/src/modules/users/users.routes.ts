@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia';
-import { usersController } from './users.controller';
+import { usersService } from './users.service';
+import { db } from '../../db';
 import { eventIdParam, updateProfileSchema, userIdParam } from './users.schema';
 import { handleServiceError } from '../../utils/error-handler';
 
@@ -7,7 +8,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     .onError(handleServiceError)
     .get(
         '/:userId/profile',
-        ({ params: { userId } }) => usersController.getUserProfile(userId),
+        ({ params: { userId } }) => usersService.getUserProfile(db, userId),
         {
             params: userIdParam,
             detail: {
@@ -19,7 +20,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     .patch(
         '/:userId/profile',
         ({ params: { userId }, body }) =>
-            usersController.updateProfile(userId, body),
+            usersService.updateProfile(db, userId, body),
         {
             params: userIdParam,
             body: updateProfileSchema,
@@ -31,7 +32,7 @@ export const usersRoutes = new Elysia({ prefix: '/users' })
     )
     .get(
         '/event/:eventId',
-        ({ params: { eventId } }) => usersController.getUsersByEventId(eventId),
+        ({ params: { eventId } }) => usersService.getUsersByEventId(db, eventId),
         {
             params: eventIdParam,
             detail: {
