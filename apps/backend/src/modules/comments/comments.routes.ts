@@ -1,5 +1,4 @@
 import { Elysia } from 'elysia';
-import { commentsController } from './comments.controller';
 import {
     createCommentBody,
     updateCommentBody,
@@ -10,11 +9,13 @@ import {
 } from './comments.schema';
 import { handleServiceError } from '../../utils/error-handler';
 import { authLayer } from '../../auth_middleware';
+import { commentsService } from '../comments/comments.service';
+import { db } from '../../db';
 
 export const commentsRoutes = new Elysia({ prefix: '/comments' })
     .use(authLayer)
     .onError(handleServiceError)
-    .get('/', ({ query }) => commentsController.list(query), {
+    .get('/', ({ query }) => commentsService.list(db, query), {
         query: commentQueryFilters,
         detail: {
             tags: ['Comments'],
@@ -23,7 +24,7 @@ export const commentsRoutes = new Elysia({ prefix: '/comments' })
                 'Retrieve a flat list of comments for an event ordered by createdAt. Optionally filter by parentCommentId to fetch replies to a specific thread. Excludes soft-deleted comments.',
         },
     })
-    .get('/:id', ({ params }) => commentsController.getById(params.id), {
+    .get('/:id', ({ params }) => commentsService.getById(db, params.id), {
         params: commentIdParam,
         detail: {
             tags: ['Comments'],
@@ -34,7 +35,7 @@ export const commentsRoutes = new Elysia({ prefix: '/comments' })
     .post(
         '/events/:eventId',
         ({ params, user, body }) =>
-            commentsController.create(user, params.eventId, body),
+            commentsService.create(db, user.id, params.eventId, body),
         {
             auth: true,
             params: eventIdParam,
@@ -50,7 +51,7 @@ export const commentsRoutes = new Elysia({ prefix: '/comments' })
     .patch(
         '/:id',
         ({ params, user, body }) =>
-            commentsController.update(params.id, user, body),
+            commentsService.update(db, params.id, user.id, body),
         {
             auth: true,
             params: commentIdParam,
@@ -65,8 +66,10 @@ export const commentsRoutes = new Elysia({ prefix: '/comments' })
     )
     .delete(
         '/:id',
-        ({ params, user, body }) =>
-            commentsController.delete(params.id, user, body),
+        async ({ params, user, body }) => {
+            await commentsService.delete(db, params.id, user, body.reason);
+            return { success: true };
+        },
         {
             auth: true,
             params: commentIdParam,

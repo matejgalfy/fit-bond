@@ -1,5 +1,4 @@
 import { Elysia } from 'elysia';
-import { eventsController } from './events.controller';
 import {
     createEventBody,
     updateEventBody,
@@ -11,11 +10,13 @@ import {
 } from './events.schema';
 import { handleServiceError } from '../../utils/error-handler';
 import { authLayer } from '../../auth_middleware';
+import { db } from '../../db';
+import { eventsService } from './events.service';
 
 export const eventsRoutes = new Elysia({ prefix: '/events' })
     .use(authLayer)
     .onError(handleServiceError)
-    .get('/', ({ query }) => eventsController.list(query), {
+    .get('/', ({ query }) => eventsService.list(db, query), {
         query: eventQueryFilters,
         detail: {
             tags: ['Events'],
@@ -26,7 +27,7 @@ export const eventsRoutes = new Elysia({ prefix: '/events' })
     })
     .get(
         '/stats/:userId',
-        ({ params }) => eventsController.getStatsByUserId(params.userId),
+        ({ params }) => eventsService.getStatsByUserId(db, params.userId),
         {
             auth: true,
             params: userIdParam,
@@ -39,7 +40,7 @@ export const eventsRoutes = new Elysia({ prefix: '/events' })
             },
         }
     )
-    .get('/:id', ({ params }) => eventsController.getById(params.id), {
+    .get('/:id', ({ params }) => eventsService.getById(db, params.id), {
         params: eventIdParam,
         detail: {
             tags: ['Events'],
@@ -48,7 +49,7 @@ export const eventsRoutes = new Elysia({ prefix: '/events' })
                 'Retrieve detailed information about a specific event.',
         },
     })
-    .post('/', ({ user, body }) => eventsController.create(user, body), {
+    .post('/', ({ user, body }) => eventsService.create(db, user.id, body), {
         auth: true,
         body: createEventBody,
         detail: {
@@ -60,7 +61,7 @@ export const eventsRoutes = new Elysia({ prefix: '/events' })
     .patch(
         '/:id',
         ({ params, user, body }) =>
-            eventsController.update(params.id, user, body),
+            eventsService.update(db, params.id, user, body),
         {
             auth: true,
             params: eventIdParam,
@@ -76,7 +77,7 @@ export const eventsRoutes = new Elysia({ prefix: '/events' })
     .post(
         '/:id/cancel',
         ({ params, user, body }) =>
-            eventsController.cancel(params.id, user, body),
+            eventsService.cancel(db, params.id, user, body.reason),
         {
             auth: true,
             params: eventIdParam,
@@ -91,7 +92,10 @@ export const eventsRoutes = new Elysia({ prefix: '/events' })
     )
     .delete(
         '/:id',
-        ({ params, user }) => eventsController.delete(params.id, user),
+        async ({ params, user }) => {
+            await eventsService.delete(db, params.id, user);
+            return { success: true };
+        },
         {
             auth: true,
             params: eventIdParam,

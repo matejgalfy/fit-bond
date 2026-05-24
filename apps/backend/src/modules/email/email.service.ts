@@ -22,7 +22,7 @@ export const emailService = {
 
     async eventCancelledEmail(recipientEmail: string, eventName: string) {
         return resend.emails.send({
-            from: 'info@tvojadomena.sk',
+            from: 'onboarding@resend.dev',
             to: recipientEmail,
             subject: `${eventName} has been cancelled`,
             html: `

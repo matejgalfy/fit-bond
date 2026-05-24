@@ -1,5 +1,7 @@
 import { Elysia } from 'elysia';
-import { adminController } from './admin.controller';
+import { adminService } from './admin.service';
+import { reportsService } from '../reports/reports.service';
+import { db } from '../../db';
 import {
     adminUserIdParam,
     adminUserQueryFilters,
@@ -33,7 +35,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
             app
                 .get(
                     '/users',
-                    ({ query }) => adminController.listUsers(query),
+                    ({ query }) => adminService.listUsers(db, query),
                     {
                         query: adminUserQueryFilters,
                         detail: {
@@ -46,7 +48,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 )
                 .get(
                     '/users/:id',
-                    ({ params }) => adminController.getUser(params.id),
+                    ({ params }) => adminService.getUser(db, params.id),
                     {
                         params: adminUserIdParam,
                         detail: {
@@ -60,7 +62,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 .patch(
                     '/users/:id',
                     ({ params, body }) =>
-                        adminController.updateUser(params.id, body),
+                        adminService.updateUser(db, params.id, body),
                     {
                         params: adminUserIdParam,
                         body: updateUserAdminBody,
@@ -74,8 +76,10 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 )
                 .delete(
                     '/users/:id',
-                    ({ params, user }) =>
-                        adminController.deleteUser(params.id, user),
+                    async ({ params, user }) => {
+                        await adminService.deleteUser(db, params.id, user.id);
+                        return { success: true };
+                    },
                     {
                         params: adminUserIdParam,
                         detail: {
@@ -88,7 +92,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 )
                 .get(
                     '/events',
-                    ({ query }) => adminController.listEvents(query),
+                    ({ query }) => adminService.listEvents(db, query),
                     {
                         query: adminEventQueryFilters,
                         detail: {
@@ -101,7 +105,7 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 )
                 .get(
                     '/reports',
-                    ({ query }) => adminController.listReports(query),
+                    ({ query }) => reportsService.listForAdmin(db, query),
                     {
                         query: adminReportQueryFilters,
                         detail: {
@@ -114,7 +118,8 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 )
                 .get(
                     '/reports/:id',
-                    ({ params }) => adminController.getReport(params.id),
+                    ({ params }) =>
+                        reportsService.getByIdForAdmin(db, params.id),
                     {
                         params: reportIdParam,
                         detail: {
@@ -128,7 +133,12 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 .post(
                     '/reports/:id/resolve',
                     ({ params, user, body }) =>
-                        adminController.resolveReport(params.id, user, body),
+                        reportsService.resolve(
+                            db,
+                            params.id,
+                            user.id,
+                            body.resolution
+                        ),
                     {
                         params: reportIdParam,
                         body: resolveReportBody,
@@ -143,7 +153,12 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 .post(
                     '/reports/:id/reject',
                     ({ params, user, body }) =>
-                        adminController.rejectReport(params.id, user, body),
+                        reportsService.reject(
+                            db,
+                            params.id,
+                            user.id,
+                            body.resolution ?? null
+                        ),
                     {
                         params: reportIdParam,
                         body: rejectReportBody,
