@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia';
 import { authLayer } from '../../auth_middleware';
 import { handleServiceError } from '../../utils/error-handler';
-import { locationsController } from './locations.controller';
+import { locationsService } from './locations.service';
 import {
     locationSearchQuery,
     locationSuggestionsResponse,
@@ -10,7 +10,7 @@ import {
 export const locationsRoutes = new Elysia({ prefix: '/locations' })
     .use(authLayer)
     .onError(handleServiceError)
-    .get('/search', ({ query }) => locationsController.search(query.q), {
+    .get('/search', ({ query }) => locationsService.search(query.q), {
         auth: true,
         query: locationSearchQuery,
         response: {
