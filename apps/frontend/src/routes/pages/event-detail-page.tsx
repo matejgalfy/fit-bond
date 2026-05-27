@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
 import { useEvent } from '@/features/events/hooks/events';
 import { EventDetailCover } from '@/features/events/components/detail/event-detail-cover';
@@ -32,16 +33,13 @@ function EventDetailPage() {
 
     if (isPending) {
         return (
-            <div className="max-w-175 mx-auto animate-pulse">
-                <div className="h-45 rounded-2xl bg-muted-background" />
-                <div className="mt-5 h-8 w-2/3 rounded-md bg-muted-background" />
-                <div className="mt-3 h-4 w-1/2 rounded-md bg-muted-background" />
+            <div className="max-w-175 mx-auto">
+                <Skeleton className="h-45 rounded-2xl" />
+                <Skeleton className="mt-5 h-8 w-2/3" />
+                <Skeleton className="mt-3 h-4 w-1/2" />
                 <div className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-2">
                     {[1, 2, 3, 4].map((item) => (
-                        <div
-                            key={item}
-                            className="h-20 rounded-xl bg-muted-background"
-                        />
+                        <Skeleton key={item} className="h-20 rounded-xl" />
                     ))}
                 </div>
             </div>

@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { Skeleton } from '@/components/ui/skeleton';
 import { IconInput } from '@/components/icon-input';
 import { EmptyState } from '@/components/empty-state';
 import {
@@ -71,9 +72,7 @@ export function AdminUsersSearch() {
 
             {!trimmed && <EmptyState>Start typing to find a user.</EmptyState>}
 
-            {trimmed && isFetching && (
-                <div className="h-20 bg-muted-background rounded-2xl animate-pulse" />
-            )}
+            {trimmed && isFetching && <Skeleton className="h-20 rounded-2xl" />}
 
             {trimmed && !isFetching && isError && (
                 <EmptyState>Failed to load users.</EmptyState>
