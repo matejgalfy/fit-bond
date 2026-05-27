@@ -14,7 +14,6 @@ test.describe('Auth flow (requires running backend on localhost:3000)', () => {
         const user = generateTestUser();
         await registerViaUI(page, user);
 
-        // Log out by clearing cookies, then log back in
         await page.context().clearCookies();
 
         await loginViaUI(page, user);
@@ -33,7 +32,6 @@ test.describe('Auth flow (requires running backend on localhost:3000)', () => {
             .fill('WrongPassword123');
         await page.getByRole('button', { name: /sign in/i }).click();
 
-        // Better-auth returns "Invalid email or password" or similar
         await expect(page.getByText(/sign in failed|invalid/i)).toBeVisible({
             timeout: 10_000,
         });
