@@ -1,5 +1,6 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
 import { EventForm } from '@/features/events/components/creation/event-form';
 import {
@@ -42,12 +43,12 @@ function CreateEventPage() {
 
     if (isEditMode && eventPending) {
         return (
-            <div className="max-w-180 mx-auto animate-pulse">
-                <div className="mb-6 h-8 w-40 rounded-md bg-muted-background" />
+            <div className="max-w-180 mx-auto">
+                <Skeleton className="mb-6 h-8 w-40" />
                 <div className="space-y-6">
-                    <div className="h-70 rounded-xl bg-muted-background" />
-                    <div className="h-58 rounded-xl bg-muted-background" />
-                    <div className="h-48 rounded-xl bg-muted-background" />
+                    <Skeleton className="h-70 rounded-xl" />
+                    <Skeleton className="h-58 rounded-xl" />
+                    <Skeleton className="h-48 rounded-xl" />
                 </div>
             </div>
         );

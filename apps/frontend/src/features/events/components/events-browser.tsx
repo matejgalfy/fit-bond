@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { useEvents } from '../hooks/events';
 import { EventCard } from './event-card';
@@ -61,12 +62,9 @@ export function EventsBrowser({
             </div>
 
             {isPending ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 animate-pulse">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {[1, 2, 3, 4].map((i) => (
-                        <div
-                            key={i}
-                            className="h-48 bg-muted-background rounded-2xl"
-                        />
+                        <Skeleton key={i} className="h-48 rounded-2xl" />
                     ))}
                 </div>
             ) : (
