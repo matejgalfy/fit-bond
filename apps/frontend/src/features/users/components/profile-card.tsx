@@ -38,7 +38,7 @@ export function ProfileCard({
             <CardContent className="p-0 space-y-8">
                 {/* Upper part: Avatar and Info */}
                 <div className="flex items-start gap-6">
-                    <div className="relative">
+                    <div className="relative shrink-0">
                         {isOwner ? (
                             <ImageUpload
                                 currentUrl={user.image}
