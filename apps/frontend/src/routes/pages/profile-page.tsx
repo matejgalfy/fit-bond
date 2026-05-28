@@ -5,19 +5,20 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { ProfileCard } from '@/features/users/components/profile-card';
 import { useUserProfile } from '@/features/users/hooks/users';
 import { useLogout } from '@/features/auth/hooks/logout';
+import { z } from 'zod';
+import { zodValidator } from '@tanstack/zod-adapter';
+
+const profileSearchSchema = z.object({
+    userId: z.string().optional(),
+});
 
 export const Route = createFileRoute('/pages/profile-page')({
-    validateSearch: (search: Record<string, unknown>): { userId?: string } => {
-        return {
-            userId: search.userId as string | undefined,
-        };
-    },
+    validateSearch: zodValidator(profileSearchSchema),
     component: ProfilePage,
 });
 
 function ProfilePage() {
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    const routeSearch = Route.useSearch() as { userId?: string };
+    const routeSearch = Route.useSearch();
     const searchUserId = routeSearch.userId;
     const { logout, isLoggingOut, logoutError } = useLogout();
 
