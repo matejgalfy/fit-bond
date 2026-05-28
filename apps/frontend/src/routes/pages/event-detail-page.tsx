@@ -18,13 +18,15 @@ const eventDetailSearchSchema = z.object({
     from: z.literal('my-events').optional().catch(undefined),
 });
 
+type EventDetailSearch = z.infer<typeof eventDetailSearchSchema>;;
+
 export const Route = createFileRoute('/pages/event-detail-page')({
     validateSearch: zodValidator(eventDetailSearchSchema),
     component: EventDetailPage,
 });
 
 function EventDetailPage() {
-    const { eventId, from } = Route.useSearch();
+    const { eventId, from }: EventDetailSearch = Route.useSearch();
     const { data: event, isPending, isError } = useEvent(eventId);
 
     if (isPending) {

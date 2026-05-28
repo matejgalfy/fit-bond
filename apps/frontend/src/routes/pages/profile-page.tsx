@@ -12,13 +12,15 @@ const profileSearchSchema = z.object({
     userId: z.string().optional(),
 });
 
+type ProfileSearch = z.infer<typeof profileSearchSchema>;
+
 export const Route = createFileRoute('/pages/profile-page')({
     validateSearch: zodValidator(profileSearchSchema),
     component: ProfilePage,
 });
 
 function ProfilePage() {
-    const routeSearch = Route.useSearch();
+    const routeSearch: ProfileSearch = Route.useSearch();
     const searchUserId = routeSearch.userId;
     const { logout, isLoggingOut, logoutError } = useLogout();
 
