@@ -1,6 +1,7 @@
 import { useMemo } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
+import { Skeleton } from '@/components/ui/skeleton';
 import { authClient } from '@/lib/api';
 import type { Comment } from '../types';
 import { useComments } from '../hooks/comments';
@@ -61,13 +62,13 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
             />
 
             {isPending && (
-                <div className="mt-6 space-y-4 animate-pulse">
+                <div className="mt-6 space-y-4">
                     {[1, 2, 3].map((item) => (
                         <div key={item} className="flex gap-3">
-                            <div className="h-8 w-8 rounded-full bg-muted-background" />
+                            <Skeleton className="h-8 w-8 rounded-full" />
                             <div className="flex-1 space-y-2">
-                                <div className="h-4 w-40 rounded-md bg-muted-background" />
-                                <div className="h-4 w-full rounded-md bg-muted-background" />
+                                <Skeleton className="h-4 w-40" />
+                                <Skeleton className="h-4 w-full" />
                             </div>
                         </div>
                     ))}

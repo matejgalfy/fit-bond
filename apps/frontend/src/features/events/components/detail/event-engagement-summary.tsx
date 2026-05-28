@@ -1,5 +1,6 @@
 import { Heart, Users } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import type { Event, Participant } from '../../types';
 import {
@@ -23,10 +24,7 @@ function UserList({ users, isPending, isError, emptyText }: UserListProps) {
         return (
             <div className="mt-1 flex gap-2">
                 {[1, 2, 3].map((item) => (
-                    <div
-                        key={item}
-                        className="h-7 w-7 animate-pulse rounded-full bg-muted-background"
-                    />
+                    <Skeleton key={item} className="h-7 w-7 rounded-full" />
                 ))}
             </div>
         );

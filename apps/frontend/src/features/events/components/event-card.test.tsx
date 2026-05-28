@@ -1,8 +1,29 @@
 import { describe, test, expect } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
+import type { ReactNode } from 'react';
+import {
+    createRootRoute,
+    createRouter,
+    createMemoryHistory,
+    RouterProvider,
+} from '@tanstack/react-router';
 import { EventCard } from './event-card';
 import type { Event } from '../types';
+
+async function renderWithRouter(ui: ReactNode) {
+    const rootRoute = createRootRoute({ component: () => <>{ui}</> });
+    const router = createRouter({
+        routeTree: rootRoute,
+        history: createMemoryHistory({ initialEntries: ['/'] }),
+    });
+    await router.load();
+    return render(
+        <RouterProvider
+            router={router as unknown as ReturnType<typeof createRouter>}
+        />
+    );
+}
 
 function makeEvent(overrides: Partial<Event> = {}): Event {
     const base = {
@@ -35,8 +56,8 @@ function makeEvent(overrides: Partial<Event> = {}): Event {
 }
 
 describe('EventCard', () => {
-    test('renders event name, sport, location and participants', () => {
-        render(<EventCard event={makeEvent()} />);
+    test('renders event name, sport, location and participants', async () => {
+        await renderWithRouter(<EventCard event={makeEvent()} />);
 
         expect(
             screen.getByRole('heading', { name: 'Saturday Football Match' })
@@ -47,8 +68,8 @@ describe('EventCard', () => {
         expect(screen.getByText('7 interested')).toBeInTheDocument();
     });
 
-    test('renders organizer name and capitalized skill level', () => {
-        render(
+    test('renders organizer name and capitalized skill level', async () => {
+        await renderWithRouter(
             <EventCard
                 event={makeEvent({
                     skillLevel: 'intermediate' as Event['skillLevel'],
@@ -60,8 +81,8 @@ describe('EventCard', () => {
         expect(screen.getByText('Intermediate')).toBeInTheDocument();
     });
 
-    test('shows "Full" badge when capacity is reached', () => {
-        render(
+    test('shows "Full" badge when capacity is reached', async () => {
+        await renderWithRouter(
             <EventCard
                 event={makeEvent({ currentParticipants: 10, capacity: 10 })}
             />
@@ -70,14 +91,14 @@ describe('EventCard', () => {
         expect(screen.getByText('Full')).toBeInTheDocument();
     });
 
-    test('does not show "Full" badge when there is still room', () => {
-        render(<EventCard event={makeEvent()} />);
+    test('does not show "Full" badge when there is still room', async () => {
+        await renderWithRouter(<EventCard event={makeEvent()} />);
 
         expect(screen.queryByText('Full')).not.toBeInTheDocument();
     });
 
-    test('shows "Cancelled" badge when event is cancelled', () => {
-        render(
+    test('shows "Cancelled" badge when event is cancelled', async () => {
+        await renderWithRouter(
             <EventCard
                 event={makeEvent({
                     cancelledAt: new Date('2026-06-10T12:00:00Z'),
@@ -88,8 +109,8 @@ describe('EventCard', () => {
         expect(screen.getByText('Cancelled')).toBeInTheDocument();
     });
 
-    test('renders cover image when coverImageUrl is provided', () => {
-        render(
+    test('renders cover image when coverImageUrl is provided', async () => {
+        await renderWithRouter(
             <EventCard
                 event={makeEvent({
                     coverImageUrl: 'https://example.com/cover.jpg',

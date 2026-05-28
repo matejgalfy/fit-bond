@@ -284,7 +284,6 @@ describe('EventsService', () => {
             } catch (e) {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
                 expect((e as ServiceError).statusCode).toBe(400);
-                // findOrCreate must not run when validation fails
                 expect(
                     mockLocationsService.findOrCreate
                 ).not.toHaveBeenCalled();
