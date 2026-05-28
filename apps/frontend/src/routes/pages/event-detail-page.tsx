@@ -9,25 +9,21 @@ import { EventDetailDescription } from '@/features/events/components/detail/even
 import { EventDetailActions } from '@/features/events/components/detail/event-detail-actions';
 import { EventEngagementSummary } from '@/features/events/components/detail/event-engagement-summary';
 import { EventCommentsSection } from '@/features/comments/components/event-comments-section';
+import { z } from 'zod';
+import { zodValidator } from '@tanstack/zod-adapter';
 
-interface EventDetailSearch {
-    eventId?: string;
-    from?: 'my-events';
-}
+const eventDetailSearchSchema = z.object({
+    eventId: z.string().optional(),
+    from: z.literal('my-events').optional().catch(undefined),
+})
 
 export const Route = createFileRoute('/pages/event-detail-page')({
-    validateSearch: (search): EventDetailSearch => {
-        return {
-            eventId:
-                typeof search.eventId === 'string' ? search.eventId : undefined,
-            from: search.from === 'my-events' ? 'my-events' : undefined,
-        };
-    },
+    validateSearch: zodValidator(eventDetailSearchSchema),
     component: EventDetailPage,
 });
 
 function EventDetailPage() {
-    const { eventId, from }: EventDetailSearch = Route.useSearch();
+    const { eventId, from } = Route.useSearch();
     const { data: event, isPending, isError } = useEvent(eventId);
 
     if (isPending) {
