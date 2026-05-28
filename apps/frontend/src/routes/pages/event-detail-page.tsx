@@ -16,7 +16,7 @@ import { zodValidator } from '@tanstack/zod-adapter';
 const eventDetailSearchSchema = z.object({
     eventId: z.string().optional(),
     from: z.literal('my-events').optional().catch(undefined),
-})
+});
 
 export const Route = createFileRoute('/pages/event-detail-page')({
     validateSearch: zodValidator(eventDetailSearchSchema),
