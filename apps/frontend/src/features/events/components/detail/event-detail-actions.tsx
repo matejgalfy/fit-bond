@@ -107,7 +107,7 @@ export function EventDetailActions({
                         onClick={() => {
                             setManagementError('');
                             void navigate({
-                                to: '/pages/create-event',
+                                to: '/pages/edit-event',
                                 search: {
                                     eventId: event.id,
                                     ...(detailSource
