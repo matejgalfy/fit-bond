@@ -39,6 +39,7 @@ function getPageSearchState(search: unknown): PageSearchState {
 function pathnameToNavId(pathname: string, search: PageSearchState): string {
     if (pathname.includes('my-events')) return 'events';
     if (pathname.includes('create-event')) return 'events';
+    if (pathname.includes('edit-event')) return 'events';
     if (pathname.includes('event-detail-page') && search.from === 'my-events') {
         return 'events';
     }
