@@ -12,20 +12,18 @@ import {
     buildEventFormState,
     buildEventLocationSuggestion,
 } from '@/features/events/utils/event-form-state';
+import { z } from 'zod';
+import { zodValidator } from '@tanstack/zod-adapter';
 
-interface CreateEventSearch {
-    eventId?: string;
-    from?: 'my-events';
-}
+const createEventSearchSchema = z.object({
+    eventId: z.string().optional(),
+    from: z.literal('my-events').optional().catch(undefined),
+});
+
+type CreateEventSearch = z.infer<typeof createEventSearchSchema>;
 
 export const Route = createFileRoute('/pages/create-event')({
-    validateSearch: (search): CreateEventSearch => {
-        return {
-            eventId:
-                typeof search.eventId === 'string' ? search.eventId : undefined,
-            from: search.from === 'my-events' ? 'my-events' : undefined,
-        };
-    },
+    validateSearch: zodValidator(createEventSearchSchema),
     component: CreateEventPage,
 });
 
