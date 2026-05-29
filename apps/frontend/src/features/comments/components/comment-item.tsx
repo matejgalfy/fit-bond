@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from '@tanstack/react-router';
 import { Reply } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
@@ -29,15 +30,27 @@ export function CommentItem({
 
     return (
         <article className="flex gap-3">
-            <UserAvatar
-                name={comment.author.name}
-                imageUrl={comment.author.image}
-                size={32}
-            />
+            <Link
+                to="/pages/profile-page"
+                search={{ userId: comment.author.id }}
+                className="shrink-0"
+            >
+                <UserAvatar
+                    name={comment.author.name}
+                    imageUrl={comment.author.image}
+                    size={32}
+                />
+            </Link>
             <div className="min-w-0 flex-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <h3 className="m-0 text-small font-semibold text-primary-text">
-                        {comment.author.name}
+                        <Link
+                            to="/pages/profile-page"
+                            search={{ userId: comment.author.id }}
+                            className="hover:underline"
+                        >
+                            {comment.author.name}
+                        </Link>
                     </h3>
                     <span className="text-tiny text-tertiary-text">
                         {timeAgo(comment.createdAt)}
@@ -90,15 +103,29 @@ export function CommentItem({
                     <div className="mt-3 space-y-3 border-l-2 border-outline pl-4">
                         {replies.map((reply) => (
                             <article key={reply.id} className="flex gap-2.5">
-                                <UserAvatar
-                                    name={reply.author.name}
-                                    imageUrl={reply.author.image}
-                                    size={26}
-                                />
+                                <Link
+                                    to="/pages/profile-page"
+                                    search={{ userId: reply.author.id }}
+                                    className="shrink-0"
+                                >
+                                    <UserAvatar
+                                        name={reply.author.name}
+                                        imageUrl={reply.author.image}
+                                        size={26}
+                                    />
+                                </Link>
                                 <div className="min-w-0 flex-1">
                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                                         <h4 className="m-0 text-tiny font-semibold text-primary-text">
-                                            {reply.author.name}
+                                            <Link
+                                                to="/pages/profile-page"
+                                                search={{
+                                                    userId: reply.author.id,
+                                                }}
+                                                className="hover:underline"
+                                            >
+                                                {reply.author.name}
+                                            </Link>
                                         </h4>
                                         <span className="text-tiny text-tertiary-text">
                                             {timeAgo(reply.createdAt)}
