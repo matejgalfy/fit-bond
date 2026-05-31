@@ -3,7 +3,10 @@ import { authClient } from '@/lib/api';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { ProfileCard } from '@/features/users/components/profile-card';
-import { useUserProfile } from '@/features/users/hooks/users';
+import { OwnerProfileActions } from '@/features/users/components/owner-profile-actions';
+import { AdminProfileActions } from '@/features/admin/components/admin-profile-actions';
+import { useUserProfile, useUpdateProfile } from '@/features/users/hooks/users';
+import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import { useLogout } from '@/features/auth/hooks/logout';
 import { z } from 'zod';
 import { zodValidator } from '@tanstack/zod-adapter';
@@ -23,6 +26,7 @@ function ProfilePage() {
     const routeSearch: ProfileSearch = Route.useSearch();
     const searchUserId = routeSearch.userId;
     const { logout, isLoggingOut, logoutError } = useLogout();
+    const isAdmin = useIsAdmin();
 
     const { data: session, isPending: isSessionPending } =
         authClient.useSession();
@@ -38,8 +42,16 @@ function ProfilePage() {
         isError,
     } = useUserProfile(targetUserId);
 
+    const { mutate: updateProfile } = useUpdateProfile(
+        isOwner ? targetUserId : undefined
+    );
+
     if (isSessionPending) return null;
     if (!session?.user) return null;
+
+    const handleAvatarUpload = (url: string) => {
+        updateProfile({ base: { profilePictureUrl: url } });
+    };
 
     return (
         <div className="max-w-240 mx-auto">
@@ -101,11 +113,23 @@ function ProfilePage() {
                 <div className="flex justify-start">
                     <ProfileCard
                         user={user_data}
-                        isOwner={isOwner}
-                        onLogout={logout}
-                        isLoggingOut={isLoggingOut}
-                        logoutError={logoutError}
-                    />
+                        onAvatarUpload={
+                            isOwner ? handleAvatarUpload : undefined
+                        }
+                    >
+                        {isOwner && (
+                            <OwnerProfileActions
+                                user={user_data}
+                                onLogout={logout}
+                                isLoggingOut={isLoggingOut}
+                                logoutError={logoutError}
+                            />
+                        )}
+
+                        {isAdmin && !isOwner && (
+                            <AdminProfileActions user={user_data} />
+                        )}
+                    </ProfileCard>
                 </div>
             )}
         </div>
