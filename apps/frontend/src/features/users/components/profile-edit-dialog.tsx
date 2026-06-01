@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogClose,
@@ -151,10 +151,7 @@ function ProfileEditForm({
                 />
             </FormField>
 
-            <FormField
-                label="Preferred location"
-                htmlFor="profile-location"
-            >
+            <FormField label="Preferred location" htmlFor="profile-location">
                 <LocationCombobox
                     id="profile-location"
                     value={location}
@@ -177,9 +174,7 @@ function ProfileEditForm({
                 />
             </FormField>
 
-            {error && (
-                <p className="text-regular text-primary-red">{error}</p>
-            )}
+            {error && <p className="text-regular text-primary-red">{error}</p>}
 
             <DialogFooter>
                 <DialogClose asChild>

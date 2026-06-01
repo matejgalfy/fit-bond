@@ -99,9 +99,7 @@ function AdminProfileEditForm({
                 />
             </FormField>
 
-            {error && (
-                <p className="text-regular text-primary-red">{error}</p>
-            )}
+            {error && <p className="text-regular text-primary-red">{error}</p>}
 
             <DialogFooter>
                 <DialogClose asChild>
@@ -139,11 +137,11 @@ export function AdminProfileEditDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <AdminProfileEditForm 
-                    userId={userId} 
-                    userName={userName} 
-                    userBio={userBio} 
-                    onOpenChange={onOpenChange} 
+                <AdminProfileEditForm
+                    userId={userId}
+                    userName={userName}
+                    userBio={userBio}
+                    onOpenChange={onOpenChange}
                 />
             </DialogContent>
         </Dialog>
