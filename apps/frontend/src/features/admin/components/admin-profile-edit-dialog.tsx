@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogClose,
@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/ui/form-field';
-import { useUpdateAdminUser } from '../hooks/users';
+import { useUpdateAdminUser } from '../hooks/use-admin-users';
 
 interface AdminProfileEditDialogProps {
     userId: string;
@@ -34,13 +34,6 @@ export function AdminProfileEditDialog({
     const [error, setError] = useState('');
 
     const { mutateAsync: updateUser, isPending } = useUpdateAdminUser();
-
-    useEffect(() => {
-        if (!open) return;
-        setName(userName);
-        setBio(userBio ?? '');
-        setError('');
-    }, [open, userName, userBio]);
 
     const submit = async () => {
         setError('');
@@ -81,6 +74,7 @@ export function AdminProfileEditDialog({
                 </DialogHeader>
 
                 <form
+                    key={open ? 'open' : 'closed'}
                     onSubmit={(e) => {
                         e.preventDefault();
                         void submit();

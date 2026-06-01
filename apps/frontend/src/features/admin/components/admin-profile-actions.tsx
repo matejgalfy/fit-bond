@@ -12,7 +12,11 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { useAdminUser, useBanUser, useUnbanUser } from '../hooks/users';
+import {
+    useAdminUser,
+    useBanUser,
+    useUnbanUser,
+} from '../hooks/use-admin-users';
 import { AdminProfileEditDialog } from './admin-profile-edit-dialog';
 
 interface AdminProfileActionsProps {
@@ -147,10 +151,10 @@ export function AdminProfileActions({ user }: AdminProfileActionsProps) {
 
 interface BanUserDialogProps {
     open: boolean;
-    onOpenChange: (_open: boolean) => void;
+    onOpenChange: (open: boolean) => void;
     userName: string;
     pending: boolean;
-    onConfirm: (_reason: string) => void;
+    onConfirm: (reason: string) => void;
 }
 
 function BanUserDialog({
@@ -179,8 +183,8 @@ function BanUserDialog({
                 <DialogHeader>
                     <DialogTitle>Ban {userName}</DialogTitle>
                     <DialogDescription>
-                        The user will be blocked from authenticated actions until
-                        unbanned.
+                        The user will be blocked from authenticated actions
+                        until unbanned.
                     </DialogDescription>
                 </DialogHeader>
                 <Textarea
