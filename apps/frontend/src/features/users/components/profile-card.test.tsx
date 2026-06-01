@@ -68,7 +68,7 @@ describe('ProfileCard', () => {
 
     test('renders ImageUpload wrapper around avatar when onAvatarUpload is provided', () => {
         const { rerender } = render(
-            <ProfileCard user={makeUser()} onAvatarUpload={() => {}} />
+            <ProfileCard user={makeUser()} onAvatarUpload={() => { /* noop */ }} />
         );
         expect(screen.getByTestId('image-upload')).toBeInTheDocument();
 
