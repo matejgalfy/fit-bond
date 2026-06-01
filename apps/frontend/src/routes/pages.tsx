@@ -14,7 +14,7 @@ import {
     NAV_ITEMS,
     type NavigationSection,
 } from '@/components/layout/navigation-item';
-import { useUserProfile } from '@/features/users/hooks/users';
+import { useUserProfile } from '@/features/users/hooks/use-users';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
 
 export const Route = createFileRoute('/pages')({

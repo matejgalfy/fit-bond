@@ -4,7 +4,7 @@ import { authClient } from '@/lib/api';
 import { EventCard } from '@/features/events/components/event-card';
 import type { Event } from '@/features/events/types';
 import { useEvents } from '@/features/events/hooks/events';
-import { useUserProfile } from '@/features/users/hooks/users';
+import { useUserProfile } from '@/features/users/hooks/use-users';
 
 export const Route = createFileRoute('/pages/home-page')({
     component: HomePage,
