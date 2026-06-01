@@ -9,7 +9,7 @@ import { AppNavbar } from '@/components/layout/app-navbar';
 import { SideNav } from '@/components/layout/side-nav';
 import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
 import { ADMIN_SIDE_NAV_ITEMS } from '@/components/layout/navigation-item';
-import { useUserProfile } from '@/features/users/hooks/users';
+import { useUserProfile } from '@/features/users/hooks/use-users';
 import { useCurrentUserRole } from '@/features/admin/hooks/current-user';
 import { useReports } from '@/features/admin/hooks/reports';
 

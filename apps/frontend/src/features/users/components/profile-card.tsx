@@ -1,37 +1,33 @@
+import type { ReactNode } from 'react';
 import { useState } from 'react';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Pencil, LogOut, MapPin } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Pencil, MapPin } from 'lucide-react';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { useUpdateProfile } from '../hooks/users';
-import { ProfileEditDialog } from './profile-edit-dialog';
 
 interface ProfileCardProps {
     user: UserProfile;
-    isOwner?: boolean;
-    onLogout?: () => void | Promise<void>;
-    isLoggingOut?: boolean;
-    logoutError?: string;
+    onAvatarUpload?: (url: string) => void;
+    children?: ReactNode;
 }
 
 export function ProfileCard({
     user,
-    isOwner = true,
-    onLogout,
-    isLoggingOut = false,
-    logoutError,
+    onAvatarUpload,
+    children,
 }: ProfileCardProps) {
     const primaryLocation = user.location;
-
-    const { mutate: updateProfile } = useUpdateProfile(user.id);
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
-    const [editOpen, setEditOpen] = useState(false);
 
-    function handleAvatarUpload(url: string) {
-        updateProfile({ base: { profilePictureUrl: url } });
-    }
+    const avatar = (
+        <UserAvatar
+            name={user.name}
+            imageUrl={avatarPreview ?? user.image}
+            size={96}
+        />
+    );
 
     return (
         <Card className="w-full max-w-2xl border-outline shadow-sm bg-surface rounded-3xl p-6">
@@ -39,30 +35,22 @@ export function ProfileCard({
                 {/* Upper part: Avatar and Info */}
                 <div className="flex items-start gap-6">
                     <div className="relative shrink-0">
-                        {isOwner ? (
+                        {onAvatarUpload ? (
                             <ImageUpload
                                 currentUrl={user.image}
-                                onUpload={handleAvatarUpload}
+                                onUpload={onAvatarUpload}
                                 onPreview={setAvatarPreview}
                                 className="rounded-full"
                             >
                                 <div className="relative">
-                                    <UserAvatar
-                                        name={user.name}
-                                        imageUrl={avatarPreview ?? user.image}
-                                        size={96}
-                                    />
+                                    {avatar}
                                     <div className="absolute cursor-pointer bottom-0 right-0 p-1.5 bg-background rounded-full border border-outline shadow-sm hover:bg-soft-blue transition-colors">
                                         <Pencil className="w-4 h-4 text-primary-blue" />
                                     </div>
                                 </div>
                             </ImageUpload>
                         ) : (
-                            <UserAvatar
-                                name={user.name}
-                                imageUrl={user.image}
-                                size={96}
-                            />
+                            avatar
                         )}
                     </div>
 
@@ -76,37 +64,8 @@ export function ProfileCard({
                     </div>
                 </div>
 
-                {/* Buttons */}
-                {isOwner && (
-                    <div className="flex flex-wrap gap-3">
-                        <Button
-                            variant="outline"
-                            className="rounded-xl border-primary-blue text-primary-blue hover:bg-primary-blue/10 hover:text-primary-blue px-6 font-semibold"
-                            onClick={() => {
-                                setEditOpen(true);
-                            }}
-                        >
-                            <Pencil className="w-4 h-4 mr-2" />
-                            Edit Profile
-                        </Button>
-                        <Button
-                            variant="outline"
-                            className="rounded-xl border-primary-red text-primary-red hover:bg-primary-red/10 hover:text-primary-red px-6 font-semibold"
-                            onClick={() => {
-                                void onLogout?.();
-                            }}
-                            disabled={isLoggingOut || !onLogout}
-                        >
-                            <LogOut className="w-4 h-4 mr-2" />
-                            {isLoggingOut ? 'Logging out...' : 'Log Out'}
-                        </Button>
-                        {logoutError && (
-                            <p className="basis-full text-regular text-primary-red">
-                                {logoutError}
-                            </p>
-                        )}
-                    </div>
-                )}
+                {/* Action slot */}
+                {children}
 
                 {/* Sports */}
                 <div className="space-y-3">
@@ -141,13 +100,38 @@ export function ProfileCard({
                     )}
                 </div>
             </CardContent>
-            {isOwner && (
-                <ProfileEditDialog
-                    user={user}
-                    open={editOpen}
-                    onOpenChange={setEditOpen}
-                />
-            )}
+        </Card>
+    );
+}
+
+export function ProfileCardSkeleton() {
+    return (
+        <Card className="w-full max-w-2xl border-outline shadow-sm bg-surface rounded-3xl p-6">
+            <CardContent className="p-0 space-y-8">
+                <div className="flex items-start gap-6">
+                    <Skeleton className="h-24 w-24 shrink-0 rounded-full" />
+                    <div className="space-y-3 py-1">
+                        <Skeleton className="h-8 w-48" />
+                        <Skeleton className="h-5 w-64" />
+                    </div>
+                </div>
+                <div className="flex flex-wrap gap-3">
+                    <Skeleton className="h-10 w-36 rounded-xl" />
+                    <Skeleton className="h-10 w-32 rounded-xl" />
+                </div>
+                <div className="space-y-3">
+                    <Skeleton className="h-4 w-32" />
+                    <div className="flex flex-wrap gap-2">
+                        <Skeleton className="h-8 w-20 rounded-full" />
+                        <Skeleton className="h-8 w-24 rounded-full" />
+                        <Skeleton className="h-8 w-16 rounded-full" />
+                    </div>
+                </div>
+                <div className="space-y-3">
+                    <Skeleton className="h-4 w-40" />
+                    <Skeleton className="h-9 w-64 rounded-xl" />
+                </div>
+            </CardContent>
         </Card>
     );
 }

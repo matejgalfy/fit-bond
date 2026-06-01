@@ -3,16 +3,6 @@ import { render, screen } from '@testing-library/react';
 import '@testing-library/jest-dom/vitest';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 
-const mutateMock = vi.fn();
-
-vi.mock('../hooks/users', () => ({
-    useUpdateProfile: () => ({ mutate: mutateMock }),
-}));
-
-vi.mock('./profile-edit-dialog', () => ({
-    ProfileEditDialog: () => null,
-}));
-
 vi.mock('@/components/ui/image-upload', () => ({
     ImageUpload: ({ children }: { children: React.ReactNode }) => (
         <div data-testid="image-upload">{children}</div>
@@ -45,11 +35,11 @@ function makeUser(overrides: Partial<UserProfile> = {}): UserProfile {
 
 describe('ProfileCard', () => {
     beforeEach(() => {
-        mutateMock.mockReset();
+        vi.clearAllMocks();
     });
 
     test('renders user name and bio', () => {
-        render(<ProfileCard user={makeUser()} isOwner={false} />);
+        render(<ProfileCard user={makeUser()} />);
 
         expect(
             screen.getByRole('heading', { name: 'Alice Example' })
@@ -58,37 +48,53 @@ describe('ProfileCard', () => {
     });
 
     test('falls back to placeholder when bio is missing', () => {
-        render(<ProfileCard user={makeUser({ bio: null })} isOwner={false} />);
+        render(<ProfileCard user={makeUser({ bio: null })} />);
 
         expect(screen.getByText('No bio yet.')).toBeInTheDocument();
     });
 
     test('renders preferred sports', () => {
-        render(<ProfileCard user={makeUser()} isOwner={false} />);
+        render(<ProfileCard user={makeUser()} />);
 
         expect(screen.getByText('Football')).toBeInTheDocument();
         expect(screen.getByText('Tennis')).toBeInTheDocument();
     });
 
     test('renders preferred location with radius', () => {
-        render(<ProfileCard user={makeUser()} isOwner={false} />);
+        render(<ProfileCard user={makeUser()} />);
 
         expect(screen.getByText(/Brno · 10 km radius/)).toBeInTheDocument();
     });
 
-    test('renders Edit Profile and Log Out buttons only when isOwner', () => {
-        render(<ProfileCard user={makeUser()} isOwner={true} />);
+    test('renders ImageUpload wrapper around avatar when onAvatarUpload is provided', () => {
+        const { rerender } = render(
+            <ProfileCard
+                user={makeUser()}
+                onAvatarUpload={() => {
+                    /* noop */
+                }}
+            />
+        );
+        expect(screen.getByTestId('image-upload')).toBeInTheDocument();
+
+        rerender(<ProfileCard user={makeUser()} />);
+        expect(screen.queryByTestId('image-upload')).not.toBeInTheDocument();
+    });
+
+    test('renders children in the action slot', () => {
+        render(
+            <ProfileCard user={makeUser()}>
+                <button>Test Action</button>
+            </ProfileCard>
+        );
 
         expect(
-            screen.getByRole('button', { name: /Edit Profile/i })
-        ).toBeInTheDocument();
-        expect(
-            screen.getByRole('button', { name: /Log Out/i })
+            screen.getByRole('button', { name: 'Test Action' })
         ).toBeInTheDocument();
     });
 
-    test('does NOT render owner-only buttons when isOwner is false', () => {
-        render(<ProfileCard user={makeUser()} isOwner={false} />);
+    test('does not render action buttons by default', () => {
+        render(<ProfileCard user={makeUser()} />);
 
         expect(
             screen.queryByRole('button', { name: /Edit Profile/i })
@@ -96,15 +102,5 @@ describe('ProfileCard', () => {
         expect(
             screen.queryByRole('button', { name: /Log Out/i })
         ).not.toBeInTheDocument();
-    });
-
-    test('renders ImageUpload wrapper around avatar only when isOwner', () => {
-        const { rerender } = render(
-            <ProfileCard user={makeUser()} isOwner={true} />
-        );
-        expect(screen.getByTestId('image-upload')).toBeInTheDocument();
-
-        rerender(<ProfileCard user={makeUser()} isOwner={false} />);
-        expect(screen.queryByTestId('image-upload')).not.toBeInTheDocument();
     });
 });

@@ -15,6 +15,7 @@ import {
     listAdminUsers,
     updateAdminUser,
 } from '../api/admin-api';
+import { userQueryKeys } from '@/features/users/api/users-api';
 import { authClient } from '@/lib/api';
 
 export function useAdminUsers(filters?: AdminUserQueryFilters) {
@@ -48,6 +49,11 @@ function useInvalidateAdminUsers() {
             id
                 ? queryClient.invalidateQueries({
                       queryKey: adminQueryKeys.userDetail(id),
+                  })
+                : Promise.resolve(),
+            id
+                ? queryClient.invalidateQueries({
+                      queryKey: userQueryKeys.profile(id),
                   })
                 : Promise.resolve(),
         ]);

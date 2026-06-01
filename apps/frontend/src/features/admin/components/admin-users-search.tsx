@@ -23,7 +23,7 @@ import {
     useDeleteAdminUser,
     useUnbanUser,
     useUpdateAdminUser,
-} from '../hooks/users';
+} from '../hooks/use-admin-users';
 
 interface AdminUserRow {
     id: string;

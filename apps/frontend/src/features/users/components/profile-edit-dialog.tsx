@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
     Dialog,
     DialogClose,
@@ -13,7 +13,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { FormField } from '@/components/ui/form-field';
 import { LocationCombobox } from '@/components/location-combobox';
-import { useUpdateProfile } from '../hooks/users';
+import { useUpdateProfile } from '../hooks/use-users';
 import { ApiError } from '@/lib/api-error';
 import { MultiSportCombobox } from '@/features/sports/components/multi-sport-combobox';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
@@ -40,11 +40,13 @@ function locationToSuggestion(
     };
 }
 
-export function ProfileEditDialog({
+function ProfileEditForm({
     user,
-    open,
     onOpenChange,
-}: ProfileEditDialogProps) {
+}: {
+    user: UserProfile;
+    onOpenChange: (open: boolean) => void;
+}) {
     const primary = user.location;
 
     const [name, setName] = useState(user.name);
@@ -61,16 +63,6 @@ export function ProfileEditDialog({
     const [error, setError] = useState('');
 
     const { mutateAsync: updateProfile, isPending } = useUpdateProfile(user.id);
-
-    useEffect(() => {
-        if (!open) return;
-        setName(user.name);
-        setBio(user.bio ?? '');
-        setSportIds(user.sports.map((s) => s.id));
-        setLocation(primary ? locationToSuggestion(primary) : null);
-        setRadius(primary ? String(primary.radius) : String(DEFAULT_RADIUS));
-        setError('');
-    }, [open, user, primary]);
 
     const submit = async () => {
         setError('');
@@ -119,6 +111,95 @@ export function ProfileEditDialog({
     };
 
     return (
+        <form
+            onSubmit={(e) => {
+                e.preventDefault();
+                void submit();
+            }}
+            className="space-y-3 w-full min-w-0"
+        >
+            <FormField label="Name" htmlFor="profile-name" required>
+                <Input
+                    id="profile-name"
+                    value={name}
+                    onChange={(e) => {
+                        setName(e.target.value);
+                    }}
+                    maxLength={100}
+                    className="h-10 bg-background"
+                />
+            </FormField>
+
+            <FormField label="Bio" htmlFor="profile-bio">
+                <Textarea
+                    id="profile-bio"
+                    value={bio}
+                    onChange={(e) => {
+                        setBio(e.target.value);
+                    }}
+                    maxLength={500}
+                    rows={2}
+                    className="bg-background"
+                />
+            </FormField>
+
+            <FormField label="My sports" htmlFor="profile-sports">
+                <MultiSportCombobox
+                    id="profile-sports"
+                    values={sportIds}
+                    onChange={setSportIds}
+                />
+            </FormField>
+
+            <FormField label="Preferred location" htmlFor="profile-location">
+                <LocationCombobox
+                    id="profile-location"
+                    value={location}
+                    onChange={setLocation}
+                />
+            </FormField>
+
+            <FormField label="Radius (km)" htmlFor="profile-radius">
+                <Input
+                    id="profile-radius"
+                    type="number"
+                    min={1}
+                    max={100}
+                    value={radius}
+                    onChange={(e) => {
+                        setRadius(e.target.value);
+                    }}
+                    disabled={!location}
+                    className="h-10 w-full bg-background"
+                />
+            </FormField>
+
+            {error && <p className="text-regular text-primary-red">{error}</p>}
+
+            <DialogFooter>
+                <DialogClose asChild>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        disabled={isPending}
+                    >
+                        Cancel
+                    </Button>
+                </DialogClose>
+                <Button type="submit" disabled={isPending}>
+                    {isPending ? 'Saving...' : 'Save'}
+                </Button>
+            </DialogFooter>
+        </form>
+    );
+}
+
+export function ProfileEditDialog({
+    user,
+    open,
+    onOpenChange,
+}: ProfileEditDialogProps) {
+    return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
@@ -128,91 +209,7 @@ export function ProfileEditDialog({
                     </DialogDescription>
                 </DialogHeader>
 
-                <form
-                    onSubmit={(e) => {
-                        e.preventDefault();
-                        void submit();
-                    }}
-                    className="space-y-3 w-full min-w-0"
-                >
-                    <FormField label="Name" htmlFor="profile-name" required>
-                        <Input
-                            id="profile-name"
-                            value={name}
-                            onChange={(e) => {
-                                setName(e.target.value);
-                            }}
-                            maxLength={100}
-                            className="h-10 bg-background"
-                        />
-                    </FormField>
-
-                    <FormField label="Bio" htmlFor="profile-bio">
-                        <Textarea
-                            id="profile-bio"
-                            value={bio}
-                            onChange={(e) => {
-                                setBio(e.target.value);
-                            }}
-                            maxLength={500}
-                            rows={2}
-                            className="bg-background"
-                        />
-                    </FormField>
-
-                    <FormField label="My sports" htmlFor="profile-sports">
-                        <MultiSportCombobox
-                            id="profile-sports"
-                            values={sportIds}
-                            onChange={setSportIds}
-                        />
-                    </FormField>
-
-                    <FormField
-                        label="Preferred location"
-                        htmlFor="profile-location"
-                    >
-                        <LocationCombobox
-                            id="profile-location"
-                            value={location}
-                            onChange={setLocation}
-                        />
-                    </FormField>
-
-                    <FormField label="Radius (km)" htmlFor="profile-radius">
-                        <Input
-                            id="profile-radius"
-                            type="number"
-                            min={1}
-                            max={100}
-                            value={radius}
-                            onChange={(e) => {
-                                setRadius(e.target.value);
-                            }}
-                            disabled={!location}
-                            className="h-10 w-full bg-background"
-                        />
-                    </FormField>
-
-                    {error && (
-                        <p className="text-regular text-primary-red">{error}</p>
-                    )}
-
-                    <DialogFooter>
-                        <DialogClose asChild>
-                            <Button
-                                type="button"
-                                variant="outline"
-                                disabled={isPending}
-                            >
-                                Cancel
-                            </Button>
-                        </DialogClose>
-                        <Button type="submit" disabled={isPending}>
-                            {isPending ? 'Saving...' : 'Save'}
-                        </Button>
-                    </DialogFooter>
-                </form>
+                <ProfileEditForm user={user} onOpenChange={onOpenChange} />
             </DialogContent>
         </Dialog>
     );
