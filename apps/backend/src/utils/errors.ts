@@ -27,4 +27,6 @@ export class ServiceError extends Error {
         new ServiceError(msg, 'UNAUTHORIZED');
     static conflict = (msg: string) => new ServiceError(msg, 'CONFLICT');
     static badRequest = (msg: string) => new ServiceError(msg, 'BAD_REQUEST');
+    static internalError = (msg: string) =>
+        new ServiceError(msg, 'INTERNAL_ERROR');
 }

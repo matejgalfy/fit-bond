@@ -1,5 +1,6 @@
 import { eq, and, isNull, asc } from 'drizzle-orm';
 import type { Database } from '../../db';
+import { firstOrNull, firstOrThrow } from '../../utils/query';
 import {
     comments,
     events,
@@ -72,8 +73,7 @@ export const commentsModel = {
             .innerJoin(user, eq(comments.userId, user.id))
             .where(and(eq(comments.id, id), isNull(comments.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async findRawById(db: Database, id: string) {
@@ -82,8 +82,7 @@ export const commentsModel = {
             .from(comments)
             .where(and(eq(comments.id, id), isNull(comments.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async isUserEligibleToComment(
@@ -147,10 +146,7 @@ export const commentsModel = {
             })
             .returning();
 
-        if (results.length === 0) {
-            throw new Error('Failed to create comment');
-        }
-        return results[0];
+        return firstOrThrow(results, 'Failed to create comment');
     },
 
     async update(db: Database, id: string, input: UpdateCommentInput) {
@@ -163,8 +159,7 @@ export const commentsModel = {
             .where(and(eq(comments.id, id), isNull(comments.deletedAt)))
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async softDelete(
@@ -184,8 +179,7 @@ export const commentsModel = {
             .where(and(eq(comments.id, id), isNull(comments.deletedAt)))
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 };
 

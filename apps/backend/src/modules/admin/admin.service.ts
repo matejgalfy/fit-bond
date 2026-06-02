@@ -7,6 +7,7 @@ import type {
     UpdateUserAdminInput,
 } from './admin.types';
 import { ServiceError } from '../../utils/errors';
+import { validateUserRelationFilters } from '../../utils/filter-validators';
 
 export interface AdminServiceDeps {
     model?: AdminModel;
@@ -63,29 +64,14 @@ export function createAdminService({
             if (!deleted) {
                 throw ServiceError.notFound('User not found');
             }
-            return deleted;
+            return { success: true };
         },
 
         async listEvents(db: Database, filters: AdminEventFilters) {
-            if (filters.userRelation && !filters.userId) {
-                throw ServiceError.badRequest(
-                    'userId is required when filtering by userRelation'
-                );
-            }
-            if (filters.excludeUserInteractions && !filters.userId) {
-                throw ServiceError.badRequest(
-                    'userId is required when excludeUserInteractions is true'
-                );
-            }
-            if (filters.userRelation && filters.excludeUserInteractions) {
-                throw ServiceError.badRequest(
-                    'userRelation and excludeUserInteractions cannot be used together'
-                );
-            }
+            validateUserRelationFilters(filters);
             return model.searchEvents(db, filters);
         },
     };
 }
 
-export const adminService = createAdminService();
 export type AdminService = ReturnType<typeof createAdminService>;

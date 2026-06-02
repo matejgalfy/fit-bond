@@ -1,15 +1,16 @@
 import { betterAuth } from 'better-auth';
 import { drizzleAdapter } from 'better-auth/adapters/drizzle';
 import { db } from './db';
-import { emailService } from './modules/email/email.service';
 import { admin } from 'better-auth/plugins';
+import { eventBus } from './lib/eventBus';
 
 const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+const frontendOrigin = process.env.FRONTEND_URL;
 
-if (!clientId || !clientSecret) {
+if (!clientId || !clientSecret || !frontendOrigin) {
     throw new Error(
-        'Google client ID and secret must be set in environment variables.'
+        'Google client ID, secret, and frontend origin must be set in environment variables.'
     );
 }
 
@@ -26,7 +27,7 @@ export const auth = betterAuth({
         },
     },
     plugins: [admin()],
-    trustedOrigins: ['http://localhost:5173'],
+    trustedOrigins: [frontendOrigin],
     user: {
         additionalFields: {
             role: {
@@ -41,11 +42,11 @@ export const auth = betterAuth({
         user: {
             create: {
                 after: async (user) => {
-                    await emailService
-                        .sendWelcomeEmail(user.email, user.name)
-                        .catch((err: unknown) => {
-                            console.error('Failed to send welcome email:', err);
-                        });
+                    await eventBus.emit(db, 'user.registered', {
+                        userId: user.id,
+                        email: user.email,
+                        name: user.name,
+                    });
                 },
             },
         },

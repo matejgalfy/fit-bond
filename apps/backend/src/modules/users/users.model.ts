@@ -1,5 +1,6 @@
 import { eq, and, isNull } from 'drizzle-orm';
 import type { Database } from '../../db';
+import { firstOrNull } from '../../utils/query';
 import { user, userPreferredSports } from '../../db/schema';
 import type { UpdateProfileInput } from './users.types';
 import { eventParticipants } from '../../db/schema';
@@ -84,8 +85,7 @@ export const usersModel = {
             .from(user)
             .where(and(eq(user.id, userId), isNull(user.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async getUsersByEventId(db: Database, eventId: string) {

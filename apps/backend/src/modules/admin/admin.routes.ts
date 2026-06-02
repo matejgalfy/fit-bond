@@ -1,6 +1,5 @@
 import { Elysia } from 'elysia';
-import { adminService } from './admin.service';
-import { reportsService } from '../reports/reports.service';
+import type { AdminService } from './admin.service';
 import { db } from '../../db';
 import {
     adminUserIdParam,
@@ -8,30 +7,14 @@ import {
     adminEventQueryFilters,
     updateUserAdminBody,
 } from './admin.schema';
-import {
-    adminReportQueryFilters,
-    reportIdParam,
-    resolveReportBody,
-    rejectReportBody,
-} from '../reports/reports.schema';
 import { handleServiceError } from '../../utils/error-handler';
-import { authLayer } from '../../auth_middleware';
-import { ServiceError } from '../../utils/errors';
+import { adminLayer } from '../../admin_middleware';
 
-export const adminRoutes = new Elysia({ prefix: '/admin' })
-    .use(authLayer)
-    .onError(handleServiceError)
-    .guard(
-        {
-            auth: true,
-            beforeHandle: (ctx) => {
-                const role = (ctx as { user?: { role?: string } }).user?.role;
-                if (role !== 'admin') {
-                    throw ServiceError.forbidden('Admin only');
-                }
-            },
-        },
-        (app) =>
+export function createAdminRoutes(adminService: AdminService) {
+    return new Elysia({ prefix: '/admin' })
+        .use(adminLayer)
+        .onError(handleServiceError)
+        .guard({ admin: true }, (app) =>
             app
                 .get(
                     '/users',
@@ -76,10 +59,8 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                 )
                 .delete(
                     '/users/:id',
-                    async ({ params, user }) => {
-                        await adminService.deleteUser(db, params.id, user.id);
-                        return { success: true };
-                    },
+                    ({ params, user }) =>
+                        adminService.deleteUser(db, params.id, user.id),
                     {
                         params: adminUserIdParam,
                         detail: {
@@ -103,71 +84,5 @@ export const adminRoutes = new Elysia({ prefix: '/admin' })
                         },
                     }
                 )
-                .get(
-                    '/reports',
-                    ({ query }) => reportsService.listForAdmin(db, query),
-                    {
-                        query: adminReportQueryFilters,
-                        detail: {
-                            tags: ['Admin'],
-                            summary: 'List reports (admin)',
-                            description:
-                                'List moderation reports with optional filtering by status, type, and reporter.',
-                        },
-                    }
-                )
-                .get(
-                    '/reports/:id',
-                    ({ params }) =>
-                        reportsService.getByIdForAdmin(db, params.id),
-                    {
-                        params: reportIdParam,
-                        detail: {
-                            tags: ['Admin'],
-                            summary: 'Get report by ID (admin)',
-                            description:
-                                'Retrieve a single report including its target reference, reason, and resolution metadata.',
-                        },
-                    }
-                )
-                .post(
-                    '/reports/:id/resolve',
-                    ({ params, user, body }) =>
-                        reportsService.resolve(
-                            db,
-                            params.id,
-                            user.id,
-                            body.resolution
-                        ),
-                    {
-                        params: reportIdParam,
-                        body: resolveReportBody,
-                        detail: {
-                            tags: ['Admin'],
-                            summary: 'Resolve report',
-                            description:
-                                'Mark a pending report as resolved with a required resolution note. Returns 409 if the report is no longer pending.',
-                        },
-                    }
-                )
-                .post(
-                    '/reports/:id/reject',
-                    ({ params, user, body }) =>
-                        reportsService.reject(
-                            db,
-                            params.id,
-                            user.id,
-                            body.resolution ?? null
-                        ),
-                    {
-                        params: reportIdParam,
-                        body: rejectReportBody,
-                        detail: {
-                            tags: ['Admin'],
-                            summary: 'Reject report',
-                            description:
-                                'Mark a pending report as rejected with an optional resolution note. Returns 409 if the report is no longer pending.',
-                        },
-                    }
-                )
-    );
+        );
+}

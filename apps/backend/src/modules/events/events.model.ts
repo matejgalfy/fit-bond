@@ -1,20 +1,7 @@
-import {
-    eq,
-    and,
-    or,
-    ilike,
-    gte,
-    lte,
-    isNull,
-    desc,
-    count,
-    not,
-    exists,
-    ne,
-    sql,
-    inArray,
-} from 'drizzle-orm';
+import { eq, and, isNull, desc, count, sql } from 'drizzle-orm';
 import type { Database } from '../../db';
+import { firstOrNull, firstOrThrow } from '../../utils/query';
+import { DEFAULT_PAGE_SIZE, DEFAULT_OFFSET } from '../../utils/pagination';
 import {
     events,
     user,
@@ -28,6 +15,7 @@ import type {
     CreateEventInput,
     UpdateEventInput,
 } from './events.types';
+import { baseEventSelection, buildSharedEventConditions } from './events.query';
 
 export const eventsModel = {
     async findAll(db: Database, filters: EventFilters) {
@@ -36,141 +24,16 @@ export const eventsModel = {
         if (filters.excludeUserInteractions) {
             conditions.push(isNull(events.cancelledAt));
         }
-        if (filters.sportIds && filters.sportIds.length > 0) {
-            conditions.push(inArray(events.sportId, filters.sportIds));
-        }
-
-        // AI saying that it isn't effective
-        if (
-            filters.lat !== undefined &&
-            filters.lng !== undefined &&
-            filters.radius !== undefined
-        ) {
-            const distance = sql<number>`(
-                6371 * acos(
-                    cos(radians(${filters.lat})) * cos(radians(${locations.lat})) *
-                    cos(radians(${locations.lng}) - radians(${filters.lng})) +
-                    sin(radians(${filters.lat})) * sin(radians(${locations.lat}))
-                )
-            )`;
-            conditions.push(lte(distance, filters.radius));
-        }
-
-        if (filters.skillLevel) {
-            conditions.push(eq(events.skillLevel, filters.skillLevel));
-        }
         if (filters.isPublic !== undefined) {
             conditions.push(eq(events.isPublic, filters.isPublic));
         }
-        if (filters.search) {
-            const searchCondition = or(
-                ilike(events.name, `%${filters.search}%`),
-                ilike(sports.name, `%${filters.search}%`)
-            );
+        conditions.push(...buildSharedEventConditions(db, filters));
 
-            if (searchCondition) {
-                conditions.push(searchCondition);
-            }
-        }
-        if (filters.fromDate) {
-            conditions.push(gte(events.startTime, new Date(filters.fromDate)));
-        }
-        if (filters.toDate) {
-            conditions.push(lte(events.startTime, new Date(filters.toDate)));
-        }
-        if (filters.city) {
-            conditions.push(
-                ilike(locations.formatted_address, `%${filters.city}%`)
-            );
-        }
-        if (filters.date) {
-            conditions.push(eq(sql`${events.startTime}::date`, filters.date));
-        }
-
-        // User relation filtering
-        if (filters.userId && filters.userRelation === 'organized') {
-            conditions.push(eq(events.organizerId, filters.userId));
-        }
-
-        // Exclude events with user interactions (for discovery)
-        if (filters.userId && filters.excludeUserInteractions) {
-            // Exclude events organized by user
-            conditions.push(ne(events.organizerId, filters.userId));
-
-            // Exclude events user has joined
-            conditions.push(
-                not(
-                    exists(
-                        db
-                            .select()
-                            .from(eventParticipants)
-                            .where(
-                                and(
-                                    eq(eventParticipants.eventId, events.id),
-                                    eq(eventParticipants.userId, filters.userId)
-                                )
-                            )
-                    )
-                )
-            );
-
-            // Exclude events user is interested in
-            conditions.push(
-                not(
-                    exists(
-                        db
-                            .select()
-                            .from(eventInterested)
-                            .where(
-                                and(
-                                    eq(eventInterested.eventId, events.id),
-                                    eq(eventInterested.userId, filters.userId)
-                                )
-                            )
-                    )
-                )
-            );
-        }
-
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         let query = db
-            .select({
-                id: events.id,
-                name: events.name,
-                description: events.description,
-                skillLevel: events.skillLevel,
-                startTime: events.startTime,
-                duration: events.duration,
-                capacity: events.capacity,
-                isPublic: events.isPublic,
-                coverImageUrl: events.coverImageUrl,
-                cancelledAt: events.cancelledAt,
-                createdAt: events.createdAt,
-                currentParticipants: sql<number>`(
-                    SELECT COUNT(*)::int FROM ${eventParticipants}
-                    WHERE ${eventParticipants.eventId} = ${events.id}
-                )`.as('current_participants'),
-                currentInterested: sql<number>`(
-                    SELECT COUNT(*)::int FROM ${eventInterested}
-                    WHERE ${eventInterested.eventId} = ${events.id}
-                )`.as('current_interested'),
-                organizer: {
-                    id: user.id,
-                    name: user.name,
-                    image: user.image,
-                },
-                location: {
-                    id: locations.id,
-                    formattedAddress: locations.formatted_address,
-                },
-                sport: {
-                    id: sports.id,
-                    name: sports.name,
-                    iconUrl: sports.iconUrl,
-                },
-            })
+            .select(baseEventSelection)
             .from(events)
             .innerJoin(user, eq(events.organizerId, user.id))
             .innerJoin(locations, eq(events.locationId, locations.id))
@@ -251,8 +114,7 @@ export const eventsModel = {
             .innerJoin(sports, eq(events.sportId, sports.id))
             .where(and(eq(events.id, id), isNull(events.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async findRawById(db: Database, id: string) {
@@ -261,8 +123,7 @@ export const eventsModel = {
             .from(events)
             .where(and(eq(events.id, id), isNull(events.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async create(
@@ -288,10 +149,7 @@ export const eventsModel = {
             })
             .returning();
 
-        if (results.length === 0) {
-            throw new Error('Failed to create event');
-        }
-        return results[0];
+        return firstOrThrow(results, 'Failed to create event');
     },
 
     async update(
@@ -324,8 +182,7 @@ export const eventsModel = {
             .where(and(eq(events.id, id), isNull(events.deletedAt)))
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async cancel(db: Database, id: string, reason?: string) {
@@ -339,8 +196,7 @@ export const eventsModel = {
             .where(and(eq(events.id, id), isNull(events.deletedAt)))
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async softDelete(db: Database, id: string) {
@@ -350,8 +206,7 @@ export const eventsModel = {
             .where(and(eq(events.id, id), isNull(events.deletedAt)))
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async getStatsByUserId(db: Database, userId: string) {

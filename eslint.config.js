@@ -55,6 +55,23 @@ export default defineConfig([
         },
     },
     {
+        files: ['**/backend/src/modules/*/*.service.ts'],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    patterns: [
+                        {
+                            group: ['../*/*.model'],
+                            message:
+                                "Services may not import a sibling module's model. Call the peer service (e.g. eventsService.requireRawById) instead.",
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+    {
         files: ['**/frontend/**/*.{ts,tsx}', '**/*.test.tsx'],
         extends: [
             reactHooks.configs.flat.recommended,

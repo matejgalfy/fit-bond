@@ -7,37 +7,21 @@ import type {
     UpdateCommentInput,
 } from './comments.types';
 import { ServiceError } from '../../utils/errors';
-import {
-    eventsModel as defaultEventsModel,
-    type EventsModel,
-} from '../events/events.model';
-import {
-    usersModel as defaultUsersModel,
-    type UsersModel,
-} from '../users/users.model';
-import {
-    notificationsService as defaultNotifications,
-    type NotificationsService,
-} from '../notifications/notifications.service';
-
-export interface CommentActor {
-    id: string;
-    role: string;
-}
+import type { EventsService } from '../events/events.service';
+import type { EventBus } from '../../lib/eventBus';
+import type { Actor } from '../../utils/actor';
 
 export interface CommentsServiceDeps {
     model?: CommentsModel;
-    eventsModel?: Pick<EventsModel, 'findRawById'>;
-    usersModel?: Pick<UsersModel, 'getUserNameById'>;
-    notifications?: Pick<NotificationsService, 'create'>;
+    eventsService: Pick<EventsService, 'loadRaw'>;
+    bus: Pick<EventBus, 'emit'>;
 }
 
 export function createCommentsService({
     model = defaultModel,
-    eventsModel = defaultEventsModel,
-    usersModel = defaultUsersModel,
-    notifications = defaultNotifications,
-}: CommentsServiceDeps = {}) {
+    eventsService,
+    bus,
+}: CommentsServiceDeps) {
     return {
         async list(db: Database, filters: CommentFilters) {
             return model.findAll(db, filters);
@@ -45,6 +29,14 @@ export function createCommentsService({
 
         async getById(db: Database, id: string) {
             const comment = await model.findById(db, id);
+            if (!comment) {
+                throw ServiceError.notFound('Comment not found');
+            }
+            return comment;
+        },
+
+        async loadRaw(db: Database, id: string) {
+            const comment = await model.findRawById(db, id);
             if (!comment) {
                 throw ServiceError.notFound('Comment not found');
             }
@@ -85,23 +77,14 @@ export function createCommentsService({
 
             const comment = await model.create(db, userId, eventId, input);
 
-            try {
-                const event = await eventsModel.findRawById(db, eventId);
-                if (event && event.organizerId !== userId) {
-                    const author = await usersModel.getUserNameById(db, userId);
-                    const authorName = author?.name ?? 'Someone';
-                    await notifications.create(db, {
-                        userId: event.organizerId,
-                        type: 'comment',
-                        title: 'New comment on your event',
-                        message: `${authorName} commented on ${event.name}.`,
-                        eventId,
-                        relatedUserId: userId,
-                    });
-                }
-            } catch (err: unknown) {
-                console.error('Notification creation failed:', err);
-            }
+            const event = await eventsService.loadRaw(db, eventId);
+            await bus.emit(db, 'event.commented', {
+                eventId,
+                eventName: event.name,
+                organizerId: event.organizerId,
+                actorId: userId,
+                commentId: comment.id,
+            });
 
             return comment;
         },
@@ -112,10 +95,7 @@ export function createCommentsService({
             userId: string,
             input: UpdateCommentInput
         ) {
-            const existing = await model.findRawById(db, commentId);
-            if (!existing) {
-                throw ServiceError.notFound('Comment not found');
-            }
+            const existing = await this.loadRaw(db, commentId);
             if (existing.userId !== userId) {
                 throw ServiceError.forbidden(
                     'Only the comment author can update this comment'
@@ -128,14 +108,10 @@ export function createCommentsService({
         async delete(
             db: Database,
             commentId: string,
-            actor: CommentActor,
+            actor: Actor,
             reason?: string
         ) {
-            const existing = await model.findRawById(db, commentId);
-            if (!existing) {
-                throw ServiceError.notFound('Comment not found');
-            }
-
+            const existing = await this.loadRaw(db, commentId);
             const isAuthor = existing.userId === actor.id;
             const isAdmin = actor.role === 'admin';
             if (!isAuthor && !isAdmin) {
@@ -150,8 +126,9 @@ export function createCommentsService({
                 actor.id,
                 isAuthor ? undefined : reason
             );
+            return { success: true };
         },
     };
 }
 
-export const commentsService = createCommentsService();
+export type CommentsService = ReturnType<typeof createCommentsService>;

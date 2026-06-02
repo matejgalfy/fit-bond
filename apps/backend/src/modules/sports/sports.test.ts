@@ -38,7 +38,9 @@ describe('SportsService', () => {
 
     beforeEach(() => {
         mockModel = makeMockModel();
-        service = createSportsService(mockModel as unknown as SportsModel);
+        service = createSportsService({
+            model: mockModel as unknown as SportsModel,
+        });
     });
 
     describe('list', () => {

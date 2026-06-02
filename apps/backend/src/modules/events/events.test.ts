@@ -8,9 +8,6 @@ import type {
     CreateEventInput,
     UpdateEventInput,
 } from './events.types';
-import type { LocationsService } from '../locations/locations.service';
-import { UsersService } from '../users/users.service';
-import type { NotificationsService } from '../notifications/notifications.service';
 
 const futureDate = new Date(Date.now() + 86400000).toISOString();
 const pastDate = new Date(Date.now() - 86400000).toISOString();
@@ -46,17 +43,9 @@ function makeFakeDb(): Database {
     return fake as unknown as Database;
 }
 
-function makeMockUsersService() {
+function makeMockBus() {
     return {
-        getUsersByEventId: vi.fn(() =>
-            Promise.resolve([] as { id: string; name: string; email: string }[])
-        ),
-    };
-}
-
-function makeMockNotifications() {
-    return {
-        createMany: vi.fn(() => Promise.resolve([])),
+        emit: vi.fn(() => Promise.resolve()),
     };
 }
 
@@ -118,24 +107,17 @@ const fakeDb = makeFakeDb();
 describe('EventsService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
     let mockLocationsService: ReturnType<typeof makeMockLocationsService>;
-    let mockUsersService: ReturnType<typeof makeMockUsersService>;
-    let mockNotifications: ReturnType<typeof makeMockNotifications>;
+    let mockBus: ReturnType<typeof makeMockBus>;
     let service: ReturnType<typeof createEventsService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
         mockLocationsService = makeMockLocationsService();
-        mockUsersService = makeMockUsersService();
-        mockNotifications = makeMockNotifications();
+        mockBus = makeMockBus();
         service = createEventsService({
             model: mockModel as unknown as EventsModel,
-            locationsService:
-                mockLocationsService as unknown as LocationsService,
-            usersService: mockUsersService as unknown as UsersService,
-            notifications: mockNotifications as unknown as Pick<
-                NotificationsService,
-                'createMany'
-            >,
+            locationsService: mockLocationsService,
+            bus: mockBus,
         });
     });
 
@@ -332,7 +314,7 @@ describe('EventsService', () => {
             const result = await service.update(
                 fakeDb,
                 'event-1',
-                'user-1',
+                { id: 'user-1' },
                 updateInput
             );
             expect(result).toEqual(updated);
@@ -358,7 +340,12 @@ describe('EventsService', () => {
             mockModel.findById.mockResolvedValueOnce(null);
             expect.assertions(1);
             try {
-                await service.update(fakeDb, 'missing', 'user-1', updateInput);
+                await service.update(
+                    fakeDb,
+                    'missing',
+                    { id: 'user-1' },
+                    updateInput
+                );
             } catch (e) {
                 expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
@@ -370,7 +357,12 @@ describe('EventsService', () => {
             );
             expect.assertions(2);
             try {
-                await service.update(fakeDb, 'event-1', 'user-1', updateInput);
+                await service.update(
+                    fakeDb,
+                    'event-1',
+                    { id: 'user-1' },
+                    updateInput
+                );
             } catch (e) {
                 expect((e as ServiceError).code).toBe('FORBIDDEN');
                 expect((e as ServiceError).statusCode).toBe(403);
@@ -386,7 +378,12 @@ describe('EventsService', () => {
             );
             expect.assertions(1);
             try {
-                await service.update(fakeDb, 'event-1', 'user-1', updateInput);
+                await service.update(
+                    fakeDb,
+                    'event-1',
+                    { id: 'user-1' },
+                    updateInput
+                );
             } catch (e) {
                 expect((e as ServiceError).code).toBe('CONFLICT');
             }
@@ -398,9 +395,14 @@ describe('EventsService', () => {
             );
             expect.assertions(1);
             try {
-                await service.update(fakeDb, 'event-1', 'user-1', {
-                    startTime: pastDate,
-                });
+                await service.update(
+                    fakeDb,
+                    'event-1',
+                    { id: 'user-1' },
+                    {
+                        startTime: pastDate,
+                    }
+                );
             } catch (e) {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
             }
@@ -415,66 +417,55 @@ describe('EventsService', () => {
             );
             expect.assertions(1);
             try {
-                await service.update(fakeDb, 'event-1', 'user-1', {
-                    capacity: 3,
-                });
+                await service.update(
+                    fakeDb,
+                    'event-1',
+                    { id: 'user-1' },
+                    {
+                        capacity: 3,
+                    }
+                );
             } catch (e) {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
             }
         });
 
-        test('notifies participants on a significant change, excluding the actor', async () => {
+        test('emits event.updated on a significant change', async () => {
             mockModel.findById.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'user-1', name: 'Morning Run' })
             );
-            mockUsersService.getUsersByEventId.mockResolvedValueOnce([
-                { id: 'p1', name: 'A', email: 'a@x.com' },
-                { id: 'user-1', name: 'Org', email: 'o@x.com' },
-            ]);
 
-            await service.update(fakeDb, 'event-1', 'user-1', {
-                startTime: futureDate,
-            });
-
-            expect(mockNotifications.createMany).toHaveBeenCalledWith(fakeDb, [
+            await service.update(
+                fakeDb,
+                'event-1',
+                { id: 'user-1' },
                 {
-                    userId: 'p1',
-                    type: 'event_update',
-                    title: 'Event updated',
-                    message:
-                        'Morning Run has been updated. Check the new details.',
-                    eventId: 'event-1',
-                    relatedUserId: 'user-1',
-                },
-            ]);
+                    startTime: futureDate,
+                }
+            );
+
+            expect(mockBus.emit).toHaveBeenCalledWith(fakeDb, 'event.updated', {
+                eventId: 'event-1',
+                eventName: 'Morning Run',
+                actorId: 'user-1',
+            });
         });
 
-        test('does not notify when only the description changes', async () => {
+        test('does not emit when only the description changes', async () => {
             mockModel.findById.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'user-1' })
             );
 
-            await service.update(fakeDb, 'event-1', 'user-1', {
-                description: 'typo fix',
-            });
-
-            expect(mockNotifications.createMany).not.toHaveBeenCalled();
-        });
-
-        test('update still succeeds when notification creation fails', async () => {
-            mockModel.findById.mockResolvedValueOnce(
-                makeMockEvent({ organizerId: 'user-1' })
-            );
-            const updated = makeMockEvent({ name: 'Updated' });
-            mockModel.update.mockResolvedValueOnce(updated);
-            mockNotifications.createMany.mockRejectedValueOnce(
-                new Error('db down')
+            await service.update(
+                fakeDb,
+                'event-1',
+                { id: 'user-1' },
+                {
+                    description: 'typo fix',
+                }
             );
 
-            const result = await service.update(fakeDb, 'event-1', 'user-1', {
-                startTime: futureDate,
-            });
-            expect(result).toEqual(updated);
+            expect(mockBus.emit).not.toHaveBeenCalled();
         });
     });
 
@@ -489,7 +480,7 @@ describe('EventsService', () => {
             const result = await service.cancel(
                 fakeDb,
                 'event-1',
-                'user-1',
+                { id: 'user-1' },
                 'Rain'
             );
             expect(result).toEqual(cancelled);
@@ -526,7 +517,7 @@ describe('EventsService', () => {
             mockModel.findRawById.mockResolvedValueOnce(null);
             expect.assertions(1);
             try {
-                await service.cancel(fakeDb, 'missing', 'user-1');
+                await service.cancel(fakeDb, 'missing', { id: 'user-1' });
             } catch (e) {
                 expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
@@ -538,7 +529,7 @@ describe('EventsService', () => {
             );
             expect.assertions(1);
             try {
-                await service.cancel(fakeDb, 'event-1', 'user-1');
+                await service.cancel(fakeDb, 'event-1', { id: 'user-1' });
             } catch (e) {
                 expect((e as ServiceError).code).toBe('FORBIDDEN');
             }
@@ -553,36 +544,31 @@ describe('EventsService', () => {
             );
             expect.assertions(1);
             try {
-                await service.cancel(fakeDb, 'event-1', 'user-1');
+                await service.cancel(fakeDb, 'event-1', { id: 'user-1' });
             } catch (e) {
                 expect((e as ServiceError).code).toBe('CONFLICT');
             }
         });
 
-        test('notifies participants that the event was cancelled', async () => {
+        test('emits event.cancelled after cancellation succeeds', async () => {
             mockModel.findRawById.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'user-1' })
             );
             mockModel.cancel.mockResolvedValueOnce(
                 makeMockEvent({ name: 'Morning Run', cancelledAt: new Date() })
             );
-            mockUsersService.getUsersByEventId.mockResolvedValue([
-                { id: 'p1', name: 'A', email: 'a@x.com' },
-                { id: 'user-1', name: 'Org', email: 'o@x.com' },
-            ]);
 
-            await service.cancel(fakeDb, 'event-1', 'user-1', 'Rain');
+            await service.cancel(fakeDb, 'event-1', { id: 'user-1' }, 'Rain');
 
-            expect(mockNotifications.createMany).toHaveBeenCalledWith(fakeDb, [
+            expect(mockBus.emit).toHaveBeenCalledWith(
+                fakeDb,
+                'event.cancelled',
                 {
-                    userId: 'p1',
-                    type: 'event_cancelled',
-                    title: 'Event cancelled',
-                    message: 'Morning Run has been cancelled.',
                     eventId: 'event-1',
-                    relatedUserId: 'user-1',
-                },
-            ]);
+                    eventName: 'Morning Run',
+                    actorId: 'user-1',
+                }
+            );
         });
     });
 
@@ -591,7 +577,7 @@ describe('EventsService', () => {
             mockModel.findRawById.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'user-1' })
             );
-            await service.delete(fakeDb, 'event-1', 'user-1');
+            await service.delete(fakeDb, 'event-1', { id: 'user-1' });
             expect(mockModel.softDelete).toHaveBeenCalledWith(
                 fakeDb,
                 'event-1'
@@ -618,7 +604,7 @@ describe('EventsService', () => {
             mockModel.findRawById.mockResolvedValueOnce(null);
             expect.assertions(1);
             try {
-                await service.delete(fakeDb, 'missing', 'user-1');
+                await service.delete(fakeDb, 'missing', { id: 'user-1' });
             } catch (e) {
                 expect((e as ServiceError).code).toBe('NOT_FOUND');
             }
@@ -630,7 +616,7 @@ describe('EventsService', () => {
             );
             expect.assertions(1);
             try {
-                await service.delete(fakeDb, 'event-1', 'user-1');
+                await service.delete(fakeDb, 'event-1', { id: 'user-1' });
             } catch (e) {
                 expect((e as ServiceError).code).toBe('FORBIDDEN');
             }

@@ -35,9 +35,9 @@ describe('NotificationsService', () => {
 
     beforeEach(() => {
         mockModel = makeMockModel();
-        service = createNotificationsService(
-            mockModel as unknown as NotificationsModel
-        );
+        service = createNotificationsService({
+            model: mockModel as unknown as NotificationsModel,
+        });
     });
 
     describe('create', () => {

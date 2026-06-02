@@ -2,10 +2,7 @@ import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createCommentsService } from './comments.service';
 import { ServiceError } from '../../utils/errors';
 import type { CommentsModel } from './comments.model';
-import type { EventsModel } from '../events/events.model';
 import type { EventType } from '../events/events.types';
-import type { UsersModel } from '../users/users.model';
-import type { NotificationsService } from '../notifications/notifications.service';
 import type { Database } from '../../db';
 import type {
     CommentType,
@@ -70,26 +67,15 @@ function makeMockEvent(overrides: Partial<EventType> = {}): EventType {
     };
 }
 
-function makeMockEventsModel() {
+function makeMockEventsService() {
     return {
-        findRawById: vi.fn(() => Promise.resolve(null as EventType | null)),
+        loadRaw: vi.fn(() => Promise.resolve(makeMockEvent())),
     };
 }
 
-function makeMockUsersModel() {
+function makeMockBus() {
     return {
-        getUserNameById: vi.fn(() =>
-            Promise.resolve({ id: 'user-1', name: 'Jana K.' } as {
-                id: string;
-                name: string;
-            } | null)
-        ),
-    };
-}
-
-function makeMockNotifications() {
-    return {
-        create: vi.fn(() => Promise.resolve(null)),
+        emit: vi.fn(() => Promise.resolve()),
     };
 }
 
@@ -97,30 +83,18 @@ const fakeDb = {} as unknown as Database;
 
 describe('CommentsService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
-    let mockEventsModel: ReturnType<typeof makeMockEventsModel>;
-    let mockUsersModel: ReturnType<typeof makeMockUsersModel>;
-    let mockNotifications: ReturnType<typeof makeMockNotifications>;
+    let mockEventsService: ReturnType<typeof makeMockEventsService>;
+    let mockBus: ReturnType<typeof makeMockBus>;
     let service: ReturnType<typeof createCommentsService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
-        mockEventsModel = makeMockEventsModel();
-        mockUsersModel = makeMockUsersModel();
-        mockNotifications = makeMockNotifications();
+        mockEventsService = makeMockEventsService();
+        mockBus = makeMockBus();
         service = createCommentsService({
             model: mockModel as unknown as CommentsModel,
-            eventsModel: mockEventsModel as unknown as Pick<
-                EventsModel,
-                'findRawById'
-            >,
-            usersModel: mockUsersModel as unknown as Pick<
-                UsersModel,
-                'getUserNameById'
-            >,
-            notifications: mockNotifications as unknown as Pick<
-                NotificationsService,
-                'create'
-            >,
+            eventsService: mockEventsService,
+            bus: mockBus,
         });
     });
 
@@ -243,53 +217,27 @@ describe('CommentsService', () => {
             }
         });
 
-        test('notifies the organizer when a different user comments', async () => {
+        test('emits event.commented after creating a comment', async () => {
             mockModel.isUserEligibleToComment.mockResolvedValueOnce(true);
-            mockEventsModel.findRawById.mockResolvedValueOnce(
+            mockEventsService.loadRaw.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'organizer-1' })
             );
-
-            await service.create(fakeDb, 'user-1', 'event-1', validInput);
-
-            expect(mockNotifications.create).toHaveBeenCalledWith(fakeDb, {
-                userId: 'organizer-1',
-                type: 'comment',
-                title: 'New comment on your event',
-                message: 'Jana K. commented on Morning Run.',
-                eventId: 'event-1',
-                relatedUserId: 'user-1',
-            });
-        });
-
-        test('does not notify when the organizer comments on their own event', async () => {
-            mockModel.isUserEligibleToComment.mockResolvedValueOnce(true);
-            mockEventsModel.findRawById.mockResolvedValueOnce(
-                makeMockEvent({ organizerId: 'user-1' })
-            );
-
-            await service.create(fakeDb, 'user-1', 'event-1', validInput);
-
-            expect(mockNotifications.create).not.toHaveBeenCalled();
-        });
-
-        test('comment still succeeds when notification creation fails', async () => {
-            mockModel.isUserEligibleToComment.mockResolvedValueOnce(true);
-            mockEventsModel.findRawById.mockResolvedValueOnce(
-                makeMockEvent({ organizerId: 'organizer-1' })
-            );
-            mockNotifications.create.mockRejectedValueOnce(
-                new Error('db down')
-            );
-            const created = makeMockComment();
+            const created = makeMockComment({ id: 'comment-99' });
             mockModel.create.mockResolvedValueOnce(created);
 
-            const result = await service.create(
+            await service.create(fakeDb, 'user-1', 'event-1', validInput);
+
+            expect(mockBus.emit).toHaveBeenCalledWith(
                 fakeDb,
-                'user-1',
-                'event-1',
-                validInput
+                'event.commented',
+                {
+                    eventId: 'event-1',
+                    eventName: 'Morning Run',
+                    organizerId: 'organizer-1',
+                    actorId: 'user-1',
+                    commentId: 'comment-99',
+                }
             );
-            expect(result).toEqual(created);
         });
     });
 

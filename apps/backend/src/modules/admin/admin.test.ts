@@ -134,7 +134,7 @@ describe('AdminService', () => {
                 'user-1',
                 'admin-1'
             );
-            expect(result).toEqual(deleted);
+            expect(result).toEqual({ success: true });
             expect(mockModel.softDeleteUser).toHaveBeenCalledWith(
                 fakeDb,
                 'user-1'

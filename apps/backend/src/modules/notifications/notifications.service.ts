@@ -8,9 +8,13 @@ import type {
 } from './notifications.types';
 import { ServiceError } from '../../utils/errors';
 
-export function createNotificationsService(
-    model: NotificationsModel = defaultModel
-) {
+export interface NotificationsServiceDeps {
+    model?: NotificationsModel;
+}
+
+export function createNotificationsService({
+    model = defaultModel,
+}: NotificationsServiceDeps = {}) {
     return {
         async create(db: Database, input: CreateNotificationInput) {
             return model.create(db, input);
@@ -65,6 +69,7 @@ export function createNotificationsService(
 
         async markAllRead(db: Database, userId: string) {
             await model.markAllRead(db, userId);
+            return { success: true };
         },
 
         async delete(
@@ -83,11 +88,11 @@ export function createNotificationsService(
             }
 
             await model.softDelete(db, notificationId);
+            return { success: true };
         },
     };
 }
 
-export const notificationsService = createNotificationsService();
 export type NotificationsService = ReturnType<
     typeof createNotificationsService
 >;
