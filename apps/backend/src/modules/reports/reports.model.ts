@@ -1,5 +1,7 @@
 import { and, desc, eq, isNull, sql } from 'drizzle-orm';
+import { DEFAULT_PAGE_SIZE, DEFAULT_OFFSET } from '../../utils/pagination';
 import type { Database } from '../../db';
+import { firstOrNull, firstOrThrow } from '../../utils/query';
 import { reports, user } from '../../db/schema';
 import type {
     AdminReportFilters,
@@ -45,10 +47,7 @@ export const reportsModel = {
             })
             .returning();
 
-        if (results.length === 0) {
-            throw new Error('Failed to create report');
-        }
-        return results[0];
+        return firstOrThrow(results, 'Failed to create report');
     },
 
     async findById(db: Database, id: string) {
@@ -56,8 +55,7 @@ export const reportsModel = {
             .select()
             .from(reports)
             .where(and(eq(reports.id, id), isNull(reports.deletedAt)));
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async findPendingDuplicate(
@@ -78,8 +76,7 @@ export const reportsModel = {
                     isNull(reports.deletedAt)
                 )
             );
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async findManyByReporter(
@@ -95,8 +92,8 @@ export const reportsModel = {
             conditions.push(eq(reports.status, filters.status));
         }
 
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         return db
             .select()
@@ -119,8 +116,8 @@ export const reportsModel = {
             conditions.push(eq(reports.reporterId, filters.reporterId));
         }
 
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         return db
             .select(adminReportSelection)
@@ -138,8 +135,7 @@ export const reportsModel = {
             .from(reports)
             .leftJoin(user, eq(user.id, reports.reporterId))
             .where(and(eq(reports.id, id), isNull(reports.deletedAt)));
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async updateStatus(
@@ -158,8 +154,7 @@ export const reportsModel = {
             })
             .where(and(eq(reports.id, id), isNull(reports.deletedAt)))
             .returning();
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 };
 

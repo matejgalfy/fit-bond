@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { limitQuerySchema, offsetQuerySchema } from '../../utils/pagination';
 
 const notificationTypeUnion = t.Union([
     t.Literal('event_update'),
@@ -23,13 +24,13 @@ export const selectNotificationSchema = t.Object({
 
 export const notificationQueryFilters = t.Object({
     type: t.Optional(notificationTypeUnion),
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const paginationQueryFilters = t.Object({
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const updateNotificationBody = t.Object({

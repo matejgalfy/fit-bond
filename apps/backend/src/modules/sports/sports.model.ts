@@ -1,5 +1,6 @@
 import { eq, and, isNull, asc } from 'drizzle-orm';
 import type { Database } from '../../db';
+import { firstOrNull, firstOrThrow } from '../../utils/query';
 import { sports } from '../../db/schema';
 import type { CreateSportInput } from './sports.types';
 
@@ -28,8 +29,7 @@ export const sportsModel = {
             .from(sports)
             .where(and(eq(sports.id, id), isNull(sports.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async findByName(db: Database, name: string) {
@@ -38,8 +38,7 @@ export const sportsModel = {
             .from(sports)
             .where(and(eq(sports.name, name), isNull(sports.deletedAt)));
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async create(db: Database, input: CreateSportInput) {
@@ -52,10 +51,7 @@ export const sportsModel = {
             })
             .returning();
 
-        if (results.length === 0) {
-            throw new Error('Failed to create sport');
-        }
-        return results[0];
+        return firstOrThrow(results, 'Failed to create sport');
     },
 
     async softDelete(db: Database, id: string) {
@@ -65,8 +61,7 @@ export const sportsModel = {
             .where(and(eq(sports.id, id), isNull(sports.deletedAt)))
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 };
 

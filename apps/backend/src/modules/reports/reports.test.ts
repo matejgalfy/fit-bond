@@ -1,7 +1,6 @@
 import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createReportsService } from './reports.service';
 import { ServiceError } from '../../utils/errors';
-import type { ReportsModel } from './reports.model';
 import type { Database } from '../../db';
 import type { ReportEntity } from './reports.types';
 
@@ -59,9 +58,9 @@ function makeMockModel() {
     };
 }
 
-function makeMockEventsModel() {
+function makeMockEventsService() {
     return {
-        findRawById: vi.fn(() =>
+        loadRaw: vi.fn(() =>
             Promise.resolve({
                 id: 'event-1',
                 organizerId: 'user-2',
@@ -70,9 +69,9 @@ function makeMockEventsModel() {
     };
 }
 
-function makeMockCommentsModel() {
+function makeMockCommentsService() {
     return {
-        findRawById: vi.fn(() =>
+        loadRaw: vi.fn(() =>
             Promise.resolve({
                 id: 'comment-1',
                 userId: 'user-2',
@@ -81,10 +80,10 @@ function makeMockCommentsModel() {
     };
 }
 
-function makeMockAdminModel() {
+function makeMockUsersService() {
     return {
-        findUserById: vi.fn(() =>
-            Promise.resolve({ id: 'user-2' } as unknown as never)
+        getNameById: vi.fn(() =>
+            Promise.resolve({ id: 'user-2', name: 'Bob' } as unknown as never)
         ),
     };
 }
@@ -93,21 +92,21 @@ const fakeDb = makeFakeDb();
 
 describe('ReportsService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
-    let mockEvents: ReturnType<typeof makeMockEventsModel>;
-    let mockComments: ReturnType<typeof makeMockCommentsModel>;
-    let mockAdmin: ReturnType<typeof makeMockAdminModel>;
+    let mockEvents: ReturnType<typeof makeMockEventsService>;
+    let mockComments: ReturnType<typeof makeMockCommentsService>;
+    let mockUsers: ReturnType<typeof makeMockUsersService>;
     let service: ReturnType<typeof createReportsService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
-        mockEvents = makeMockEventsModel();
-        mockComments = makeMockCommentsModel();
-        mockAdmin = makeMockAdminModel();
+        mockEvents = makeMockEventsService();
+        mockComments = makeMockCommentsService();
+        mockUsers = makeMockUsersService();
         service = createReportsService({
-            model: mockModel as unknown as ReportsModel,
-            eventsModel: mockEvents,
-            commentsModel: mockComments,
-            adminModel: mockAdmin,
+            model: mockModel,
+            eventsService: mockEvents,
+            commentsService: mockComments,
+            usersService: mockUsers,
         });
     });
 
@@ -121,10 +120,7 @@ describe('ReportsService', () => {
                 reason: 'spam',
             });
             expect(result).toEqual(created);
-            expect(mockEvents.findRawById).toHaveBeenCalledWith(
-                fakeDb,
-                'event-1'
-            );
+            expect(mockEvents.loadRaw).toHaveBeenCalledWith(fakeDb, 'event-1');
             expect(mockModel.create).toHaveBeenCalled();
         });
 
@@ -134,7 +130,7 @@ describe('ReportsService', () => {
                 targetId: 'comment-1',
                 reason: 'rude',
             });
-            expect(mockComments.findRawById).toHaveBeenCalledWith(
+            expect(mockComments.loadRaw).toHaveBeenCalledWith(
                 fakeDb,
                 'comment-1'
             );
@@ -146,15 +142,15 @@ describe('ReportsService', () => {
                 targetId: 'user-2',
                 reason: 'harassment',
             });
-            expect(mockAdmin.findUserById).toHaveBeenCalledWith(
+            expect(mockUsers.getNameById).toHaveBeenCalledWith(
                 fakeDb,
                 'user-2'
             );
         });
 
         test('throws NOT_FOUND when reported event does not exist', async () => {
-            mockEvents.findRawById.mockResolvedValueOnce(
-                null as unknown as never
+            mockEvents.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
             );
             expect.assertions(2);
             try {
@@ -170,8 +166,8 @@ describe('ReportsService', () => {
         });
 
         test('throws NOT_FOUND when reported comment does not exist', async () => {
-            mockComments.findRawById.mockResolvedValueOnce(
-                null as unknown as never
+            mockComments.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Comment not found')
             );
             expect.assertions(1);
             try {
@@ -186,7 +182,7 @@ describe('ReportsService', () => {
         });
 
         test('throws NOT_FOUND when reported user does not exist', async () => {
-            mockAdmin.findUserById.mockResolvedValueOnce(
+            mockUsers.getNameById.mockResolvedValueOnce(
                 null as unknown as never
             );
             expect.assertions(1);
@@ -211,12 +207,12 @@ describe('ReportsService', () => {
                 });
             } catch (e) {
                 expect((e as ServiceError).code).toBe('BAD_REQUEST');
-                expect(mockAdmin.findUserById).not.toHaveBeenCalled();
+                expect(mockUsers.getNameById).not.toHaveBeenCalled();
             }
         });
 
         test('throws BAD_REQUEST when reporting own event', async () => {
-            mockEvents.findRawById.mockResolvedValueOnce({
+            mockEvents.loadRaw.mockResolvedValueOnce({
                 id: 'event-1',
                 organizerId: 'user-1',
             } as unknown as never);
@@ -234,7 +230,7 @@ describe('ReportsService', () => {
         });
 
         test('throws BAD_REQUEST when reporting own comment', async () => {
-            mockComments.findRawById.mockResolvedValueOnce({
+            mockComments.loadRaw.mockResolvedValueOnce({
                 id: 'comment-1',
                 userId: 'user-1',
             } as unknown as never);

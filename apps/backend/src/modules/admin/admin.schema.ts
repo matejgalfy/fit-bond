@@ -1,5 +1,6 @@
 import { t } from 'elysia';
 import { eventQueryFilters } from '../events/events.schema';
+import { limitQuerySchema, offsetQuerySchema } from '../../utils/pagination';
 
 export const adminUserIdParam = t.Object({
     id: t.String(),
@@ -10,8 +11,8 @@ export const adminUserQueryFilters = t.Object({
     role: t.Optional(t.Union([t.Literal('user'), t.Literal('admin')])),
     banned: t.Optional(t.Boolean()),
     includeDeleted: t.Optional(t.Boolean()),
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const adminEventQueryFilters = t.Composite([

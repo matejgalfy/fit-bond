@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { limitQuerySchema, offsetQuerySchema } from '../../utils/pagination';
 
 export const reportTypeSchema = t.Union([
     t.Literal('user'),
@@ -24,16 +25,16 @@ export const reportIdParam = t.Object({
 
 export const myReportsQuery = t.Object({
     status: t.Optional(reportStatusSchema),
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const adminReportQueryFilters = t.Object({
     status: t.Optional(reportStatusSchema),
     reportType: t.Optional(reportTypeSchema),
     reporterId: t.Optional(t.String()),
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const resolveReportBody = t.Object({

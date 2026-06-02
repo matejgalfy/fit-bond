@@ -1,19 +1,7 @@
-import {
-    eq,
-    and,
-    or,
-    ilike,
-    gte,
-    lte,
-    isNull,
-    desc,
-    not,
-    exists,
-    ne,
-    inArray,
-    sql,
-} from 'drizzle-orm';
+import { eq, and, or, ilike, isNull, desc } from 'drizzle-orm';
+import { DEFAULT_PAGE_SIZE, DEFAULT_OFFSET } from '../../utils/pagination';
 import type { Database } from '../../db';
+import { firstOrNull } from '../../utils/query';
 import {
     user,
     events,
@@ -27,6 +15,10 @@ import type {
     AdminEventFilters,
     UpdateUserAdminInput,
 } from './admin.types';
+import {
+    baseEventSelection,
+    buildSharedEventConditions,
+} from '../events/events.query';
 
 export const adminModel = {
     async searchUsers(db: Database, filters: AdminUserFilters) {
@@ -57,8 +49,8 @@ export const adminModel = {
             }
         }
 
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         return db
             .select({
@@ -84,8 +76,7 @@ export const adminModel = {
 
     async findUserById(db: Database, id: string) {
         const results = await db.select().from(user).where(eq(user.id, id));
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async updateUser(db: Database, id: string, input: UpdateUserAdminInput) {
@@ -102,8 +93,7 @@ export const adminModel = {
             .set(updateData)
             .where(eq(user.id, id))
             .returning();
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async softDeleteUser(db: Database, id: string) {
@@ -112,8 +102,7 @@ export const adminModel = {
             .set({ deletedAt: new Date(), updatedAt: new Date() })
             .where(and(eq(user.id, id), isNull(user.deletedAt)))
             .returning();
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async searchEvents(db: Database, filters: AdminEventFilters) {
@@ -128,113 +117,19 @@ export const adminModel = {
         if (!filters.includePrivate) {
             conditions.push(eq(events.isPublic, true));
         }
-        if (filters.sportIds && filters.sportIds.length > 0) {
-            conditions.push(inArray(events.sportId, filters.sportIds));
-        }
-        if (filters.skillLevel) {
-            conditions.push(eq(events.skillLevel, filters.skillLevel));
-        }
-        if (filters.search) {
-            const term = `%${filters.search}%`;
-            const searchCondition = or(
-                ilike(events.name, term),
-                ilike(sports.name, term)
-            );
-            if (searchCondition) {
-                conditions.push(searchCondition);
-            }
-        }
-        if (filters.fromDate) {
-            conditions.push(gte(events.startTime, new Date(filters.fromDate)));
-        }
-        if (filters.toDate) {
-            conditions.push(lte(events.startTime, new Date(filters.toDate)));
-        }
-        if (filters.city) {
-            conditions.push(
-                ilike(locations.formatted_address, `%${filters.city}%`)
-            );
-        }
-        if (filters.date) {
-            conditions.push(eq(sql`${events.startTime}::date`, filters.date));
-        }
-        if (filters.userId && filters.userRelation === 'organized') {
-            conditions.push(eq(events.organizerId, filters.userId));
-        }
-        if (filters.userId && filters.excludeUserInteractions) {
-            conditions.push(ne(events.organizerId, filters.userId));
-            conditions.push(
-                not(
-                    exists(
-                        db
-                            .select()
-                            .from(eventParticipants)
-                            .where(
-                                and(
-                                    eq(eventParticipants.eventId, events.id),
-                                    eq(eventParticipants.userId, filters.userId)
-                                )
-                            )
-                    )
-                )
-            );
-            conditions.push(
-                not(
-                    exists(
-                        db
-                            .select()
-                            .from(eventInterested)
-                            .where(
-                                and(
-                                    eq(eventInterested.eventId, events.id),
-                                    eq(eventInterested.userId, filters.userId)
-                                )
-                            )
-                    )
-                )
-            );
-        }
+        conditions.push(...buildSharedEventConditions(db, filters));
 
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         let query = db
             .select({
-                id: events.id,
-                name: events.name,
-                description: events.description,
-                skillLevel: events.skillLevel,
-                startTime: events.startTime,
-                duration: events.duration,
-                capacity: events.capacity,
-                isPublic: events.isPublic,
-                coverImageUrl: events.coverImageUrl,
-                cancelledAt: events.cancelledAt,
+                ...baseEventSelection,
                 cancellationReason: events.cancellationReason,
-                createdAt: events.createdAt,
                 deletedAt: events.deletedAt,
-                currentParticipants: sql<number>`(
-                    SELECT COUNT(*)::int FROM ${eventParticipants}
-                    WHERE ${eventParticipants.eventId} = ${events.id}
-                )`.as('current_participants'),
-                currentInterested: sql<number>`(
-                    SELECT COUNT(*)::int FROM ${eventInterested}
-                    WHERE ${eventInterested.eventId} = ${events.id}
-                )`.as('current_interested'),
                 organizer: {
-                    id: user.id,
-                    name: user.name,
-                    image: user.image,
+                    ...baseEventSelection.organizer,
                     banned: user.banned,
-                },
-                location: {
-                    id: locations.id,
-                    formattedAddress: locations.formatted_address,
-                },
-                sport: {
-                    id: sports.id,
-                    name: sports.name,
-                    iconUrl: sports.iconUrl,
                 },
             })
             .from(events)

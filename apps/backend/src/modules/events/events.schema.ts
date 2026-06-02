@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { limitQuerySchema, offsetQuerySchema } from '../../utils/pagination';
 import { locationInputSchema } from '../locations/locations.schema';
 
 export const selectEventSchema = t.Object({
@@ -92,8 +93,8 @@ export const eventQueryFilters = t.Object({
     ),
     date: t.Optional(t.String({ format: 'date' })),
     excludeUserInteractions: t.Optional(t.Boolean()),
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const eventIdParam = t.Object({

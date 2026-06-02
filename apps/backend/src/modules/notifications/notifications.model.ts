@@ -1,5 +1,7 @@
 import { eq, and, isNull, desc } from 'drizzle-orm';
+import { DEFAULT_PAGE_SIZE, DEFAULT_OFFSET } from '../../utils/pagination';
 import type { Database } from '../../db';
+import { firstOrNull } from '../../utils/query';
 import { notifications } from '../../db/schema';
 import type {
     CreateNotificationInput,
@@ -27,8 +29,7 @@ export const notificationsModel = {
             .values(input)
             .returning(returnColumns);
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async createMany(db: Database, inputs: CreateNotificationInput[]) {
@@ -46,22 +47,11 @@ export const notificationsModel = {
             conditions.push(eq(notifications.type, filters.type));
         }
 
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         return db
-            .select({
-                id: notifications.id,
-                userId: notifications.userId,
-                type: notifications.type,
-                title: notifications.title,
-                message: notifications.message,
-                eventId: notifications.eventId,
-                relatedUserId: notifications.relatedUserId,
-                isRead: notifications.isRead,
-                readAt: notifications.readAt,
-                createdAt: notifications.createdAt,
-            })
+            .select(returnColumns)
             .from(notifications)
             .where(and(...conditions))
             .orderBy(desc(notifications.createdAt))
@@ -70,22 +60,11 @@ export const notificationsModel = {
     },
 
     async findUnread(db: Database, userId: string, filters: PaginationFilters) {
-        const limit = filters.limit ?? 20;
-        const offset = filters.offset ?? 0;
+        const limit = filters.limit ?? DEFAULT_PAGE_SIZE;
+        const offset = filters.offset ?? DEFAULT_OFFSET;
 
         return db
-            .select({
-                id: notifications.id,
-                userId: notifications.userId,
-                type: notifications.type,
-                title: notifications.title,
-                message: notifications.message,
-                eventId: notifications.eventId,
-                relatedUserId: notifications.relatedUserId,
-                isRead: notifications.isRead,
-                readAt: notifications.readAt,
-                createdAt: notifications.createdAt,
-            })
+            .select(returnColumns)
             .from(notifications)
             .where(
                 and(
@@ -107,8 +86,7 @@ export const notificationsModel = {
                 and(eq(notifications.id, id), isNull(notifications.deletedAt))
             );
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async update(db: Database, id: string, isRead: boolean) {
@@ -118,21 +96,9 @@ export const notificationsModel = {
             .where(
                 and(eq(notifications.id, id), isNull(notifications.deletedAt))
             )
-            .returning({
-                id: notifications.id,
-                userId: notifications.userId,
-                type: notifications.type,
-                title: notifications.title,
-                message: notifications.message,
-                eventId: notifications.eventId,
-                relatedUserId: notifications.relatedUserId,
-                isRead: notifications.isRead,
-                readAt: notifications.readAt,
-                createdAt: notifications.createdAt,
-            });
+            .returning(returnColumns);
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 
     async markAllRead(db: Database, userId: string) {
@@ -157,8 +123,7 @@ export const notificationsModel = {
             )
             .returning();
 
-        if (results.length === 0) return null;
-        return results[0];
+        return firstOrNull(results);
     },
 };
 

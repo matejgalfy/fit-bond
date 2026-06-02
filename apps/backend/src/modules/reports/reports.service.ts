@@ -1,11 +1,8 @@
 import type { Database } from '../../db';
 import { ServiceError } from '../../utils/errors';
-import { eventsModel as defaultEventsModel } from '../events/events.model';
-import type { EventsModel } from '../events/events.model';
-import { commentsModel as defaultCommentsModel } from '../comments/comments.model';
-import type { CommentsModel } from '../comments/comments.model';
-import { adminModel as defaultAdminModel } from '../admin/admin.model';
-import type { AdminModel } from '../admin/admin.model';
+import type { EventsService } from '../events/events.service';
+import type { CommentsService } from '../comments/comments.service';
+import type { UsersService } from '../users/users.service';
 import { reportsModel as defaultModel } from './reports.model';
 import type { ReportsModel } from './reports.model';
 import type {
@@ -16,17 +13,17 @@ import type {
 
 export interface ReportsServiceDeps {
     model?: ReportsModel;
-    eventsModel?: Pick<EventsModel, 'findRawById'>;
-    commentsModel?: Pick<CommentsModel, 'findRawById'>;
-    adminModel?: Pick<AdminModel, 'findUserById'>;
+    eventsService: Pick<EventsService, 'loadRaw'>;
+    commentsService: Pick<CommentsService, 'loadRaw'>;
+    usersService: Pick<UsersService, 'getNameById'>;
 }
 
 export function createReportsService({
     model = defaultModel,
-    eventsModel = defaultEventsModel,
-    commentsModel = defaultCommentsModel,
-    adminModel = defaultAdminModel,
-}: ReportsServiceDeps = {}) {
+    eventsService,
+    commentsService,
+    usersService,
+}: ReportsServiceDeps) {
     return {
         async create(
             db: Database,
@@ -35,13 +32,10 @@ export function createReportsService({
         ) {
             switch (input.reportType) {
                 case 'event': {
-                    const target = await eventsModel.findRawById(
+                    const target = await eventsService.loadRaw(
                         db,
                         input.targetId
                     );
-                    if (!target) {
-                        throw ServiceError.notFound('Event not found');
-                    }
                     if (target.organizerId === reporterId) {
                         throw ServiceError.badRequest(
                             'Cannot report your own event'
@@ -50,13 +44,10 @@ export function createReportsService({
                     break;
                 }
                 case 'comment': {
-                    const target = await commentsModel.findRawById(
+                    const target = await commentsService.loadRaw(
                         db,
                         input.targetId
                     );
-                    if (!target) {
-                        throw ServiceError.notFound('Comment not found');
-                    }
                     if (target.userId === reporterId) {
                         throw ServiceError.badRequest(
                             'Cannot report your own comment'
@@ -68,7 +59,7 @@ export function createReportsService({
                     if (input.targetId === reporterId) {
                         throw ServiceError.badRequest('Cannot report yourself');
                     }
-                    const target = await adminModel.findUserById(
+                    const target = await usersService.getNameById(
                         db,
                         input.targetId
                     );
@@ -128,27 +119,7 @@ export function createReportsService({
             adminId: string,
             resolution: string
         ) {
-            const existing = await model.findById(db, id);
-            if (!existing) {
-                throw ServiceError.notFound('Report not found');
-            }
-            if (existing.status !== 'pending') {
-                throw ServiceError.conflict(
-                    `Report is already ${existing.status}`
-                );
-            }
-
-            const updated = await model.updateStatus(
-                db,
-                id,
-                'resolved',
-                adminId,
-                resolution
-            );
-            if (!updated) {
-                throw ServiceError.notFound('Report not found');
-            }
-            return updated;
+            return transitionReport(db, id, 'resolved', adminId, resolution);
         },
 
         async reject(
@@ -157,30 +128,38 @@ export function createReportsService({
             adminId: string,
             resolution: string | null
         ) {
-            const existing = await model.findById(db, id);
-            if (!existing) {
-                throw ServiceError.notFound('Report not found');
-            }
-            if (existing.status !== 'pending') {
-                throw ServiceError.conflict(
-                    `Report is already ${existing.status}`
-                );
-            }
-
-            const updated = await model.updateStatus(
-                db,
-                id,
-                'rejected',
-                adminId,
-                resolution
-            );
-            if (!updated) {
-                throw ServiceError.notFound('Report not found');
-            }
-            return updated;
+            return transitionReport(db, id, 'rejected', adminId, resolution);
         },
     };
+
+    // Shared pending -> resolved/rejected transition with status guards.
+    async function transitionReport(
+        db: Database,
+        id: string,
+        status: 'resolved' | 'rejected',
+        adminId: string,
+        resolution: string | null
+    ) {
+        const existing = await model.findById(db, id);
+        if (!existing) {
+            throw ServiceError.notFound('Report not found');
+        }
+        if (existing.status !== 'pending') {
+            throw ServiceError.conflict(`Report is already ${existing.status}`);
+        }
+
+        const updated = await model.updateStatus(
+            db,
+            id,
+            status,
+            adminId,
+            resolution
+        );
+        if (!updated) {
+            throw ServiceError.notFound('Report not found');
+        }
+        return updated;
+    }
 }
 
-export const reportsService = createReportsService();
 export type ReportsService = ReturnType<typeof createReportsService>;

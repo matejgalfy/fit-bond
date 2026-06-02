@@ -4,7 +4,13 @@ import { sportsModel as defaultModel } from './sports.model';
 import type { CreateSportInput } from './sports.types';
 import { ServiceError } from '../../utils/errors';
 
-export function createSportsService(model: SportsModel = defaultModel) {
+export interface SportsServiceDeps {
+    model?: SportsModel;
+}
+
+export function createSportsService({
+    model = defaultModel,
+}: SportsServiceDeps = {}) {
     return {
         async list(db: Database) {
             return model.findAll(db);
@@ -34,8 +40,9 @@ export function createSportsService(model: SportsModel = defaultModel) {
                 throw ServiceError.notFound('Sport not found');
             }
             await model.softDelete(db, id);
+            return { success: true };
         },
     };
 }
 
-export const sportsService = createSportsService();
+export type SportsService = ReturnType<typeof createSportsService>;

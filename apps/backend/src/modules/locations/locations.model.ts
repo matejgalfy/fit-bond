@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import type { Database } from '../../db';
+import { firstOrNull, firstOrThrow } from '../../utils/query';
 import { locations } from '../../db/schema';
 import type { LocationInput } from './locations.schema';
 import type { LocationRow } from './locations.types';
@@ -10,7 +11,7 @@ export const locationsModel = {
             .select()
             .from(locations)
             .where(eq(locations.id, id));
-        return results.length === 0 ? null : results[0];
+        return firstOrNull(results);
     },
 
     async upsertByPlaceId(
@@ -37,10 +38,7 @@ export const locationsModel = {
             })
             .returning();
 
-        if (results.length === 0) {
-            throw new Error('Failed to upsert location');
-        }
-        return results[0];
+        return firstOrThrow(results, 'Failed to upsert location');
     },
 };
 

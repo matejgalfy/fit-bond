@@ -44,6 +44,7 @@ export const userProfileSchema = t.Object({
     location: t.Union([userProfileLocationSchema, t.Null()]),
 });
 
+// user.id is better-auth text (nanoid-style), not a UUID — keep as plain string.
 export const userIdParam = t.Object({
     userId: t.String(),
 });

@@ -1,4 +1,5 @@
 import { t } from 'elysia';
+import { limitQuerySchema, offsetQuerySchema } from '../../utils/pagination';
 
 export const selectCommentSchema = t.Object({
     id: t.String({ format: 'uuid' }),
@@ -31,8 +32,8 @@ export const deleteCommentBody = t.Object({
 export const commentQueryFilters = t.Object({
     eventId: t.String({ format: 'uuid' }),
     parentCommentId: t.Optional(t.String({ format: 'uuid' })),
-    limit: t.Optional(t.Integer({ minimum: 1, maximum: 100 })),
-    offset: t.Optional(t.Integer({ minimum: 0 })),
+    limit: limitQuerySchema,
+    offset: offsetQuerySchema,
 });
 
 export const commentIdParam = t.Object({

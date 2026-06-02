@@ -2,10 +2,7 @@ import { test, expect, describe, beforeEach, vi } from 'vitest';
 import { createParticipationService } from './participation.service';
 import { ServiceError } from '../../utils/errors';
 import type { ParticipationModel } from './participation.model';
-import type { EventsModel } from '../events/events.model';
 import type { EventType } from '../events/events.types';
-import type { UsersModel } from '../users/users.model';
-import type { NotificationsService } from '../notifications/notifications.service';
 import type { Database } from '../../db';
 
 const futureDate = new Date(Date.now() + 86400000);
@@ -56,28 +53,15 @@ function makeMockModel() {
     };
 }
 
-function makeMockEventsModel() {
+function makeMockEventsService() {
     return {
-        findRawById: vi.fn(() =>
-            Promise.resolve(makeMockEvent() as EventType | null)
-        ),
+        loadRaw: vi.fn(() => Promise.resolve(makeMockEvent())),
     };
 }
 
-function makeMockUsersModel() {
+function makeMockBus() {
     return {
-        getUserNameById: vi.fn(() =>
-            Promise.resolve({ id: 'user-1', name: 'Marek R.' } as {
-                id: string;
-                name: string;
-            } | null)
-        ),
-    };
-}
-
-function makeMockNotifications() {
-    return {
-        create: vi.fn(() => Promise.resolve(null)),
+        emit: vi.fn(() => Promise.resolve()),
     };
 }
 
@@ -85,30 +69,18 @@ const fakeDb = makeFakeDb();
 
 describe('ParticipationService', () => {
     let mockModel: ReturnType<typeof makeMockModel>;
-    let mockEventsModel: ReturnType<typeof makeMockEventsModel>;
-    let mockUsersModel: ReturnType<typeof makeMockUsersModel>;
-    let mockNotifications: ReturnType<typeof makeMockNotifications>;
+    let mockEventsService: ReturnType<typeof makeMockEventsService>;
+    let mockBus: ReturnType<typeof makeMockBus>;
     let service: ReturnType<typeof createParticipationService>;
 
     beforeEach(() => {
         mockModel = makeMockModel();
-        mockEventsModel = makeMockEventsModel();
-        mockUsersModel = makeMockUsersModel();
-        mockNotifications = makeMockNotifications();
+        mockEventsService = makeMockEventsService();
+        mockBus = makeMockBus();
         service = createParticipationService({
             model: mockModel as unknown as ParticipationModel,
-            eventsModel: mockEventsModel as unknown as Pick<
-                EventsModel,
-                'findRawById'
-            >,
-            usersModel: mockUsersModel as unknown as Pick<
-                UsersModel,
-                'getUserNameById'
-            >,
-            notifications: mockNotifications as unknown as Pick<
-                NotificationsService,
-                'create'
-            >,
+            eventsService: mockEventsService,
+            bus: mockBus,
         });
     });
 
@@ -125,7 +97,9 @@ describe('ParticipationService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(null);
+            mockEventsService.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
+            );
             expect.assertions(2);
             try {
                 await service.listParticipants(fakeDb, 'missing');
@@ -145,7 +119,9 @@ describe('ParticipationService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(null);
+            mockEventsService.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
+            );
             expect.assertions(1);
             try {
                 await service.listInterested(fakeDb, 'missing');
@@ -167,7 +143,9 @@ describe('ParticipationService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(null);
+            mockEventsService.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
+            );
             expect.assertions(1);
             try {
                 await service.join(fakeDb, 'missing', 'user-1');
@@ -177,7 +155,7 @@ describe('ParticipationService', () => {
         });
 
         test('throws CONFLICT when event is cancelled', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(
+            mockEventsService.loadRaw.mockResolvedValueOnce(
                 makeMockEvent({ cancelledAt: new Date() })
             );
             expect.assertions(1);
@@ -189,7 +167,7 @@ describe('ParticipationService', () => {
         });
 
         test('throws CONFLICT when event has already started', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(
+            mockEventsService.loadRaw.mockResolvedValueOnce(
                 makeMockEvent({ startTime: pastDate })
             );
             expect.assertions(1);
@@ -201,7 +179,7 @@ describe('ParticipationService', () => {
         });
 
         test('throws CONFLICT when user is the organizer', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(
+            mockEventsService.loadRaw.mockResolvedValueOnce(
                 makeMockEvent({ organizerId: 'user-1' })
             );
             expect.assertions(1);
@@ -223,7 +201,7 @@ describe('ParticipationService', () => {
         });
 
         test('throws CONFLICT when event is full', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(
+            mockEventsService.loadRaw.mockResolvedValueOnce(
                 makeMockEvent({ capacity: 5 })
             );
             mockModel.countParticipants.mockResolvedValueOnce(5);
@@ -242,24 +220,18 @@ describe('ParticipationService', () => {
             expect(mockModel.addInterested).not.toHaveBeenCalled();
         });
 
-        test('notifies the organizer that a participant joined', async () => {
+        test('emits event.participant_joined after joining', async () => {
             await service.join(fakeDb, 'event-1', 'user-1');
-            expect(mockNotifications.create).toHaveBeenCalledWith(fakeDb, {
-                userId: 'organizer-1',
-                type: 'participant_joined',
-                title: 'New participant joined',
-                message: 'Marek R. joined your event Morning Run.',
-                eventId: 'event-1',
-                relatedUserId: 'user-1',
-            });
-        });
-
-        test('join still succeeds when notification creation fails', async () => {
-            mockNotifications.create.mockRejectedValueOnce(
-                new Error('db down')
+            expect(mockBus.emit).toHaveBeenCalledWith(
+                fakeDb,
+                'event.participant_joined',
+                {
+                    eventId: 'event-1',
+                    eventName: 'Morning Run',
+                    organizerId: 'organizer-1',
+                    actorId: 'user-1',
+                }
             );
-            const result = await service.join(fakeDb, 'event-1', 'user-1');
-            expect(result).toEqual({ success: true });
         });
     });
 
@@ -276,7 +248,9 @@ describe('ParticipationService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(null);
+            mockEventsService.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
+            );
             expect.assertions(1);
             try {
                 await service.leave(fakeDb, 'missing', 'user-1');
@@ -312,7 +286,9 @@ describe('ParticipationService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(null);
+            mockEventsService.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
+            );
             expect.assertions(1);
             try {
                 await service.markInterest(fakeDb, 'missing', 'user-1');
@@ -322,7 +298,7 @@ describe('ParticipationService', () => {
         });
 
         test('throws CONFLICT when event is cancelled', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(
+            mockEventsService.loadRaw.mockResolvedValueOnce(
                 makeMockEvent({ cancelledAt: new Date() })
             );
             expect.assertions(1);
@@ -354,16 +330,18 @@ describe('ParticipationService', () => {
             }
         });
 
-        test('notifies the organizer that a user is interested', async () => {
+        test('emits event.participant_interested after marking interest', async () => {
             await service.markInterest(fakeDb, 'event-1', 'user-1');
-            expect(mockNotifications.create).toHaveBeenCalledWith(fakeDb, {
-                userId: 'organizer-1',
-                type: 'interest',
-                title: 'Someone is interested in your event',
-                message: 'Marek R. is interested in your event Morning Run.',
-                eventId: 'event-1',
-                relatedUserId: 'user-1',
-            });
+            expect(mockBus.emit).toHaveBeenCalledWith(
+                fakeDb,
+                'event.participant_interested',
+                {
+                    eventId: 'event-1',
+                    eventName: 'Morning Run',
+                    organizerId: 'organizer-1',
+                    actorId: 'user-1',
+                }
+            );
         });
     });
 
@@ -384,7 +362,9 @@ describe('ParticipationService', () => {
         });
 
         test('throws NOT_FOUND when event does not exist', async () => {
-            mockEventsModel.findRawById.mockResolvedValueOnce(null);
+            mockEventsService.loadRaw.mockRejectedValueOnce(
+                ServiceError.notFound('Event not found')
+            );
             expect.assertions(1);
             try {
                 await service.unmarkInterest(fakeDb, 'missing', 'user-1');

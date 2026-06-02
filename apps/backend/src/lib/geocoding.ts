@@ -140,11 +140,10 @@ export async function searchAddresses(
             city && country
                 ? `${city}, ${country}`
                 : city || country || fullAddress;
-        const displayName = fullAddress;
 
         suggestions.push({
             placeId,
-            displayName,
+            displayName: fullAddress,
             fullAddress,
             formattedAddress,
             lat,

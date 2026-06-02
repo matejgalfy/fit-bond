@@ -32,9 +32,8 @@ export function createLocationsService({
                 }));
             } catch (err) {
                 if (err instanceof GeocodingError) {
-                    throw new ServiceError(
-                        `Geocoding service unavailable: ${err.message}`,
-                        'INTERNAL_ERROR'
+                    throw ServiceError.internalError(
+                        `Geocoding service unavailable: ${err.message}`
                     );
                 }
                 throw err;
@@ -55,5 +54,3 @@ export function createLocationsService({
 }
 
 export type LocationsService = ReturnType<typeof createLocationsService>;
-
-export const locationsService = createLocationsService();

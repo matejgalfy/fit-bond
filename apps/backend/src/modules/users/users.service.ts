@@ -3,20 +3,17 @@ import type { UsersModel } from './users.model';
 import type { UserProfile, UpdateProfileInput } from './users.types';
 import { usersModel as defaultModel } from './users.model';
 import { ServiceError } from '../../utils/errors';
-import {
-    locationsService as defaultLocationsService,
-    type LocationsService,
-} from '../locations/locations.service';
+import type { LocationsService } from '../locations/locations.service';
 
 export interface UsersServiceDeps {
     model?: UsersModel;
-    locationsService?: LocationsService;
+    locationsService: LocationsService;
 }
 
 export function createUsersService({
     model = defaultModel,
-    locationsService = defaultLocationsService,
-}: UsersServiceDeps = {}) {
+    locationsService,
+}: UsersServiceDeps) {
     return {
         async getUserProfile(
             db: Database,
@@ -80,8 +77,11 @@ export function createUsersService({
         async getUsersByEventId(db: Database, eventId: string) {
             return model.getUsersByEventId(db, eventId);
         },
+
+        async getNameById(db: Database, userId: string) {
+            return model.getUserNameById(db, userId);
+        },
     };
 }
 
-export const usersService = createUsersService();
 export type UsersService = ReturnType<typeof createUsersService>;
