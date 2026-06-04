@@ -45,6 +45,25 @@ export function createNotificationsRoutes(
                 },
             }
         )
+        .get(
+            '/unread-count',
+            async ({ user }) => {
+                const count = await notificationsService.getUnreadCount(
+                    db,
+                    user.id
+                );
+                return { count };
+            },
+            {
+                auth: true,
+                detail: {
+                    tags: ['Notifications'],
+                    summary: 'Get unread notification count',
+                    description:
+                        'Retrieve the count of unread notifications for the authenticated user.',
+                },
+            }
+        )
         .post(
             '/mark-all-read',
             ({ user }) => notificationsService.markAllRead(db, user.id),

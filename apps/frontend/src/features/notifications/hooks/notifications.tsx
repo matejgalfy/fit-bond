@@ -10,6 +10,7 @@ import {
     deleteNotification,
     listNotifications,
     listUnreadNotifications,
+    getUnreadNotificationsCount,
     markAllNotificationsRead,
     markNotificationRead,
     notificationQueryKeys,
@@ -28,6 +29,14 @@ export function useUnreadNotifications() {
     return useQuery<Notification[]>({
         queryKey: notificationQueryKeys.unread(),
         queryFn: () => listUnreadNotifications(),
+    });
+}
+
+export function useUnreadNotificationsCount() {
+    return useQuery<{ count: number }>({
+        queryKey: notificationQueryKeys.unreadCount(),
+        queryFn: () => getUnreadNotificationsCount(),
+        refetchInterval: 30000,
     });
 }
 

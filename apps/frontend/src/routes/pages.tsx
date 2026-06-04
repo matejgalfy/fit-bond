@@ -14,6 +14,7 @@ import {
 } from '@/components/layout/navigation-item';
 import { useUserProfile } from '@/features/users/hooks/use-users';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
+import { useUnreadNotificationsCount } from '@/features/notifications/hooks/notifications';
 
 export const Route = createFileRoute('/pages')({
     component: PagesLayout,
@@ -64,9 +65,24 @@ function PagesLayout() {
         ];
     }, [isAdmin]);
 
+    const { data: unreadData } = useUnreadNotificationsCount();
+    const unreadCount = unreadData?.count ?? 0;
+
+    const navItemsWithBadges = useMemo(() => {
+        return NAV_ITEMS.map((item) => {
+            if (item.id === 'notifications' && unreadCount > 0) {
+                return { ...item, badge: unreadCount > 9 ? '9+' : unreadCount };
+            }
+            return item;
+        });
+    }, [unreadCount]);
+
     const bottomNavItems = useMemo(
-        () => (isAdmin ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS),
-        [isAdmin]
+        () =>
+            isAdmin
+                ? [...navItemsWithBadges, ADMIN_NAV_ITEM]
+                : navItemsWithBadges,
+        [isAdmin, navItemsWithBadges]
     );
 
     if (isPending) {
@@ -87,7 +103,7 @@ function PagesLayout() {
         <AppShell
             userName={profile?.name ?? session.user.name}
             profilePictureUrl={navImage}
-            sideNavItems={NAV_ITEMS}
+            sideNavItems={navItemsWithBadges}
             sideNavSections={sections}
             bottomNavItems={bottomNavItems}
             activeNav={activeNav}
