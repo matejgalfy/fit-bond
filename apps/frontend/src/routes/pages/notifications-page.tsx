@@ -40,7 +40,7 @@ function RouteComponent() {
     }, [notifications, activeFilter]);
 
     return (
-        <div className="max-w-200 mx-auto">
+        <div className="max-w-200">
             <div className="mb-5 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div>
                     <h1 className="font-heading text-heading font-bold text-primary-text">

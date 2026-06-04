@@ -21,7 +21,7 @@ function AdminDiscoverPage() {
     );
 
     return (
-        <div className="max-w-240 mx-auto">
+        <div className="max-w-240">
             <div className="mb-6">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     Discover

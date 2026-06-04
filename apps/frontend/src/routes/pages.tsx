@@ -6,9 +6,7 @@ import {
 } from '@tanstack/react-router';
 import { useMemo } from 'react';
 import { authClient } from '@/lib/api';
-import { AppNavbar } from '@/components/layout/app-navbar';
-import { SideNav } from '@/components/layout/side-nav';
-import { MobileBottomNav } from '@/components/layout/mobile-bottom-nav';
+import { AppShell } from '@/components/layout/app-shell';
 import {
     ADMIN_NAV_ITEM,
     NAV_ITEMS,
@@ -86,22 +84,15 @@ function PagesLayout() {
     const navImage = profile?.image ?? session.user.image;
 
     return (
-        <div className="font-sans bg-background text-primary-text min-h-screen flex flex-col transition-colors duration-300">
-            <AppNavbar
-                userName={profile?.name ?? session.user.name}
-                profilePictureUrl={navImage}
-            />
-            <div className="flex flex-1">
-                <SideNav
-                    items={NAV_ITEMS}
-                    sections={sections}
-                    activeNav={activeNav}
-                />
-                <main className="flex-1 overflow-auto p-4 pb-20 md:p-6 md:pb-6">
-                    <Outlet />
-                </main>
-            </div>
-            <MobileBottomNav items={bottomNavItems} activeNav={activeNav} />
-        </div>
+        <AppShell
+            userName={profile?.name ?? session.user.name}
+            profilePictureUrl={navImage}
+            sideNavItems={NAV_ITEMS}
+            sideNavSections={sections}
+            bottomNavItems={bottomNavItems}
+            activeNav={activeNav}
+        >
+            <Outlet />
+        </AppShell>
     );
 }

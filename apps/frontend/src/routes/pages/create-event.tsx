@@ -11,7 +11,7 @@ function CreateEventPage() {
     const { mutateAsync: createEvent, isPending } = useCreateEvent();
 
     return (
-        <div className="max-w-180 mx-auto">
+        <div className="max-w-180">
             <div className="mb-6">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     Create New Event
