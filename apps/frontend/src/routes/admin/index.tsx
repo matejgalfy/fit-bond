@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
+import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ReportsTable } from '@/features/admin/components/reports-table';
 import { ReportDetailPanel } from '@/features/admin/components/report-detail-panel';
 import {
+    useInfiniteReports,
     useRejectReport,
-    useReports,
     useResolveReport,
 } from '@/features/admin/hooks/reports';
 import type { Report } from '@/features/admin/types';
@@ -21,7 +22,8 @@ const ADMIN_TAB = {
 type AdminTabValue = (typeof ADMIN_TAB)[keyof typeof ADMIN_TAB];
 
 function AdminDashboard() {
-    const { data: reports } = useReports();
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        useInfiniteReports();
     const resolveReport = useResolveReport();
     const rejectReport = useRejectReport();
     const [selectedId, setSelectedId] = useState<string>();
@@ -29,7 +31,7 @@ function AdminDashboard() {
         ADMIN_TAB.reports
     );
 
-    const reportList = reports ?? [];
+    const reportList = data?.pages.flatMap((page) => page ?? []) ?? [];
     const selectedReport: Report | undefined =
         reportList.find((report) => report.id === selectedId) ??
         (reportList.length === 0 ? undefined : reportList[0]);
@@ -74,6 +76,18 @@ function AdminDashboard() {
                     selectedReportId={selectedReport?.id}
                     onSelect={setSelectedId}
                 />
+
+                {hasNextPage && (
+                    <div className="flex justify-center">
+                        <Button
+                            variant="secondary"
+                            onClick={() => void fetchNextPage()}
+                            disabled={isFetchingNextPage}
+                        >
+                            {isFetchingNextPage ? 'Loading…' : 'Load more'}
+                        </Button>
+                    </div>
+                )}
 
                 <ReportDetailPanel
                     report={selectedReport}
