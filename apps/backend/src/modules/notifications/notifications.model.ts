@@ -89,7 +89,7 @@ export const notificationsModel = {
                     isNull(notifications.deletedAt)
                 )
             );
-        return results[0]?.value ?? 0;
+        return firstOrNull(results)?.value ?? 0;
     },
 
     async findRawById(db: Database, id: string) {
