@@ -27,6 +27,9 @@ export const auth = betterAuth({
         },
     },
     plugins: [admin()],
+    onAPIError: {
+        errorURL: `${frontendOrigin}/auth/login`,
+    },
     trustedOrigins: [frontendOrigin],
     user: {
         additionalFields: {
