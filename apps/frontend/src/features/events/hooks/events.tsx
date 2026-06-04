@@ -1,5 +1,6 @@
 import {
     keepPreviousData,
+    useInfiniteQuery,
     useMutation,
     useQuery,
     useQueryClient,
@@ -27,6 +28,20 @@ export function useEvents(filters?: EventQueryFilters) {
     return useQuery<Event[]>({
         queryKey: eventQueryKeys.list(filters),
         queryFn: () => listEvents(filters),
+        placeholderData: keepPreviousData,
+    });
+}
+
+export function useInfiniteEvents(filters?: EventQueryFilters) {
+    const limit = filters?.limit ?? 20;
+
+    return useInfiniteQuery<Event[]>({
+        queryKey: eventQueryKeys.infiniteList(filters),
+        queryFn: ({ pageParam }) =>
+            listEvents({ ...filters, limit, offset: pageParam as number }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length < limit ? undefined : allPages.length * limit,
         placeholderData: keepPreviousData,
     });
 }
