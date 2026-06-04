@@ -36,6 +36,10 @@ export function createNotificationsService({
             return model.findUnread(db, userId, filters);
         },
 
+        async getUnreadCount(db: Database, userId: string) {
+            return model.findUnreadCount(db, userId);
+        },
+
         async update(
             db: Database,
             notificationId: string,

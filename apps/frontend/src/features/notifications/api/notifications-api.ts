@@ -12,6 +12,7 @@ export const notificationQueryKeys = {
     list: (filters?: NotificationQueryFilters) =>
         [...notificationQueryKeys.lists(), filters ?? null] as const,
     unread: () => [...notificationQueryKeys.all, 'unread'] as const,
+    unreadCount: () => [...notificationQueryKeys.all, 'unread-count'] as const,
 };
 
 export async function listNotifications(filters?: NotificationQueryFilters) {
@@ -27,6 +28,12 @@ export async function listUnreadNotifications(
         query: filters,
     });
     throwIfError(error, 'Failed to fetch unread notifications');
+    return data;
+}
+
+export async function getUnreadNotificationsCount() {
+    const { data, error } = await api.notifications['unread-count'].get();
+    throwIfError(error, 'Failed to fetch unread notifications count');
     return data;
 }
 

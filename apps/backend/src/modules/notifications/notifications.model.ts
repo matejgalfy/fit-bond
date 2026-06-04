@@ -1,4 +1,4 @@
-import { eq, and, isNull, desc } from 'drizzle-orm';
+import { eq, and, isNull, desc, count } from 'drizzle-orm';
 import { DEFAULT_PAGE_SIZE, DEFAULT_OFFSET } from '../../utils/pagination';
 import type { Database } from '../../db';
 import { firstOrNull } from '../../utils/query';
@@ -76,6 +76,20 @@ export const notificationsModel = {
             .orderBy(desc(notifications.createdAt))
             .limit(limit)
             .offset(offset);
+    },
+
+    async findUnreadCount(db: Database, userId: string) {
+        const results = await db
+            .select({ value: count() })
+            .from(notifications)
+            .where(
+                and(
+                    eq(notifications.userId, userId),
+                    eq(notifications.isRead, false),
+                    isNull(notifications.deletedAt)
+                )
+            );
+        return results[0]?.value ?? 0;
     },
 
     async findRawById(db: Database, id: string) {
