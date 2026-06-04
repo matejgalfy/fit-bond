@@ -33,7 +33,7 @@ function EditEventPage() {
 
     if (eventPending) {
         return (
-            <div className="max-w-180 mx-auto">
+            <div className="max-w-180">
                 <Skeleton className="mb-6 h-8 w-40" />
                 <div className="space-y-6">
                     <Skeleton className="h-70 rounded-xl" />
@@ -46,7 +46,7 @@ function EditEventPage() {
 
     if (isError) {
         return (
-            <div className="max-w-180 mx-auto">
+            <div className="max-w-180">
                 <EmptyState>
                     <div className="flex flex-col items-center gap-4">
                         <div>
@@ -68,7 +68,7 @@ function EditEventPage() {
     }
 
     return (
-        <div className="max-w-180 mx-auto">
+        <div className="max-w-180">
             <div className="mb-6">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     Edit Event

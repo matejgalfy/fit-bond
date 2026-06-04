@@ -41,7 +41,7 @@ function AdminDashboard() {
         resolveReport.error?.message ?? rejectReport.error?.message ?? null;
 
     return (
-        <div className="max-w-280 mx-auto">
+        <div className="max-w-280">
             <div className="mb-4">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
                     Admin Dashboard

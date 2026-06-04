@@ -31,7 +31,7 @@ function EventDetailPage() {
 
     if (isPending) {
         return (
-            <div className="max-w-175 mx-auto">
+            <div className="max-w-175">
                 <Skeleton className="h-45 rounded-2xl" />
                 <Skeleton className="mt-5 h-8 w-2/3" />
                 <Skeleton className="mt-3 h-4 w-1/2" />
@@ -46,7 +46,7 @@ function EventDetailPage() {
 
     if (isError) {
         return (
-            <div className="max-w-175 mx-auto">
+            <div className="max-w-175">
                 <EmptyState>
                     <div className="flex flex-col items-center gap-4">
                         <div>
@@ -70,7 +70,7 @@ function EventDetailPage() {
     }
 
     return (
-        <div className="max-w-175 mx-auto">
+        <div className="max-w-175">
             <EventDetailCover event={event} />
             <EventDetailHeader event={event} />
             <EventDetailInfoGrid event={event} />
