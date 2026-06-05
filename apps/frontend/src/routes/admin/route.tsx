@@ -48,7 +48,7 @@ function AdminLayout() {
 
     const navItems = ADMIN_SIDE_NAV_ITEMS.map((item) =>
         item.id === 'admin-dashboard' && pendingReports > 0
-            ? { ...item, badge: pendingReports }
+            ? { ...item, badge: pendingReports > 9 ? '9+' : pendingReports }
             : item
     );
 
