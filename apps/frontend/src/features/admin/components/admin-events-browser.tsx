@@ -50,15 +50,10 @@ export function AdminEventsBrowser() {
         ]
     );
 
-    const {
-        data,
-        isPending,
-        fetchNextPage,
-        hasNextPage,
-        isFetchingNextPage,
-    } = useInfiniteAdminEvents(apiFilters);
+    const { data, isPending, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        useInfiniteAdminEvents(apiFilters);
 
-    const events = data?.pages.flatMap((page) => page ?? []) ?? [];
+    const events = data?.pages.flat() ?? [];
 
     return (
         <>

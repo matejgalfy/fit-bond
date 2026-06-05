@@ -35,9 +35,7 @@ export function useInfiniteReports(filters?: AdminReportQueryFilters) {
             listAdminReports({ ...filters, limit, offset: pageParam }),
         initialPageParam: 0,
         getNextPageParam: (lastPage, allPages) =>
-            (lastPage?.length ?? 0) < limit
-                ? undefined
-                : allPages.length * limit,
+            lastPage.length < limit ? undefined : allPages.length * limit,
         placeholderData: keepPreviousData,
     });
 }

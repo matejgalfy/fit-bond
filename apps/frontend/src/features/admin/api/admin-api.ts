@@ -24,7 +24,12 @@ export const adminQueryKeys = {
     reports: (filters?: AdminReportQueryFilters) =>
         [...adminQueryKeys.all, 'reports', filters ?? null] as const,
     infiniteReports: (filters?: AdminReportQueryFilters) =>
-        [...adminQueryKeys.all, 'reports', 'infinite', filters ?? null] as const,
+        [
+            ...adminQueryKeys.all,
+            'reports',
+            'infinite',
+            filters ?? null,
+        ] as const,
     reportDetail: (id: string) =>
         [...adminQueryKeys.all, 'reports', 'detail', id] as const,
 };

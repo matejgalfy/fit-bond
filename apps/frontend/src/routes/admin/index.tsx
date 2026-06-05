@@ -31,7 +31,7 @@ function AdminDashboard() {
         ADMIN_TAB.reports
     );
 
-    const reportList = data?.pages.flatMap((page) => page ?? []) ?? [];
+    const reportList = data?.pages.flat() ?? [];
     const selectedReport: Report | undefined =
         reportList.find((report) => report.id === selectedId) ??
         (reportList.length === 0 ? undefined : reportList[0]);
