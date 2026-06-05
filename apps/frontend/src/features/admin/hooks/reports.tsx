@@ -1,5 +1,6 @@
 import {
     keepPreviousData,
+    useInfiniteQuery,
     useMutation,
     useQuery,
     useQueryClient,
@@ -21,6 +22,20 @@ export function useReports(filters?: AdminReportQueryFilters) {
     return useQuery({
         queryKey: adminQueryKeys.reports(filters),
         queryFn: () => listAdminReports(filters),
+        placeholderData: keepPreviousData,
+    });
+}
+
+export function useInfiniteReports(filters?: AdminReportQueryFilters) {
+    const limit = filters?.limit ?? 20;
+
+    return useInfiniteQuery({
+        queryKey: adminQueryKeys.infiniteReports(filters),
+        queryFn: ({ pageParam }) =>
+            listAdminReports({ ...filters, limit, offset: pageParam }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length < limit ? undefined : allPages.length * limit,
         placeholderData: keepPreviousData,
     });
 }

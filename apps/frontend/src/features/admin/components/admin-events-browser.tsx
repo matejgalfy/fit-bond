@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { EmptyState } from '@/components/empty-state';
+import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -8,7 +9,7 @@ import {
     DiscoverFilters,
     type DiscoverFiltersState,
 } from '@/features/events/components/discover-filters';
-import { useAdminEvents } from '../hooks/events';
+import { useInfiniteAdminEvents } from '../hooks/events';
 
 export function AdminEventsBrowser() {
     const [rawFilters, setRawFilters] = useState<DiscoverFiltersState>({
@@ -49,7 +50,10 @@ export function AdminEventsBrowser() {
         ]
     );
 
-    const { data: events, isPending } = useAdminEvents(apiFilters);
+    const { data, isPending, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        useInfiniteAdminEvents(apiFilters);
+
+    const events = data?.pages.flat() ?? [];
 
     return (
         <>
@@ -77,7 +81,7 @@ export function AdminEventsBrowser() {
 
             <div className="mb-4 text-regular text-secondary-text">
                 <strong className="text-primary-text font-semibold">
-                    {events?.length ?? 0}
+                    {events.length}
                 </strong>{' '}
                 events found
             </div>
@@ -90,15 +94,27 @@ export function AdminEventsBrowser() {
                 </div>
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    {events?.map((event) => (
+                    {events.map((event) => (
                         <EventCard key={event.id} event={event} />
                     ))}
 
-                    {events?.length === 0 && (
+                    {events.length === 0 && (
                         <EmptyState className="col-span-full">
                             No events match the current filters.
                         </EmptyState>
                     )}
+                </div>
+            )}
+
+            {hasNextPage && (
+                <div className="mt-6 flex justify-center">
+                    <Button
+                        variant="secondary"
+                        onClick={() => void fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                    >
+                        {isFetchingNextPage ? 'Loading…' : 'Load more'}
+                    </Button>
                 </div>
             )}
         </>
