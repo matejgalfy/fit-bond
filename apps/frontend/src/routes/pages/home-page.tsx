@@ -41,8 +41,8 @@ function HomePage() {
                     <span className="text-primary-blue">{firstName}</span> 👋
                 </h1>
                 <p className="text-regular text-secondary-text mt-1">
-                    Set up your preferred sports and location in your profile settings
-                    to customise your homepage.
+                    Set up your preferred sports and location in your profile
+                    settings to customise your homepage.
                 </p>
             </div>
 
