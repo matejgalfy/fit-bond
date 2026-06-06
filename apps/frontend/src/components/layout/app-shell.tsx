@@ -38,8 +38,10 @@ export function AppShell({
                     sections={sideNavSections}
                     activeNav={activeNav}
                 />
-                <main className="flex-1 overflow-auto px-content-x py-content-y pb-content-bottom">
-                    {children}
+                <main className="flex-1 px-content-x py-content-y pb-content-bottom">
+                    <div className="mx-auto w-full max-w-280">
+                        {children}
+                    </div>
                 </main>
             </div>
             <MobileBottomNav items={bottomNavItems} activeNav={activeNav} />
