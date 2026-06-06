@@ -39,9 +39,7 @@ export function AppShell({
                     activeNav={activeNav}
                 />
                 <main className="flex-1 px-content-x py-content-y pb-content-bottom">
-                    <div className="mx-auto w-full max-w-280">
-                        {children}
-                    </div>
+                    <div className="mx-auto w-full max-w-280">{children}</div>
                 </main>
             </div>
             <MobileBottomNav items={bottomNavItems} activeNav={activeNav} />
