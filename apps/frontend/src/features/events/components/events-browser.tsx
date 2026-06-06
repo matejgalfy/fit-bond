@@ -30,6 +30,7 @@ export function EventsBrowser({
         () => ({
             userId,
             excludeUserInteractions,
+            fromDate: new Date().toISOString(),
             search: debouncedSearch || undefined,
             city: debouncedCity || undefined,
             date: rawFilters.date || undefined,
