@@ -18,7 +18,6 @@ export function AdminEventsBrowser() {
         city: '',
         skillLevel: 'any',
     });
-    const [includePrivate, setIncludePrivate] = useState(true);
     const [includeCancelled, setIncludeCancelled] = useState(true);
     const [includeDeleted, setIncludeDeleted] = useState(true);
 
@@ -34,7 +33,6 @@ export function AdminEventsBrowser() {
                 rawFilters.skillLevel === 'any'
                     ? undefined
                     : rawFilters.skillLevel,
-            includePrivate,
             includeCancelled,
             includeDeleted,
             limit: 20,
@@ -44,7 +42,6 @@ export function AdminEventsBrowser() {
             debouncedCity,
             rawFilters.date,
             rawFilters.skillLevel,
-            includePrivate,
             includeCancelled,
             includeDeleted,
         ]
@@ -61,11 +58,6 @@ export function AdminEventsBrowser() {
 
             <Card className="p-4 mb-4 border-outline bg-surface shadow-sm rounded-2xl">
                 <div className="flex flex-wrap gap-4 text-small">
-                    <Toggle
-                        label="Include private"
-                        checked={includePrivate}
-                        onChange={setIncludePrivate}
-                    />
                     <Toggle
                         label="Include cancelled"
                         checked={includeCancelled}

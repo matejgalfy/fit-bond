@@ -10,7 +10,7 @@ import {
 } from '../../utils/create-event-payload';
 import { validateCreateEventInput } from '../../validation/create-event-validation';
 import { CreatingEventBasics } from './event-basics';
-import { CreatingEventDetails, type Visibility } from './details/event-details';
+import { CreatingEventDetails } from './details/event-details';
 import {
     CreatingEventTimeLocation,
     type CustomDurationUnit,
@@ -29,7 +29,6 @@ const EMPTY_FORM_STATE: CreateEventFormState = {
     customDurationUnit: 'min',
     meridiem: 'AM',
     skillLevel: 'beginner',
-    visibility: 'public',
     capacity: '',
     coverImageUrl: '',
 };
@@ -73,9 +72,6 @@ export function EventForm({
     const [meridiem, setMeridiem] = useState<Meridiem>(initialState.meridiem);
     const [skillLevel, setSkillLevel] = useState<SkillLevel>(
         initialState.skillLevel
-    );
-    const [visibility, setVisibility] = useState<Visibility>(
-        initialState.visibility
     );
     const [capacity, setCapacity] = useState(initialState.capacity);
     const [coverImageUrl, setCoverImageUrl] = useState(
@@ -125,7 +121,6 @@ export function EventForm({
                     customDurationUnit,
                     meridiem,
                     skillLevel,
-                    visibility,
                     capacity,
                     coverImageUrl,
                 },
@@ -184,10 +179,8 @@ export function EventForm({
             <CreatingEventDetails
                 capacity={capacity}
                 skillLevel={skillLevel}
-                visibility={visibility}
                 onCapacityChange={setCapacity}
                 onSkillLevelChange={setSkillLevel}
-                onVisibilityChange={setVisibility}
             />
 
             {error && (

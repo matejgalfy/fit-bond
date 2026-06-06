@@ -5,7 +5,6 @@ import type {
     CustomDurationUnit,
     Meridiem,
 } from '../components/creation/time-and-location/event-time-and-location';
-import type { Visibility } from '../components/creation/details/event-details';
 
 export interface CreateEventFormState {
     eventName: string;
@@ -19,7 +18,6 @@ export interface CreateEventFormState {
     customDurationUnit: CustomDurationUnit;
     meridiem: Meridiem;
     skillLevel: SkillLevel;
-    visibility: Visibility;
     capacity: string;
     coverImageUrl: string;
 }
@@ -100,7 +98,6 @@ export function buildCreateEventPayload(
             customDurationUnit: form.customDurationUnit,
         }),
         capacity: Number(form.capacity),
-        isPublic: form.visibility === 'public',
         ...(coverImageUrl.length > 0 ? { coverImageUrl } : {}),
     };
 }

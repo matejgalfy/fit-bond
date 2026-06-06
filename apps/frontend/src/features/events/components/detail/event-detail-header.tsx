@@ -34,9 +34,6 @@ export function EventDetailHeader({ event }: EventDetailHeaderProps) {
                 >
                     {formatSkillLevel(event.skillLevel)}
                 </Badge>
-                <Badge className="text-secondary-text">
-                    {event.isPublic ? 'Public' : 'Private'}
-                </Badge>
                 {isCancelled && (
                     <Badge className="bg-soft-red text-primary-red">
                         Cancelled
