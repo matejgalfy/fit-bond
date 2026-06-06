@@ -106,11 +106,8 @@ export function Login() {
                                 }}
                             />
 
-                            <div className="text-right mb-5">
-                                <span className="text-small text-primary-blue font-medium cursor-pointer hover:underline">
-                                    Forgot password?
-                                </span>
-                            </div>
+                            <div className="mb-5"></div>
+
 
                             {error && (
                                 <p className="text-regular text-primary-red text-center mb-3">
