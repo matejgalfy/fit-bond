@@ -1,4 +1,4 @@
-import { eq, and, isNull, desc, count, sql } from 'drizzle-orm';
+import { eq, and, or, isNull, desc, count, sql } from 'drizzle-orm';
 import type { Database } from '../../db';
 import { firstOrNull, firstOrThrow } from '../../utils/query';
 import { DEFAULT_PAGE_SIZE, DEFAULT_OFFSET } from '../../utils/pagination';
@@ -20,6 +20,11 @@ import { baseEventSelection, buildSharedEventConditions } from './events.query';
 export const eventsModel = {
     async findAll(db: Database, filters: EventFilters) {
         const conditions = [isNull(events.deletedAt)];
+
+        const notBanned = or(isNull(user.banned), eq(user.banned, false));
+        if (notBanned) {
+            conditions.push(notBanned);
+        }
 
         if (filters.excludeUserInteractions) {
             conditions.push(isNull(events.cancelledAt));
