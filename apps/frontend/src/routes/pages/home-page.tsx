@@ -18,6 +18,7 @@ function HomePage() {
         return {
             userId: session?.user.id,
             excludeUserInteractions: true,
+            fromDate: new Date().toISOString(),
             sportIds: profile?.sports.map((s) => s.id) ?? undefined,
             lat: profile?.location?.lat ?? undefined,
             lng: profile?.location?.lng ?? undefined,
