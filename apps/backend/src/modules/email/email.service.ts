@@ -14,7 +14,7 @@ export function createEmailService({
     return {
         async sendWelcomeEmail(recipientEmail: string, userName: string) {
             return resend.emails.send({
-                from: 'onboarding@resend.dev',
+                from: 'noreply@fit-bond.app',
                 to: recipientEmail,
                 subject: `Hi ${userName}, Welcome to FitBond!`,
                 html: `
@@ -31,7 +31,7 @@ export function createEmailService({
 
         async eventCancelledEmail(recipientEmail: string, eventName: string) {
             return resend.emails.send({
-                from: 'onboarding@resend.dev',
+                from: 'noreply@fit-bond.app',
                 to: recipientEmail,
                 subject: `${eventName} has been cancelled`,
                 html: `
