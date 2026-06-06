@@ -76,7 +76,6 @@ export function buildEventFormState(event: Event): CreateEventFormState {
         customDurationUnit: durationFields.customDurationUnit,
         meridiem: timeFields.meridiem,
         skillLevel: event.skillLevel,
-        visibility: event.isPublic ? 'public' : 'private',
         capacity: String(event.capacity),
         coverImageUrl: event.coverImageUrl ?? '',
     };

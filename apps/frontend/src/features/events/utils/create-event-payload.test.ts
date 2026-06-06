@@ -108,7 +108,6 @@ describe('create-event-payload utils', () => {
             customDurationUnit: 'min' as const,
             meridiem: 'AM' as const,
             skillLevel: 'beginner' as const,
-            visibility: 'public' as const,
             capacity: '20',
             coverImageUrl: 'https://example.com/img.jpg',
         };
@@ -125,19 +124,6 @@ describe('create-event-payload utils', () => {
         test('trims whitespace from event name', () => {
             const payload = buildCreateEventPayload(baseForm, baseLocation);
             expect(payload.name).toBe('Florbal tournament');
-        });
-
-        test('sets isPublic true for public visibility', () => {
-            const payload = buildCreateEventPayload(baseForm, baseLocation);
-            expect(payload.isPublic).toBe(true);
-        });
-
-        test('sets isPublic false for private visibility', () => {
-            const payload = buildCreateEventPayload(
-                { ...baseForm, visibility: 'private' },
-                baseLocation
-            );
-            expect(payload.isPublic).toBe(false);
         });
 
         test('omits description when empty', () => {
