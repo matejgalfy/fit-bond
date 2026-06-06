@@ -108,7 +108,6 @@ export function Login() {
 
                             <div className="mb-5"></div>
 
-
                             {error && (
                                 <p className="text-regular text-primary-red text-center mb-3">
                                     {error}
