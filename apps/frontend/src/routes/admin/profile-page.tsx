@@ -43,7 +43,11 @@ function AdminProfilePage() {
         <div className="max-w-240">
             <div className="mb-6">
                 <h1 className="font-heading text-heading font-bold m-0 text-primary-text">
-                    {isOwner ? <>My Profile</> : <>{user_data?.name}'s Profile</>}
+                    {isOwner ? (
+                        <>My Profile</>
+                    ) : (
+                        <>{user_data?.name}'s Profile</>
+                    )}
                 </h1>
                 <p className="text-regular text-secondary-text mt-1">
                     View public profile and sports preferences.
