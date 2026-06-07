@@ -7,6 +7,7 @@ import type { Event } from '../types';
 export interface EventCardProps {
     event: Event;
     detailSource?: 'my-events';
+    detailRoute?: '/pages/event-detail-page' | '/admin/event-detail-page';
 }
 
 function formatDate(date: Date): string {
@@ -28,7 +29,11 @@ function getSkillLevelDisplay(skillLevel: string): string {
     return skillLevel.charAt(0).toUpperCase() + skillLevel.slice(1);
 }
 
-export function EventCard({ event, detailSource }: EventCardProps) {
+export function EventCard({
+    event,
+    detailSource,
+    detailRoute = '/pages/event-detail-page',
+}: EventCardProps) {
     const navigate = useNavigate();
     const isFull = event.currentParticipants >= event.capacity;
     const isCancelled = event.cancelledAt !== null;
@@ -38,6 +43,14 @@ export function EventCard({ event, detailSource }: EventCardProps) {
     const location = event.location.formattedAddress;
 
     const openEventDetail = () => {
+        if (detailRoute === '/admin/event-detail-page') {
+            void navigate({
+                to: '/admin/event-detail-page',
+                search: { eventId: event.id },
+            });
+            return;
+        }
+
         void navigate({
             to: '/pages/event-detail-page',
             search: {

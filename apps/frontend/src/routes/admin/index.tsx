@@ -63,7 +63,7 @@ function AdminDashboard() {
                         className="flex-none text-regular px-4"
                     >
                         Reports
-                        <span className="rounded-full bg-muted-background px-1.5 py-0.5 text-tiny leading-none text-secondary-text group-data-[state=active]:bg-primary-blue group-data-[state=active]:text-surface">
+                        <span className="inline-flex items-center justify-center min-w-5 h-5 px-1.5 rounded-full bg-muted-background text-tiny leading-none text-secondary-text group-data-[state=active]:bg-primary-blue group-data-[state=active]:text-surface">
                             {pendingCount}
                         </span>
                     </TabsTrigger>

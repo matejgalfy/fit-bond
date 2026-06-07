@@ -3,6 +3,7 @@ import { MessageCircle } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authClient } from '@/lib/api';
+import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import type { Comment } from '../types';
 import { useComments } from '../hooks/comments';
 import { CommentComposer } from './comment-composer';
@@ -32,6 +33,7 @@ function groupComments(comments: Comment[]) {
 
 export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
     const { data: session } = authClient.useSession();
+    const isAdmin = useIsAdmin();
     const { data: comments, isPending, isError } = useComments(eventId);
 
     const { roots, repliesByParentId } = useMemo(
@@ -53,13 +55,15 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                 </h2>
             </div>
 
-            <CommentComposer
-                eventId={eventId}
-                userName={session.user.name}
-                userImage={userImage}
-                placeholder="Write a comment..."
-                buttonLabel="Post comment"
-            />
+            {!isAdmin && (
+                <CommentComposer
+                    eventId={eventId}
+                    userName={session.user.name}
+                    userImage={userImage}
+                    placeholder="Write a comment..."
+                    buttonLabel="Post comment"
+                />
+            )}
 
             {isPending && (
                 <div className="mt-6 space-y-4">
@@ -98,6 +102,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                             currentUserId={session.user.id}
                             currentUserName={session.user.name}
                             currentUserImage={userImage}
+                            isAdmin={isAdmin}
                         />
                     ))}
                 </div>

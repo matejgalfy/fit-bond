@@ -41,6 +41,7 @@ function makeMockModel() {
         softDelete: vi.fn(() =>
             Promise.resolve(makeMockComment() as CommentType | null)
         ),
+        softDeleteReplies: vi.fn(() => Promise.resolve([] as CommentType[])),
     };
 }
 
@@ -317,6 +318,24 @@ describe('CommentsService', () => {
                 'Inappropriate content'
             );
             expect(mockModel.softDelete).toHaveBeenCalledWith(
+                fakeDb,
+                'comment-1',
+                'admin-1',
+                'Inappropriate content'
+            );
+        });
+
+        test('cascades soft-delete to all replies of the comment', async () => {
+            mockModel.findRawById.mockResolvedValueOnce(
+                makeMockComment({ userId: 'other-user' })
+            );
+            await service.delete(
+                fakeDb,
+                'comment-1',
+                { id: 'admin-1', role: 'admin' },
+                'Inappropriate content'
+            );
+            expect(mockModel.softDeleteReplies).toHaveBeenCalledWith(
                 fakeDb,
                 'comment-1',
                 'admin-1',

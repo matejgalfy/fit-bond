@@ -4,6 +4,7 @@ import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { useIsAdmin } from '@/features/admin/hooks/current-user';
 
 interface AppNavbarProps {
     userName?: string;
@@ -12,6 +13,7 @@ interface AppNavbarProps {
 
 export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
     const { resolvedTheme, setTheme } = useTheme();
+    const isAdmin = useIsAdmin();
     const dark = resolvedTheme === 'dark';
     const toggleDark = () => {
         setTheme(dark ? 'light' : 'dark');
@@ -19,7 +21,11 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
 
     return (
         <nav className="sticky top-0 z-50 h-14 bg-surface border-b border-outline flex items-center px-4 gap-3">
-            <div className="flex items-center gap-1.5">
+            <Link
+                to={isAdmin ? '/admin' : '/pages/home-page'}
+                className="flex items-center gap-1.5"
+                aria-label="FitBond home"
+            >
                 <div className="w-7 h-7 rounded-lg bg-linear-to-br from-primary-blue to-strong-blue flex items-center justify-center text-regular font-bold text-surface">
                     F
                 </div>
@@ -27,7 +33,7 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
                 <span className="text-subheading font-bold text-primary-blue font-heading">
                     FitBond
                 </span>
-            </div>
+            </Link>
 
             <div className="flex-1" />
 
@@ -43,7 +49,7 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
 
-            {userName ? (
+            {userName && !isAdmin ? (
                 <Button
                     variant="ghost"
                     size="icon"

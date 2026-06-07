@@ -1,11 +1,20 @@
 import { useState } from 'react';
 import { Link } from '@tanstack/react-router';
-import { Reply } from 'lucide-react';
+import { Reply, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from '@/components/ui/dialog';
 import { timeAgo } from '@/lib/utils';
 import { ReportCommentDialog } from '@/features/reports/components/report-comment-dialog';
 import type { Comment } from '../types';
+import { useDeleteComment } from '../hooks/comments';
 import { CommentComposer } from './comment-composer';
 
 interface CommentItemProps {
@@ -15,6 +24,7 @@ interface CommentItemProps {
     currentUserId: string;
     currentUserName: string;
     currentUserImage?: string | null;
+    isAdmin?: boolean;
 }
 
 export function CommentItem({
@@ -24,14 +34,16 @@ export function CommentItem({
     currentUserId,
     currentUserName,
     currentUserImage,
+    isAdmin = false,
 }: CommentItemProps) {
     const [replyOpen, setReplyOpen] = useState(false);
     const isOwnComment = comment.author.id === currentUserId;
+    const profileTo = isAdmin ? '/admin/profile-page' : '/pages/profile-page';
 
     return (
         <article className="flex gap-3">
             <Link
-                to="/pages/profile-page"
+                to={profileTo}
                 search={{ userId: comment.author.id }}
                 className="shrink-0"
             >
@@ -45,7 +57,7 @@ export function CommentItem({
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                     <h3 className="m-0 text-small font-semibold text-primary-text">
                         <Link
-                            to="/pages/profile-page"
+                            to={profileTo}
                             search={{ userId: comment.author.id }}
                             className="hover:underline"
                         >
@@ -62,24 +74,34 @@ export function CommentItem({
                 </p>
 
                 <div className="mt-0.5 flex items-center gap-1">
-                    <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="h-7 gap-1 px-1.5 text-primary-blue"
-                        onClick={() => {
-                            setReplyOpen((open) => !open);
-                        }}
-                    >
-                        <Reply />
-                        Reply
-                    </Button>
-                    {!isOwnComment && (
-                        <ReportCommentDialog commentId={comment.id} />
+                    {isAdmin ? (
+                        <DeleteCommentButton
+                            commentId={comment.id}
+                            eventId={eventId}
+                            isReply={false}
+                        />
+                    ) : (
+                        <>
+                            <Button
+                                type="button"
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 gap-1 px-1.5 text-primary-blue"
+                                onClick={() => {
+                                    setReplyOpen((open) => !open);
+                                }}
+                            >
+                                <Reply />
+                                Reply
+                            </Button>
+                            {!isOwnComment && (
+                                <ReportCommentDialog commentId={comment.id} />
+                            )}
+                        </>
                     )}
                 </div>
 
-                {replyOpen && (
+                {replyOpen && !isAdmin && (
                     <div className="mt-3 border-l-4 border-outline pl-4">
                         <CommentComposer
                             eventId={eventId}
@@ -104,7 +126,7 @@ export function CommentItem({
                         {replies.map((reply) => (
                             <article key={reply.id} className="flex gap-2.5">
                                 <Link
-                                    to="/pages/profile-page"
+                                    to={profileTo}
                                     search={{ userId: reply.author.id }}
                                     className="shrink-0"
                                 >
@@ -118,7 +140,7 @@ export function CommentItem({
                                     <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
                                         <h4 className="m-0 text-tiny font-semibold text-primary-text">
                                             <Link
-                                                to="/pages/profile-page"
+                                                to={profileTo}
                                                 search={{
                                                     userId: reply.author.id,
                                                 }}
@@ -134,12 +156,22 @@ export function CommentItem({
                                     <p className="m-0 whitespace-pre-wrap text-tiny leading-5 text-primary-text">
                                         {reply.content}
                                     </p>
-                                    {reply.author.id !== currentUserId && (
+                                    {isAdmin ? (
                                         <div className="mt-0.5">
-                                            <ReportCommentDialog
+                                            <DeleteCommentButton
                                                 commentId={reply.id}
+                                                eventId={eventId}
+                                                isReply
                                             />
                                         </div>
+                                    ) : (
+                                        reply.author.id !== currentUserId && (
+                                            <div className="mt-0.5">
+                                                <ReportCommentDialog
+                                                    commentId={reply.id}
+                                                />
+                                            </div>
+                                        )
                                     )}
                                 </div>
                             </article>
@@ -148,5 +180,89 @@ export function CommentItem({
                 )}
             </div>
         </article>
+    );
+}
+
+interface DeleteCommentButtonProps {
+    commentId: string;
+    eventId: string;
+    isReply: boolean;
+}
+
+function DeleteCommentButton({
+    commentId,
+    eventId,
+    isReply,
+}: DeleteCommentButtonProps) {
+    const [open, setOpen] = useState(false);
+    const deleteComment = useDeleteComment(eventId);
+
+    return (
+        <>
+            <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                className="h-7 gap-1 px-1.5 text-primary-red hover:text-primary-red"
+                onClick={() => {
+                    setOpen(true);
+                }}
+            >
+                <Trash2 />
+                Delete
+            </Button>
+
+            <Dialog
+                open={open}
+                onOpenChange={(next) => {
+                    setOpen(next);
+                    if (!next) deleteComment.reset();
+                }}
+            >
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>
+                            Delete {isReply ? 'reply' : 'comment'}?
+                        </DialogTitle>
+                        <DialogDescription>
+                            {isReply
+                                ? 'This permanently removes the reply.'
+                                : 'This removes the comment and all of its replies.'}
+                        </DialogDescription>
+                    </DialogHeader>
+                    {deleteComment.isError && (
+                        <p className="m-0 text-small text-primary-red">
+                            {deleteComment.error.message}
+                        </p>
+                    )}
+                    <DialogFooter>
+                        <Button
+                            variant="outline"
+                            onClick={() => {
+                                setOpen(false);
+                            }}
+                        >
+                            Cancel
+                        </Button>
+                        <Button
+                            variant="destructive"
+                            disabled={deleteComment.isPending}
+                            onClick={() => {
+                                deleteComment.mutate(
+                                    { id: commentId },
+                                    {
+                                        onSuccess: () => {
+                                            setOpen(false);
+                                        },
+                                    }
+                                );
+                            }}
+                        >
+                            {deleteComment.isPending ? 'Deleting...' : 'Delete'}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+        </>
     );
 }

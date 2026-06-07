@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { useEffect } from 'react';
 import { authClient } from '@/lib/api';
+import { useCurrentUserRole } from '@/features/admin/hooks/current-user';
 
 export const Route = createFileRoute('/')({
     component: IndexRedirect,
@@ -9,17 +10,21 @@ export const Route = createFileRoute('/')({
 function IndexRedirect() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
+    const { data: role, isPending: rolePending } = useCurrentUserRole();
 
     useEffect(() => {
-        if (isPending) return;
+        if (isPending || rolePending) return;
 
         if (session?.user) {
-            void navigate({ to: '/pages/home-page', replace: true });
+            void navigate({
+                to: role === 'admin' ? '/admin' : '/pages/home-page',
+                replace: true,
+            });
             return;
         }
 
         void navigate({ to: '/auth/login', replace: true });
-    }, [isPending, navigate, session?.user]);
+    }, [isPending, rolePending, navigate, session?.user, role]);
 
     return null;
 }

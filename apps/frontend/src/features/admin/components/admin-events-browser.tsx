@@ -87,7 +87,11 @@ export function AdminEventsBrowser() {
             ) : (
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     {events.map((event) => (
-                        <EventCard key={event.id} event={event} />
+                        <EventCard
+                            key={event.id}
+                            event={event}
+                            detailRoute="/admin/event-detail-page"
+                        />
                     ))}
 
                     {events.length === 0 && (
