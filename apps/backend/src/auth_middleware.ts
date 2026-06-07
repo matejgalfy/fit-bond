@@ -14,11 +14,6 @@ export const authLayer = new Elysia({ name: 'better-auth' })
                 if (!session) {
                     return status(401);
                 }
-
-                // The better-auth admin plugin enforces bans itself: banning a
-                // user deletes their sessions (so getSession returns null here)
-                // and blocks any further sign-in, so no manual check is needed.
-
                 // Return user and session to make them available in the context
                 return {
                     user: session.user,

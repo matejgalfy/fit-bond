@@ -1,0 +1,30 @@
+# Dependencies + build outputs (reinstalled/rebuilt inside the image).
+node_modules
+**/node_modules
+dist
+**/dist
+*.tsbuildinfo
+**/*.tsbuildinfo
+
+# Secrets / local env — never bake these into an image.
+.env
+.env.*
+**/.env
+**/.env.*
+
+# VCS + editor.
+.git
+.gitignore
+.idea
+.vscode
+.DS_Store
+
+# Tests / E2E artifacts not needed for the production build.
+apps/frontend/playwright-report
+apps/frontend/test-results
+apps/frontend/blob-report
+apps/frontend/.playwright
+**/coverage
+
+# Local dev compose + plan/docs noise.
+apps/backend/docker-compose.yml

@@ -11,12 +11,11 @@ export type ServiceErrorCode = keyof typeof CODE_TO_STATUS;
 
 export class ServiceError extends Error {
     public readonly statusCode: number;
+    public readonly code: ServiceErrorCode;
 
-    constructor(
-        message: string,
-        public readonly code: ServiceErrorCode
-    ) {
+    constructor(message: string, code: ServiceErrorCode) {
         super(message);
+        this.code = code;
         this.name = 'ServiceError';
         this.statusCode = CODE_TO_STATUS[code];
     }

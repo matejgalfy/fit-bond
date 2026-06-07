@@ -62,6 +62,10 @@ registerNotificationsSubscribers({
 });
 registerEmailSubscribers({ bus: eventBus, usersService });
 
+const port = Number(process.env.PORT) || 3000;
+
+// Routes stay at the root so the Eden treaty client keeps its `api.events`
+// shape.
 export const app = new Elysia()
     .use(authLayer)
     .use(
@@ -70,7 +74,17 @@ export const app = new Elysia()
         })
     )
     .use(openapi(openapiConfig))
-    .use(staticPlugin({ assets: 'uploads', prefix: '/uploads' }))
+    // `alwaysStatic` defaults to true under NODE_ENV=production, which snapshots
+    // the uploads dir at boot and 404s anything uploaded afterward. Force the
+    // dynamic wildcard handler so runtime uploads are served from disk per request.
+    .use(
+        staticPlugin({
+            assets: 'uploads',
+            prefix: '/uploads',
+            alwaysStatic: false,
+        })
+    )
+    .get('/health', () => ({ ok: true }))
     .use(uploadRoutes)
     .use(createEventsRoutes(eventsService))
     .use(createParticipationRoutes(participationService))
@@ -82,8 +96,10 @@ export const app = new Elysia()
     .use(createAdminRoutes(adminService))
     .use(createReportsRoutes(reportsService))
     .use(createReportsAdminRoutes(reportsService))
-    .listen(3000);
+    .listen({ port, hostname: '0.0.0.0' });
 
-console.log('Server running on http://localhost:3000');
-console.log('API documentation available at http://localhost:3000/openapi');
+console.log(`Server running on http://localhost:${String(port)}`);
+console.log(
+    `API documentation available at http://localhost:${String(port)}/openapi`
+);
 export type Backend = typeof app;

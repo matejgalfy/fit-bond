@@ -1,0 +1,54 @@
+# Production stack: PostgreSQL + Bun/Elysia backend + Caddy-served SPA (auto-HTTPS).
+#   cp .env.production.example .env.production   # fill in secrets + SITE_ADDRESS
+#   docker compose up --build
+# Served at $SITE_ADDRESS (e.g. https://fit-bond.dev; http://localhost locally).
+services:
+    db:
+        image: postgres:18
+        restart: unless-stopped
+        env_file: .env.production
+        volumes:
+            # postgres:18 stores data in a versioned subdir; mount the parent.
+            - pgdata:/var/lib/postgresql
+        healthcheck:
+            test:
+                [
+                    'CMD-SHELL',
+                    'pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}',
+                ]
+            interval: 5s
+            timeout: 5s
+            retries: 10
+
+    backend:
+        build:
+            context: .
+            dockerfile: apps/backend/Dockerfile
+        restart: unless-stopped
+        env_file: .env.production
+        depends_on:
+            db:
+                condition: service_healthy
+        volumes:
+            - uploads:/app/apps/backend/uploads
+
+    web:
+        build:
+            context: .
+            dockerfile: apps/frontend/Dockerfile
+        restart: unless-stopped
+        env_file: .env.production # provides SITE_ADDRESS for Caddy
+        depends_on:
+            - backend
+        ports:
+            - '80:80'
+            - '443:443'
+        volumes:
+            - caddy_data:/data # TLS certificates — must persist across restarts
+            - caddy_config:/config
+
+volumes:
+    pgdata:
+    uploads:
+    caddy_data:
+    caddy_config:

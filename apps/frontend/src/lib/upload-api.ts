@@ -1,10 +1,10 @@
-const BASE_URL = 'http://localhost:3000';
+import { apiUrl, filesBaseUrl } from './api';
 
 export async function uploadImage(file: File): Promise<string> {
     const form = new FormData();
     form.append('file', file);
 
-    const res = await fetch(`${BASE_URL}/upload`, {
+    const res = await fetch(`${apiUrl}/upload`, {
         method: 'POST',
         credentials: 'include',
         body: form,
@@ -15,5 +15,5 @@ export async function uploadImage(file: File): Promise<string> {
     }
 
     const { url } = (await res.json()) as { url: string };
-    return `${BASE_URL}${url}`;
+    return `${filesBaseUrl}${url}`;
 }

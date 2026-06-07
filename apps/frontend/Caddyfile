@@ -1,0 +1,31 @@
+# Site address comes from $SITE_ADDRESS:
+#   prod:  fit-bond.dev          -> Caddy auto-provisions HTTPS via Let's Encrypt
+#   local: http://localhost      -> plain HTTP on :80 (no cert needed)
+# To register a Let's Encrypt account email, add a `tls you@example.com` line
+# inside the site block below.
+{$SITE_ADDRESS:http://localhost} {
+	encode gzip
+
+	# better-auth lives at /api/auth on the backend — preserve the full path.
+	handle /api/auth/* {
+		reverse_proxy backend:3000
+	}
+
+	# REST API: strip the /api prefix (backend routes live at the root).
+	handle /api/* {
+		uri strip_prefix /api
+		reverse_proxy backend:3000
+	}
+
+	# Uploaded files served by the backend's static handler (path preserved).
+	handle /uploads/* {
+		reverse_proxy backend:3000
+	}
+
+	# SPA: serve static assets, fall back to index.html for client-side routes.
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

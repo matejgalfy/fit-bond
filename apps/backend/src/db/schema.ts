@@ -6,11 +6,11 @@ import {
     timestamp,
     boolean,
     pgEnum,
-    AnyPgColumn,
     decimal,
     primaryKey,
     index,
 } from 'drizzle-orm/pg-core';
+import type { AnyPgColumn } from 'drizzle-orm/pg-core';
 import { relations } from 'drizzle-orm';
 // Enums
 export const userRoleEnum = pgEnum('user_role', ['user', 'admin']);

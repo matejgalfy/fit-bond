@@ -34,5 +34,5 @@ export const openapiConfig = {
             },
         ],
     },
-    exclude: { methods: ['OPTIONS'] as const },
-} as const;
+    exclude: { methods: ['OPTIONS'] },
+};
