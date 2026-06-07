@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+    <defs>
+        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <!-- z primary-blue: hsl(210, 100%, 60%) -->
+            <stop offset="0%" stop-color="#3399FF" />
+            <!-- do strong-blue: hsl(210, 100%, 40%) -->
+            <stop offset="100%" stop-color="#0066CC" />
+        </linearGradient>
+    </defs>
+    
+    <!-- Štvorec so zaoblenými rohmi, pri 512x512 je polomer 120 akurát (ekvivalent rounded-lg) -->
+    <rect width="512" height="512" rx="120" fill="url(#bg)" />
+    
+    <!-- Vycentrované biele F, podobné fontu z dizajnu -->
+    <text 
+        x="50%" 
+        y="54%" 
+        font-family="'DM Sans', system-ui, sans-serif" 
+        font-weight="bold" 
+        font-size="280" 
+        fill="#FFFFFF" 
+        text-anchor="middle" 
+        dominant-baseline="middle"
+    >
+        F
+    </text>
+</svg>
