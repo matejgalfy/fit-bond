@@ -93,9 +93,6 @@ function makeMockModel() {
         cancel: vi.fn(() =>
             Promise.resolve(makeMockEvent() as EventType | null)
         ),
-        softDelete: vi.fn(() =>
-            Promise.resolve(makeMockEvent() as EventType | null)
-        ),
         getStatsByUserId: vi.fn(() =>
             Promise.resolve({ organized: 0, joined: 0, interested: 0 })
         ),
@@ -569,57 +566,6 @@ describe('EventsService', () => {
                     actorId: 'user-1',
                 }
             );
-        });
-    });
-
-    describe('delete', () => {
-        test('soft-deletes event when user is organizer', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
-                makeMockEvent({ organizerId: 'user-1' })
-            );
-            await service.delete(fakeDb, 'event-1', { id: 'user-1' });
-            expect(mockModel.softDelete).toHaveBeenCalledWith(
-                fakeDb,
-                'event-1'
-            );
-        });
-
-        test('soft-deletes event when actor is admin', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
-                makeMockEvent({ organizerId: 'user-1' })
-            );
-
-            await service.delete(fakeDb, 'event-1', {
-                id: 'admin-1',
-                role: 'admin',
-            });
-
-            expect(mockModel.softDelete).toHaveBeenCalledWith(
-                fakeDb,
-                'event-1'
-            );
-        });
-
-        test('throws NOT_FOUND when event does not exist', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(null);
-            expect.assertions(1);
-            try {
-                await service.delete(fakeDb, 'missing', { id: 'user-1' });
-            } catch (e) {
-                expect((e as ServiceError).code).toBe('NOT_FOUND');
-            }
-        });
-
-        test('throws FORBIDDEN when user is not organizer', async () => {
-            mockModel.findRawById.mockResolvedValueOnce(
-                makeMockEvent({ organizerId: 'other-user' })
-            );
-            expect.assertions(1);
-            try {
-                await service.delete(fakeDb, 'event-1', { id: 'user-1' });
-            } catch (e) {
-                expect((e as ServiceError).code).toBe('FORBIDDEN');
-            }
         });
     });
 

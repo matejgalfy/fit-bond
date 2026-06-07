@@ -19,7 +19,6 @@ export const adminEventQueryFilters = t.Composite([
     eventQueryFilters,
     t.Object({
         includeCancelled: t.Optional(t.Boolean()),
-        includeDeleted: t.Optional(t.Boolean()),
         includePrivate: t.Optional(t.Boolean()),
     }),
 ]);

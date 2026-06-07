@@ -178,7 +178,7 @@ describe('AdminService', () => {
 
     describe('listEvents', () => {
         test('delegates to model.searchEvents with filters', async () => {
-            const filters = { includeCancelled: true, includeDeleted: true };
+            const filters = { includeCancelled: true };
             await service.listEvents(fakeDb, filters);
             expect(mockModel.searchEvents).toHaveBeenCalledWith(
                 fakeDb,

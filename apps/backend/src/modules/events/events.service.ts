@@ -160,18 +160,6 @@ export function createEventsService({
             return cancelledEvent;
         },
 
-        async delete(db: Database, eventId: string, actor: Actor) {
-            const existing = await this.loadRaw(db, eventId);
-            if (!canManageEvent(existing.organizerId, actor)) {
-                throw ServiceError.forbidden(
-                    'Only the organizer or an admin can delete this event'
-                );
-            }
-
-            await model.softDelete(db, eventId);
-            return { success: true };
-        },
-
         async getStatsByUserId(db: Database, userId: string) {
             return model.getStatsByUserId(db, userId);
         },

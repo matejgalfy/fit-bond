@@ -19,16 +19,16 @@ import { baseEventSelection, buildSharedEventConditions } from './events.query';
 
 export const eventsModel = {
     async findAll(db: Database, filters: EventFilters) {
-        const conditions = [isNull(events.deletedAt)];
+        const conditions = [
+            isNull(events.deletedAt),
+            isNull(events.cancelledAt),
+        ];
 
         const notBanned = or(isNull(user.banned), eq(user.banned, false));
         if (notBanned) {
             conditions.push(notBanned);
         }
 
-        if (filters.excludeUserInteractions) {
-            conditions.push(isNull(events.cancelledAt));
-        }
         if (filters.isPublic !== undefined) {
             conditions.push(eq(events.isPublic, filters.isPublic));
         }
@@ -204,23 +204,19 @@ export const eventsModel = {
         return firstOrNull(results);
     },
 
-    async softDelete(db: Database, id: string) {
-        const results = await db
-            .update(events)
-            .set({ deletedAt: new Date(), updatedAt: new Date() })
-            .where(and(eq(events.id, id), isNull(events.deletedAt)))
-            .returning();
-
-        return firstOrNull(results);
-    },
-
     async getStatsByUserId(db: Database, userId: string) {
+        // Cancelled events are hidden from normal users, so they are excluded
+        // here too to keep the My Events tab counts consistent with the lists.
         // Count organized events
         const organizedResult = await db
             .select({ count: count() })
             .from(events)
             .where(
-                and(eq(events.organizerId, userId), isNull(events.deletedAt))
+                and(
+                    eq(events.organizerId, userId),
+                    isNull(events.deletedAt),
+                    isNull(events.cancelledAt)
+                )
             );
 
         // Count joined events
@@ -231,7 +227,8 @@ export const eventsModel = {
                 events,
                 and(
                     eq(eventParticipants.eventId, events.id),
-                    isNull(events.deletedAt)
+                    isNull(events.deletedAt),
+                    isNull(events.cancelledAt)
                 )
             )
             .where(eq(eventParticipants.userId, userId));
@@ -244,7 +241,8 @@ export const eventsModel = {
                 events,
                 and(
                     eq(eventInterested.eventId, events.id),
-                    isNull(events.deletedAt)
+                    isNull(events.deletedAt),
+                    isNull(events.cancelledAt)
                 )
             )
             .where(eq(eventInterested.userId, userId));

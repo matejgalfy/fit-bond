@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useId, useMemo, useState } from 'react';
 import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
 import { EventCard } from '@/features/events/components/event-card';
@@ -19,7 +20,6 @@ export function AdminEventsBrowser() {
         skillLevel: 'any',
     });
     const [includeCancelled, setIncludeCancelled] = useState(true);
-    const [includeDeleted, setIncludeDeleted] = useState(true);
 
     const debouncedSearch = useDebounce(rawFilters.search, 300);
     const debouncedCity = useDebounce(rawFilters.city, 300);
@@ -34,7 +34,6 @@ export function AdminEventsBrowser() {
                     ? undefined
                     : rawFilters.skillLevel,
             includeCancelled,
-            includeDeleted,
             limit: 20,
         }),
         [
@@ -43,7 +42,6 @@ export function AdminEventsBrowser() {
             rawFilters.date,
             rawFilters.skillLevel,
             includeCancelled,
-            includeDeleted,
         ]
     );
 
@@ -62,11 +60,6 @@ export function AdminEventsBrowser() {
                         label="Include cancelled"
                         checked={includeCancelled}
                         onChange={setIncludeCancelled}
-                    />
-                    <Toggle
-                        label="Include deleted"
-                        checked={includeDeleted}
-                        onChange={setIncludeDeleted}
                     />
                 </div>
             </Card>
@@ -124,17 +117,20 @@ interface ToggleProps {
 }
 
 function Toggle({ label, checked, onChange }: ToggleProps) {
+    const id = useId();
+
     return (
-        <label className="flex items-center gap-2 text-secondary-text cursor-pointer">
-            <input
-                type="checkbox"
+        <div className="flex items-center gap-2 text-secondary-text">
+            <Checkbox
+                id={id}
                 checked={checked}
-                onChange={(e) => {
-                    onChange(e.target.checked);
+                onCheckedChange={(value) => {
+                    onChange(value === true);
                 }}
-                className="size-4 accent-primary-blue"
             />
-            {label}
-        </label>
+            <label htmlFor={id} className="cursor-pointer select-none">
+                {label}
+            </label>
+        </div>
     );
 }

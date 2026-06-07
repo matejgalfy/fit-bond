@@ -106,11 +106,8 @@ export const adminModel = {
     },
 
     async searchEvents(db: Database, filters: AdminEventFilters) {
-        const conditions = [];
+        const conditions = [isNull(events.deletedAt)];
 
-        if (!filters.includeDeleted) {
-            conditions.push(isNull(events.deletedAt));
-        }
         if (!filters.includeCancelled) {
             conditions.push(isNull(events.cancelledAt));
         }
@@ -126,7 +123,6 @@ export const adminModel = {
             .select({
                 ...baseEventSelection,
                 cancellationReason: events.cancellationReason,
-                deletedAt: events.deletedAt,
                 organizer: {
                     ...baseEventSelection.organizer,
                     banned: user.banned,
