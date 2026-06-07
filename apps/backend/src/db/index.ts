@@ -8,7 +8,7 @@ const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
 });
 
-export const db = drizzle(pool, { schema, logger: true });
+export const db = drizzle(pool, { schema });
 
 /** Use this type to accept either the main `db` instance or a transaction `tx`. */
 export type Database = PgDatabase<NodePgQueryResultHKT, typeof schema>;
