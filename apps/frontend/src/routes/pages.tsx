@@ -7,13 +7,9 @@ import {
 import { useMemo } from 'react';
 import { authClient } from '@/lib/api';
 import { AppShell } from '@/components/layout/app-shell';
-import {
-    ADMIN_NAV_ITEM,
-    NAV_ITEMS,
-    type NavigationSection,
-} from '@/components/layout/navigation-item';
+import { NAV_ITEMS } from '@/components/layout/navigation-item';
 import { useUserProfile } from '@/features/users/hooks/use-users';
-import { useIsAdmin } from '@/features/admin/hooks/current-user';
+import { useCurrentUserRole } from '@/features/admin/hooks/current-user';
 import { useUnreadNotificationsCount } from '@/features/notifications/hooks/notifications';
 
 export const Route = createFileRoute('/pages')({
@@ -50,20 +46,9 @@ function pathnameToNavId(pathname: string, search: PageSearchState): string {
 
 function PagesLayout() {
     const { data: session, isPending } = authClient.useSession();
+    const { data: role, isPending: rolePending } = useCurrentUserRole();
     const { location } = useRouterState();
     const { data: profile } = useUserProfile(session?.user.id);
-    const isAdmin = useIsAdmin();
-
-    const sections = useMemo<NavigationSection[] | undefined>(() => {
-        if (!isAdmin) return undefined;
-        return [
-            {
-                label: 'Admin',
-                accent: 'red',
-                items: [ADMIN_NAV_ITEM],
-            },
-        ];
-    }, [isAdmin]);
 
     const { data: unreadData } = useUnreadNotificationsCount();
     const unreadCount = unreadData?.count ?? 0;
@@ -77,20 +62,16 @@ function PagesLayout() {
         });
     }, [unreadCount]);
 
-    const bottomNavItems = useMemo(
-        () =>
-            isAdmin
-                ? [...navItemsWithBadges, ADMIN_NAV_ITEM]
-                : navItemsWithBadges,
-        [isAdmin, navItemsWithBadges]
-    );
-
-    if (isPending) {
+    if (isPending || rolePending) {
         return null;
     }
 
     if (!session?.user) {
         return <Navigate to="/auth/login" replace />;
+    }
+
+    if (role === 'admin') {
+        return <Navigate to="/admin" replace />;
     }
 
     const activeNav = pathnameToNavId(
@@ -104,8 +85,7 @@ function PagesLayout() {
             userName={profile?.name ?? session.user.name}
             profilePictureUrl={navImage}
             sideNavItems={navItemsWithBadges}
-            sideNavSections={sections}
-            bottomNavItems={bottomNavItems}
+            bottomNavItems={navItemsWithBadges}
             activeNav={activeNav}
         >
             <Outlet />
