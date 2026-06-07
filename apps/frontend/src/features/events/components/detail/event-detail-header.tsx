@@ -2,6 +2,7 @@ import { Link } from '@tanstack/react-router';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { cn } from '@/lib/utils';
+import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import type { Event } from '../../types';
 import { formatSkillLevel } from '../../utils/event-formatters';
 
@@ -10,7 +11,9 @@ interface EventDetailHeaderProps {
 }
 
 export function EventDetailHeader({ event }: EventDetailHeaderProps) {
+    const isAdmin = useIsAdmin();
     const isCancelled = Boolean(event.cancelledAt);
+    const profileTo = isAdmin ? '/admin/profile-page' : '/pages/profile-page';
 
     return (
         <header className="mt-5">
@@ -42,7 +45,7 @@ export function EventDetailHeader({ event }: EventDetailHeaderProps) {
             </div>
 
             <Link
-                to="/pages/profile-page"
+                to={profileTo}
                 search={{ userId: event.organizer.id }}
                 className="mt-4 inline-flex items-center gap-2 text-regular text-secondary-text"
             >

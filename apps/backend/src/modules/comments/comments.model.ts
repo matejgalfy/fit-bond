@@ -181,6 +181,29 @@ export const commentsModel = {
 
         return firstOrNull(results);
     },
+
+    async softDeleteReplies(
+        db: Database,
+        parentCommentId: string,
+        deletedBy: string,
+        reason?: string
+    ) {
+        return db
+            .update(comments)
+            .set({
+                deletedAt: new Date(),
+                updatedAt: new Date(),
+                deletedBy,
+                deletionReason: reason,
+            })
+            .where(
+                and(
+                    eq(comments.parentCommentId, parentCommentId),
+                    isNull(comments.deletedAt)
+                )
+            )
+            .returning();
+    },
 };
 
 export type CommentsModel = typeof commentsModel;

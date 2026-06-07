@@ -120,11 +120,14 @@ export function createCommentsService({
                 );
             }
 
-            await model.softDelete(
+            const reasonToStore = isAuthor ? undefined : reason;
+            await model.softDelete(db, commentId, actor.id, reasonToStore);
+            // Cascade: deleting a comment also removes all of its replies.
+            await model.softDeleteReplies(
                 db,
                 commentId,
                 actor.id,
-                isAuthor ? undefined : reason
+                reasonToStore
             );
             return { success: true };
         },

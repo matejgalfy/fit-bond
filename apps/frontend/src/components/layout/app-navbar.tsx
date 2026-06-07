@@ -49,7 +49,7 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
 
-            {userName ? (
+            {userName && !isAdmin ? (
                 <Button
                     variant="ghost"
                     size="icon"
