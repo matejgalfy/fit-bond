@@ -1,7 +1,6 @@
 import { useId, useMemo, useState } from 'react';
 import { EmptyState } from '@/components/empty-state';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useDebounce } from '@/hooks/use-debounce';
@@ -52,17 +51,17 @@ export function AdminEventsBrowser() {
 
     return (
         <>
-            <DiscoverFilters filters={rawFilters} onChange={setRawFilters} />
-
-            <Card className="p-4 mb-4 border-outline bg-surface shadow-sm rounded-2xl">
-                <div className="flex flex-wrap gap-4 text-small">
+            <DiscoverFilters
+                filters={rawFilters}
+                onChange={setRawFilters}
+                extraControls={
                     <Toggle
                         label="Include cancelled"
                         checked={includeCancelled}
                         onChange={setIncludeCancelled}
                     />
-                </div>
-            </Card>
+                }
+            />
 
             <div className="mb-4 text-regular text-secondary-text">
                 <strong className="text-primary-text font-semibold">

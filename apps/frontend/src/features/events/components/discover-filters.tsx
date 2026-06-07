@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { Search, MapPin, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,6 +17,7 @@ export interface DiscoverFiltersState {
 interface DiscoverFiltersProps {
     filters: DiscoverFiltersState;
     onChange: (_filters: DiscoverFiltersState) => void;
+    extraControls?: ReactNode;
 }
 
 const SKILL_LEVELS: { label: string; value: SkillLevel | 'any' }[] = [
@@ -25,7 +27,11 @@ const SKILL_LEVELS: { label: string; value: SkillLevel | 'any' }[] = [
     { label: 'Advanced', value: 'advanced' },
 ];
 
-export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
+export function DiscoverFilters({
+    filters,
+    onChange,
+    extraControls,
+}: DiscoverFiltersProps) {
     const updateFilter = <K extends keyof DiscoverFiltersState>(
         key: K,
         value: DiscoverFiltersState[K]
@@ -127,6 +133,12 @@ export function DiscoverFilters({ filters, onChange }: DiscoverFiltersProps) {
                     })}
                 </div>
             </div>
+
+            {extraControls && (
+                <div className="mt-5 pt-4 border-t border-outline flex flex-wrap gap-4 text-small">
+                    {extraControls}
+                </div>
+            )}
         </Card>
     );
 }
