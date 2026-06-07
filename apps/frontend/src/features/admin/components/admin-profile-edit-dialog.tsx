@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import {
     Dialog,
     DialogClose,
@@ -11,7 +13,14 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { FormField } from '@/components/ui/form-field';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
 import { useUpdateAdminUser } from '../hooks/use-admin-users';
 
 interface AdminProfileEditDialogProps {
@@ -21,6 +30,13 @@ interface AdminProfileEditDialogProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
+
+const adminProfileEditSchema = z.object({
+    name: z.string().trim().min(1, 'Name is required.').max(200),
+    bio: z.string().trim().max(1000),
+});
+
+type AdminProfileEditValues = z.infer<typeof adminProfileEditSchema>;
 
 function AdminProfileEditForm({
     userId,
@@ -33,89 +49,106 @@ function AdminProfileEditForm({
     userBio: string | null;
     onOpenChange: (open: boolean) => void;
 }) {
-    const [name, setName] = useState(userName);
-    const [bio, setBio] = useState(userBio ?? '');
-    const [error, setError] = useState('');
+    const form = useForm<AdminProfileEditValues>({
+        resolver: zodResolver(adminProfileEditSchema),
+        defaultValues: {
+            name: userName,
+            bio: userBio ?? '',
+        },
+    });
 
     const { mutateAsync: updateUser, isPending } = useUpdateAdminUser();
 
-    const submit = async () => {
-        setError('');
-
-        const trimmedName = name.trim();
-        if (trimmedName.length === 0) {
-            setError('Name is required.');
-            return;
-        }
-
+    const onSubmit = async (values: AdminProfileEditValues) => {
         try {
             await updateUser({
                 id: userId,
                 body: {
-                    name: trimmedName,
-                    bio: bio.trim() || null,
+                    name: values.name,
+                    bio: values.bio || null,
                 },
             });
             onOpenChange(false);
         } catch (err) {
-            if (err instanceof Error) {
-                setError(err.message);
-                return;
-            }
-            setError('Failed to save profile. Please try again.');
+            form.setError('root', {
+                message:
+                    err instanceof Error
+                        ? err.message
+                        : 'Failed to save profile. Please try again.',
+            });
         }
     };
 
+    const rootError = form.formState.errors.root?.message;
+
     return (
-        <form
-            onSubmit={(e) => {
-                e.preventDefault();
-                void submit();
-            }}
-            className="space-y-3 w-full min-w-0"
-        >
-            <FormField label="Name" htmlFor="admin-edit-name" required>
-                <Input
-                    id="admin-edit-name"
-                    value={name}
-                    onChange={(e) => {
-                        setName(e.target.value);
-                    }}
-                    maxLength={200}
-                    className="h-10 bg-background"
+        <Form {...form}>
+            <form
+                onSubmit={(e) => {
+                    void form.handleSubmit(onSubmit)(e);
+                }}
+                className="space-y-3 w-full min-w-0"
+            >
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>
+                                Name
+                                <span className="text-primary-red">*</span>
+                            </FormLabel>
+                            <FormControl>
+                                <Input
+                                    maxLength={200}
+                                    className="h-10 bg-background"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
-            </FormField>
 
-            <FormField label="Bio" htmlFor="admin-edit-bio">
-                <Textarea
-                    id="admin-edit-bio"
-                    value={bio}
-                    onChange={(e) => {
-                        setBio(e.target.value);
-                    }}
-                    maxLength={1000}
-                    rows={3}
-                    className="bg-background"
+                <FormField
+                    control={form.control}
+                    name="bio"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Bio</FormLabel>
+                            <FormControl>
+                                <Textarea
+                                    maxLength={1000}
+                                    rows={3}
+                                    className="bg-background"
+                                    {...field}
+                                />
+                            </FormControl>
+                            <FormMessage />
+                        </FormItem>
+                    )}
                 />
-            </FormField>
 
-            {error && <p className="text-regular text-primary-red">{error}</p>}
+                {rootError && (
+                    <p className="text-regular text-primary-red">{rootError}</p>
+                )}
 
-            <DialogFooter>
-                <DialogClose asChild>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        disabled={isPending}
-                    >
-                        Cancel
+                <DialogFooter>
+                    <DialogClose asChild>
+                        <Button
+                            type="button"
+                            variant="outline"
+                            disabled={isPending}
+                        >
+                            Cancel
+                        </Button>
+                    </DialogClose>
+                    <Button type="submit" disabled={isPending}>
+                        {isPending ? 'Saving...' : 'Save'}
                     </Button>
-                </DialogClose>
-                <Button type="submit" disabled={isPending}>
-                    {isPending ? 'Saving...' : 'Save'}
-                </Button>
-            </DialogFooter>
-        </form>
+                </DialogFooter>
+            </form>
+        </Form>
     );
 }
 

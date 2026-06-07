@@ -1,23 +1,36 @@
-import { FormField } from '@/components/ui/form-field';
+import { useFormContext } from 'react-hook-form';
+import {
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
 import { LocationCombobox } from '@/components/location-combobox';
-import type { LocationSuggestion } from '../../../../../../../backend/src/modules/locations/locations.schema';
+import type { EventFormValues } from '../../../validation/event-form-schema';
 
-interface LocationFieldProps {
-    location: LocationSuggestion | null;
-    onLocationChange: (location: LocationSuggestion | null) => void;
-}
+export function LocationField() {
+    const form = useFormContext<EventFormValues>();
 
-export function LocationField({
-    location,
-    onLocationChange,
-}: LocationFieldProps) {
     return (
-        <FormField label="Location" htmlFor="event-location" required>
-            <LocationCombobox
-                id="event-location"
-                value={location}
-                onChange={onLocationChange}
-            />
-        </FormField>
+        <FormField
+            control={form.control}
+            name="location"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel htmlFor="event-location">
+                        Location<span className="text-primary-red">*</span>
+                    </FormLabel>
+                    <FormControl>
+                        <LocationCombobox
+                            id="event-location"
+                            value={field.value}
+                            onChange={field.onChange}
+                        />
+                    </FormControl>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
     );
 }

@@ -1,9 +1,18 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
+} from '@/components/ui/form';
 
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { AuthCard } from '@/features/auth/components/auth-card';
@@ -15,6 +24,10 @@ import { TextInput } from '@/features/auth/components/text-input';
 import { Mail, User } from 'lucide-react';
 
 import { authClient } from '@/lib/api';
+import {
+    registerSchema,
+    type RegisterValues,
+} from '@/features/auth/auth-schema';
 
 export const Route = createFileRoute('/auth/register')({
     component: Register,
@@ -24,12 +37,15 @@ function Register() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
 
-    const [name, setName] = useState('');
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [confirmPassword, setConfirmPassword] = useState('');
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const form = useForm<RegisterValues>({
+        resolver: zodResolver(registerSchema),
+        defaultValues: {
+            name: '',
+            email: '',
+            password: '',
+            confirmPassword: '',
+        },
+    });
 
     useEffect(() => {
         if (!isPending && session?.user) {
@@ -37,49 +53,37 @@ function Register() {
         }
     }, [isPending, navigate, session?.user]);
 
-    const handleSubmit = () => {
-        setError('');
-
-        if (!name || !email || !password || !confirmPassword) {
-            setError('Please fill in all fields.');
-            return;
-        }
-
-        if (password !== confirmPassword) {
-            setError('Passwords do not match.');
-            return;
-        }
-
-        if (password.length < 8) {
-            setError('Password must be at least 8 characters.');
-            return;
-        }
-
-        setIsLoading(true);
-
+    const onSubmit = (values: RegisterValues) =>
         authClient.signUp
-            .email({ name, email, password })
+            .email({
+                name: values.name,
+                email: values.email,
+                password: values.password,
+            })
             .then(({ error: signUpError }) => {
                 if (signUpError) {
-                    setError(
-                        signUpError.message ??
-                            'Registration failed. Please try again.'
-                    );
-                    setIsLoading(false);
+                    form.setError('root', {
+                        message:
+                            signUpError.message ??
+                            'Registration failed. Please try again.',
+                    });
                     return;
                 }
 
                 void navigate({ to: '/pages/home-page' });
             })
             .catch(() => {
-                setError('Registration failed. Please try again.');
-                setIsLoading(false);
+                form.setError('root', {
+                    message: 'Registration failed. Please try again.',
+                });
             });
-    };
 
     if (isPending || session?.user) {
         return null;
     }
+
+    const rootError = form.formState.errors.root?.message;
+    const isSubmitting = form.formState.isSubmitting;
 
     return (
         <div className="min-h-svh bg-background text-primary-text transition-colors duration-300">
@@ -96,63 +100,96 @@ function Register() {
                         <GoogleButton />
                         <AuthDivider />
 
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleSubmit();
-                            }}
-                        >
-                            <TextInput
-                                type="text"
-                                placeholder="Full name"
-                                icon={User}
-                                value={name}
-                                onChange={(e) => {
-                                    setName(e.target.value);
+                        <Form {...form}>
+                            <form
+                                onSubmit={(e) => {
+                                    void form.handleSubmit(onSubmit)(e);
                                 }}
-                            />
-
-                            <TextInput
-                                type="email"
-                                placeholder="Email address"
-                                icon={Mail}
-                                value={email}
-                                onChange={(e) => {
-                                    setEmail(e.target.value);
-                                }}
-                            />
-
-                            <PasswordInput
-                                value={password}
-                                onChange={(e) => {
-                                    setPassword(e.target.value);
-                                }}
-                            />
-
-                            <PasswordInput
-                                placeholder="Confirm password"
-                                value={confirmPassword}
-                                onChange={(e) => {
-                                    setConfirmPassword(e.target.value);
-                                }}
-                            />
-
-                            {error && (
-                                <p className="text-regular text-primary-red text-center mb-3">
-                                    {error}
-                                </p>
-                            )}
-
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full h-11 rounded-xl text-regular font-semibold"
                             >
-                                {isLoading
-                                    ? 'Creating account…'
-                                    : 'Create Account'}
-                            </Button>
-                        </form>
+                                <div className="space-y-3.5">
+                                    <FormField
+                                        control={form.control}
+                                        name="name"
+                                        render={({ field }) => (
+                                            <FormItem className="gap-1.5">
+                                                <FormControl>
+                                                    <TextInput
+                                                        type="text"
+                                                        placeholder="Full name"
+                                                        icon={User}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem className="gap-1.5">
+                                                <FormControl>
+                                                    <TextInput
+                                                        type="email"
+                                                        placeholder="Email address"
+                                                        icon={Mail}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem className="gap-1.5">
+                                                <FormControl>
+                                                    <PasswordInput {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="confirmPassword"
+                                        render={({ field }) => (
+                                            <FormItem className="gap-1.5">
+                                                <FormControl>
+                                                    <PasswordInput
+                                                        placeholder="Confirm password"
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                {rootError && (
+                                    <p className="text-regular text-primary-red text-center mt-3.5">
+                                        {rootError}
+                                    </p>
+                                )}
+
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full h-11 rounded-xl text-regular font-semibold mt-5"
+                                >
+                                    {isSubmitting
+                                        ? 'Creating account…'
+                                        : 'Create Account'}
+                                </Button>
+                            </form>
+                        </Form>
 
                         <p className="text-center text-small text-secondary-text mt-4">
                             Already have an account?{' '}
