@@ -8,11 +8,11 @@ export interface GeocodeSuggestion {
 }
 
 export class GeocodingError extends Error {
-    constructor(
-        message: string,
-        public readonly cause?: unknown
-    ) {
+    public readonly cause?: unknown;
+
+    constructor(message: string, cause?: unknown) {
         super(message);
+        this.cause = cause;
         this.name = 'GeocodingError';
     }
 }

@@ -42,7 +42,9 @@ export const createEventBody = t.Object({
     duration: t.Number({ minimum: 15, maximum: 480 }),
     capacity: t.Number({ minimum: 2, maximum: 200 }),
     isPublic: t.Optional(t.Boolean()),
-    coverImageUrl: t.Optional(t.String({ format: 'uri' })),
+    // `uri-reference`, not `uri`: same-origin uploads are stored as relative
+    // paths like `/uploads/<file>`, which the strict `uri` format rejects.
+    coverImageUrl: t.Optional(t.String({ format: 'uri-reference' })),
 });
 
 export const updateEventBody = t.Object({
@@ -60,7 +62,9 @@ export const updateEventBody = t.Object({
     duration: t.Optional(t.Number({ minimum: 15, maximum: 480 })),
     capacity: t.Optional(t.Number({ minimum: 2, maximum: 200 })),
     isPublic: t.Optional(t.Boolean()),
-    coverImageUrl: t.Optional(t.String({ format: 'uri' })),
+    // `uri-reference`, not `uri`: same-origin uploads are stored as relative
+    // paths like `/uploads/<file>`, which the strict `uri` format rejects.
+    coverImageUrl: t.Optional(t.String({ format: 'uri-reference' })),
 });
 
 export const cancelEventBody = t.Object({

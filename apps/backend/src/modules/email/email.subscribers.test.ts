@@ -5,6 +5,7 @@ import type { Database } from '../../db';
 import type { EmailService } from './email.service';
 
 type CancelledMail = ReturnType<EmailService['eventCancelledEmail']>;
+type WelcomeMail = ReturnType<EmailService['sendWelcomeEmail']>;
 
 const fakeDb = {} as unknown as Database;
 
@@ -27,6 +28,13 @@ function makeMockEmailService() {
                     data: null,
                     error: null,
                 }) as unknown as CancelledMail
+        ),
+        sendWelcomeEmail: vi.fn(
+            (): WelcomeMail =>
+                Promise.resolve({
+                    data: null,
+                    error: null,
+                }) as unknown as WelcomeMail
         ),
     };
 }

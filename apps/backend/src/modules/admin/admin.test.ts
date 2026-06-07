@@ -22,6 +22,7 @@ function makeMockUser(overrides: Partial<UserType> = {}): UserType {
         emailVerified: true,
         banned: false,
         banReason: null,
+        bannedReason: null,
         banExpires: null,
         createdAt: new Date(),
         updatedAt: new Date(),

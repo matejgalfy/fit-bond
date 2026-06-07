@@ -5,7 +5,9 @@ export const updateBaseUserSchema = t.Object({
     email: t.Optional(t.String({ format: 'email' })),
     name: t.Optional(t.String({ minLength: 1, maxLength: 100 })),
     bio: t.Optional(t.String({ maxLength: 500 })),
-    profilePictureUrl: t.Optional(t.String({ format: 'uri' })),
+    // `uri-reference`, not `uri`: uploaded avatars are stored as relative paths
+    // like `/uploads/<file>` (Google OAuth avatars remain absolute URLs).
+    profilePictureUrl: t.Optional(t.String({ format: 'uri-reference' })),
 });
 
 export const userPreferredLocationSchema = t.Composite([

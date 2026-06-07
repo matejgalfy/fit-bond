@@ -6,7 +6,9 @@ export function GoogleButton() {
         authClient.signIn
             .social({
                 provider: 'google',
-                callbackURL: 'http://localhost:5173/pages/home-page',
+                // Relative path — better-auth resolves it against its own
+                // origin, so it works on any domain (dev or prod).
+                callbackURL: '/pages/home-page',
             })
             .catch(console.error);
     };
