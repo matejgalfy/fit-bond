@@ -15,6 +15,8 @@ import { zodValidator } from '@tanstack/zod-adapter';
 
 const adminEventDetailSearchSchema = z.object({
     eventId: z.string().optional(),
+    // Set when arriving from a comment report: the comment to focus.
+    commentId: z.string().optional().catch(undefined),
 });
 
 type AdminEventDetailSearch = z.infer<typeof adminEventDetailSearchSchema>;
@@ -25,7 +27,7 @@ export const Route = createFileRoute('/admin/event-detail-page')({
 });
 
 function AdminEventDetailPage() {
-    const { eventId }: AdminEventDetailSearch = Route.useSearch();
+    const { eventId, commentId }: AdminEventDetailSearch = Route.useSearch();
     const { data: event, isPending, isError } = useEvent(eventId);
 
     if (isPending) {
@@ -74,7 +76,10 @@ function AdminEventDetailPage() {
             <EventDetailActions event={event} />
             <EventDetailDescription event={event} />
             <EventEngagementSummary event={event} />
-            <EventCommentsSection eventId={event.id} />
+            <EventCommentsSection
+                eventId={event.id}
+                focusCommentId={commentId}
+            />
         </div>
     );
 }

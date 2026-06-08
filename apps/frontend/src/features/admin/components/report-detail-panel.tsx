@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
-import { CheckCircle2, XCircle } from 'lucide-react';
+import { CheckCircle2, ExternalLink, XCircle } from 'lucide-react';
+import { useRouter } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,6 +18,21 @@ interface ReportDetailPanelProps {
 
 type ActionMode = 'idle' | 'resolve' | 'reject';
 
+// The label for the "open target" action, or null when the target can't be
+// opened (e.g. a reported comment whose event no longer exists).
+function targetActionLabel(report: Report): string | null {
+    switch (report.reportType) {
+        case 'event':
+            return 'Open event';
+        case 'comment':
+            return report.targetEventId ? 'Open comment' : null;
+        case 'user':
+            return 'Open profile';
+        default:
+            return null;
+    }
+}
+
 export function ReportDetailPanel({
     report,
     onResolve,
@@ -25,6 +41,7 @@ export function ReportDetailPanel({
     rejectPending,
     actionError,
 }: ReportDetailPanelProps) {
+    const router = useRouter();
     const [mode, setMode] = useState<ActionMode>('idle');
     const [resolution, setResolution] = useState('');
 
@@ -35,6 +52,41 @@ export function ReportDetailPanel({
 
     const isPending = report?.status === 'pending';
     const trimmed = resolution.trim();
+    const openLabel = report ? targetActionLabel(report) : null;
+
+    // Open the reported content in a new tab so the admin keeps the reports
+    // dashboard (and the Resolve/Reject actions) open behind it.
+    const openTarget = () => {
+        if (!report) return;
+        let href: string | null = null;
+        switch (report.reportType) {
+            case 'event':
+                href = router.buildLocation({
+                    to: '/admin/event-detail-page',
+                    search: { eventId: report.targetId },
+                }).href;
+                break;
+            case 'comment':
+                if (!report.targetEventId) return;
+                href = router.buildLocation({
+                    to: '/admin/event-detail-page',
+                    search: {
+                        eventId: report.targetEventId,
+                        commentId: report.targetId,
+                    },
+                }).href;
+                break;
+            case 'user':
+                href = router.buildLocation({
+                    to: '/admin/profile-page',
+                    search: { userId: report.targetId },
+                }).href;
+                break;
+        }
+        if (href) {
+            window.open(href, '_blank', 'noopener,noreferrer');
+        }
+    };
 
     return (
         <Card>
@@ -68,6 +120,17 @@ export function ReportDetailPanel({
                                 />
                             )}
                         </dl>
+
+                        {openLabel && (
+                            <Button
+                                variant="outline"
+                                onClick={openTarget}
+                                className="mb-3"
+                            >
+                                <ExternalLink size={16} />
+                                {openLabel}
+                            </Button>
+                        )}
 
                         {isPending && mode === 'idle' && (
                             <div className="flex flex-wrap gap-2">
