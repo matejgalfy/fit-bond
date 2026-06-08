@@ -1,9 +1,10 @@
 import { useMemo } from 'react';
 import { createFileRoute } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
+import { Button } from '@/components/ui/button';
 import { EventCard } from '@/features/events/components/event-card';
 import type { Event } from '@/features/events/types';
-import { useEvents } from '@/features/events/hooks/events';
+import { useInfiniteEvents } from '@/features/events/hooks/events';
 import { useUserProfile } from '@/features/users/hooks/use-users';
 
 export const Route = createFileRoute('/pages/home-page')({
@@ -23,15 +24,17 @@ function HomePage() {
             lat: profile?.location?.lat ?? undefined,
             lng: profile?.location?.lng ?? undefined,
             radius: profile?.location?.radius ?? undefined,
+            limit: 20,
         };
     }, [session?.user.id, profile]);
 
-    const { data: backendEvents } = useEvents(apiFilters);
+    const { data, fetchNextPage, hasNextPage, isFetchingNextPage } =
+        useInfiniteEvents(apiFilters);
 
     if (!session?.user) return null;
 
     const firstName = session.user.name.split(' ')[0];
-    const allEvents: Event[] = backendEvents ?? [];
+    const allEvents: Event[] = data?.pages.flat() ?? [];
 
     return (
         <div className="max-w-240">
@@ -55,6 +58,18 @@ function HomePage() {
                     <EventCard key={event.id} event={event} />
                 ))}
             </div>
+
+            {hasNextPage && (
+                <div className="mt-6 flex justify-center">
+                    <Button
+                        variant="secondary"
+                        onClick={() => void fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                    >
+                        {isFetchingNextPage ? 'Loading…' : 'Load more'}
+                    </Button>
+                </div>
+            )}
         </div>
     );
 }
