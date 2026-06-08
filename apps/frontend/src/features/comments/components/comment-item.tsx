@@ -11,11 +11,15 @@ import {
     DialogHeader,
     DialogTitle,
 } from '@/components/ui/dialog';
-import { timeAgo } from '@/lib/utils';
+import { cn, timeAgo } from '@/lib/utils';
 import { ReportCommentDialog } from '@/features/reports/components/report-comment-dialog';
 import type { Comment } from '../types';
 import { useDeleteComment } from '../hooks/comments';
 import { CommentComposer } from './comment-composer';
+
+// Applied to a comment scrolled into view from a notification.
+const highlightClass =
+    'rounded-xl ring-2 ring-primary-blue ring-offset-4 ring-offset-surface transition-shadow duration-300';
 
 interface CommentItemProps {
     comment: Comment;
@@ -25,6 +29,7 @@ interface CommentItemProps {
     currentUserName: string;
     currentUserImage?: string | null;
     isAdmin?: boolean;
+    highlightCommentId?: string | null;
 }
 
 export function CommentItem({
@@ -35,13 +40,20 @@ export function CommentItem({
     currentUserName,
     currentUserImage,
     isAdmin = false,
+    highlightCommentId,
 }: CommentItemProps) {
     const [replyOpen, setReplyOpen] = useState(false);
     const isOwnComment = comment.author.id === currentUserId;
     const profileTo = isAdmin ? '/admin/profile-page' : '/pages/profile-page';
 
     return (
-        <article className="flex gap-3">
+        <article
+            id={`comment-${comment.id}`}
+            className={cn(
+                'flex gap-3',
+                highlightCommentId === comment.id && highlightClass
+            )}
+        >
             <Link
                 to={profileTo}
                 search={{ userId: comment.author.id }}
@@ -124,7 +136,15 @@ export function CommentItem({
                 {replies.length > 0 && (
                     <div className="mt-3 space-y-3 border-l-2 border-outline pl-4">
                         {replies.map((reply) => (
-                            <article key={reply.id} className="flex gap-2.5">
+                            <article
+                                key={reply.id}
+                                id={`comment-${reply.id}`}
+                                className={cn(
+                                    'flex gap-2.5',
+                                    highlightCommentId === reply.id &&
+                                        highlightClass
+                                )}
+                            >
                                 <Link
                                     to={profileTo}
                                     search={{ userId: reply.author.id }}

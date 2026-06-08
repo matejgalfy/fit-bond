@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useLocation } from '@tanstack/react-router';
+import { createFileRoute, Link } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
@@ -16,6 +16,10 @@ import { zodValidator } from '@tanstack/zod-adapter';
 const eventDetailSearchSchema = z.object({
     eventId: z.string().optional(),
     from: z.literal('my-events').optional().catch(undefined),
+    // Set when arriving from a comment notification: the comment's author and
+    // the notification timestamp, used to locate the exact comment to focus.
+    commentAuthorId: z.string().optional().catch(undefined),
+    commentAt: z.coerce.number().optional().catch(undefined),
 });
 
 type EventDetailSearch = z.infer<typeof eventDetailSearchSchema>;
@@ -26,9 +30,14 @@ export const Route = createFileRoute('/pages/event-detail-page')({
 });
 
 function EventDetailPage() {
-    const { eventId, from }: EventDetailSearch = Route.useSearch();
-    const { hash } = useLocation();
+    const { eventId, from, commentAuthorId, commentAt }: EventDetailSearch =
+        Route.useSearch();
     const { data: event, isPending, isError } = useEvent(eventId);
+
+    const focusComment =
+        commentAuthorId && commentAt != null
+            ? { authorId: commentAuthorId, atMs: commentAt }
+            : undefined;
 
     if (isPending) {
         return (
@@ -80,7 +89,7 @@ function EventDetailPage() {
             <EventEngagementSummary event={event} />
             <EventCommentsSection
                 eventId={event.id}
-                focusComments={hash === 'comments'}
+                focusComment={focusComment}
             />
         </div>
     );

@@ -29,18 +29,22 @@ function RouteComponent() {
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-    // Every notification references the event it concerns (comment
-    // notifications point at the event whose discussion holds the comment), so
-    // opening one navigates to that event's detail page — comment
-    // notifications land on the discussion via the `comments` hash.
+    // Every notification references the event it concerns, so opening one
+    // navigates to that event's detail page. Comment notifications additionally
+    // carry the comment's author and timestamp so the event page can scroll to
+    // and highlight the exact comment (we don't store a comment id).
     const openNotification = (notification: Notification) => {
         if (!notification.eventId) return;
+        const focusSearch =
+            notification.type === 'comment' && notification.relatedUserId
+                ? {
+                      commentAuthorId: notification.relatedUserId,
+                      commentAt: new Date(notification.createdAt).getTime(),
+                  }
+                : {};
         void navigate({
             to: '/pages/event-detail-page',
-            search: { eventId: notification.eventId },
-            ...(notification.type === 'comment'
-                ? { hash: 'comments' }
-                : {}),
+            search: { eventId: notification.eventId, ...focusSearch },
         });
     };
 

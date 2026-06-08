@@ -1,19 +1,20 @@
-import { useEffect, useMemo, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
 import { authClient } from '@/lib/api';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import type { Comment } from '../types';
+import { type FocusComment, findFocusedCommentId } from '../utils';
 import { useComments } from '../hooks/comments';
 import { CommentComposer } from './comment-composer';
 import { CommentItem } from './comment-item';
 
 interface EventCommentsSectionProps {
     eventId: string;
-    // Scroll this section into view once comments have loaded — used when the
-    // user arrives from a comment notification.
-    focusComments?: boolean;
+    // Set when the user arrives from a comment notification: scrolls to and
+    // briefly highlights the matching comment (or the section, as a fallback).
+    focusComment?: FocusComment;
 }
 
 function groupComments(comments: Comment[]) {
@@ -36,26 +37,55 @@ function groupComments(comments: Comment[]) {
 
 export function EventCommentsSection({
     eventId,
-    focusComments = false,
+    focusComment,
 }: EventCommentsSectionProps) {
     const { data: session } = authClient.useSession();
     const isAdmin = useIsAdmin();
     const { data: comments, isPending, isError } = useComments(eventId);
     const sectionRef = useRef<HTMLElement>(null);
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
     const { roots, repliesByParentId } = useMemo(
         () => groupComments(comments ?? []),
         [comments]
     );
 
+    const focusAuthorId = focusComment?.authorId;
+    const focusAtMs = focusComment?.atMs;
+    const targetCommentId = useMemo(() => {
+        if (focusAuthorId == null || focusAtMs == null) return null;
+        return findFocusedCommentId(comments ?? [], {
+            authorId: focusAuthorId,
+            atMs: focusAtMs,
+        });
+    }, [comments, focusAuthorId, focusAtMs]);
+
     useEffect(() => {
-        if (focusComments && !isPending) {
+        if (focusAuthorId == null || isPending) return;
+
+        const target = targetCommentId
+            ? document.getElementById(`comment-${targetCommentId}`)
+            : null;
+
+        if (!target) {
+            // Comment not found (deleted or not loaded) — fall back to showing
+            // the discussion.
             sectionRef.current?.scrollIntoView({
                 behavior: 'smooth',
                 block: 'start',
             });
+            return;
         }
-    }, [focusComments, isPending]);
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedId(targetCommentId);
+        const timer = setTimeout(() => {
+            setHighlightedId(null);
+        }, 2500);
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [focusAuthorId, isPending, targetCommentId]);
 
     if (!session?.user) return null;
 
@@ -119,6 +149,7 @@ export function EventCommentsSection({
                             currentUserName={session.user.name}
                             currentUserImage={userImage}
                             isAdmin={isAdmin}
+                            highlightCommentId={highlightedId}
                         />
                     ))}
                 </div>
