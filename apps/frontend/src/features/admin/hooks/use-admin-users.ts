@@ -10,7 +10,6 @@ import type {
 } from '../../../../../backend/src/modules/admin/admin.schema';
 import {
     adminQueryKeys,
-    deleteAdminUser,
     getAdminUser,
     listAdminUsers,
     updateAdminUser,
@@ -99,16 +98,6 @@ export function useUpdateAdminUser() {
     return useMutation({
         mutationFn: ({ id, body }: { id: string; body: UpdateUserAdminBody }) =>
             updateAdminUser(id, body),
-        onSuccess: async (_data, variables) => {
-            await invalidate(variables.id);
-        },
-    });
-}
-
-export function useDeleteAdminUser() {
-    const invalidate = useInvalidateAdminUsers();
-    return useMutation({
-        mutationFn: ({ id }: { id: string }) => deleteAdminUser(id),
         onSuccess: async (_data, variables) => {
             await invalidate(variables.id);
         },

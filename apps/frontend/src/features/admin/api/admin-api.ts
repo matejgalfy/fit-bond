@@ -52,12 +52,6 @@ export async function updateAdminUser(id: string, body: UpdateUserAdminBody) {
     return data;
 }
 
-export async function deleteAdminUser(id: string) {
-    const { data, error } = await api.admin.users({ id }).delete();
-    throwIfError(error, 'Failed to delete user');
-    return data;
-}
-
 export async function listAdminEvents(filters?: AdminEventQueryFilters) {
     const { data, error } = await api.admin.events.get({
         query: filters ?? {},
