@@ -17,6 +17,7 @@ export const selectNotificationSchema = t.Object({
     message: t.String(),
     eventId: t.Optional(t.Union([t.String({ format: 'uuid' }), t.Null()])),
     relatedUserId: t.Optional(t.Union([t.String(), t.Null()])),
+    commentId: t.Optional(t.Union([t.String({ format: 'uuid' }), t.Null()])),
     isRead: t.Boolean(),
     readAt: t.Optional(t.Union([t.Date(), t.Null()])),
     createdAt: t.Date(),

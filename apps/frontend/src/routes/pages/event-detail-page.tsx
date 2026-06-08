@@ -16,6 +16,8 @@ import { zodValidator } from '@tanstack/zod-adapter';
 const eventDetailSearchSchema = z.object({
     eventId: z.string().optional(),
     from: z.literal('my-events').optional().catch(undefined),
+    // Set when arriving from a comment notification: the comment to focus.
+    commentId: z.string().optional().catch(undefined),
 });
 
 type EventDetailSearch = z.infer<typeof eventDetailSearchSchema>;
@@ -26,7 +28,7 @@ export const Route = createFileRoute('/pages/event-detail-page')({
 });
 
 function EventDetailPage() {
-    const { eventId, from }: EventDetailSearch = Route.useSearch();
+    const { eventId, from, commentId }: EventDetailSearch = Route.useSearch();
     const { data: event, isPending, isError } = useEvent(eventId);
 
     if (isPending) {
@@ -77,7 +79,10 @@ function EventDetailPage() {
             <EventDetailActions event={event} detailSource={from} />
             <EventDetailDescription event={event} />
             <EventEngagementSummary event={event} />
-            <EventCommentsSection eventId={event.id} />
+            <EventCommentsSection
+                eventId={event.id}
+                focusCommentId={commentId}
+            />
         </div>
     );
 }

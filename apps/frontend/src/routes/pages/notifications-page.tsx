@@ -1,12 +1,13 @@
 import { useMemo, useState } from 'react';
 import { Bell } from 'lucide-react';
-import { createFileRoute } from '@tanstack/react-router';
+import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import {
     NotificationsTabFilter,
     type NotificationTabValue,
 } from '@/features/notifications/components/notifications-tab-filter';
 import { MarkAllAsReadButton } from '@/features/notifications/components/mark-all-as-read-button';
 import { NotificationItem } from '@/features/notifications/components/notification-item';
+import type { Notification } from '@/features/notifications/types';
 import {
     useMarkAllNotificationsRead,
     useMarkNotificationRead,
@@ -21,11 +22,28 @@ function RouteComponent() {
     const [activeFilter, setActiveFilter] =
         useState<NotificationTabValue>('all');
 
+    const navigate = useNavigate();
     const { data: notifications = [] } = useNotifications();
     const markRead = useMarkNotificationRead();
     const markAllRead = useMarkAllNotificationsRead();
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
+
+    // Every notification references the event it concerns, so opening one
+    // navigates to that event's detail page. Comment notifications also carry
+    // the comment id, so the event page can scroll to and highlight it.
+    const openNotification = (notification: Notification) => {
+        if (!notification.eventId) return;
+        void navigate({
+            to: '/pages/event-detail-page',
+            search: {
+                eventId: notification.eventId,
+                ...(notification.commentId
+                    ? { commentId: notification.commentId }
+                    : {}),
+            },
+        });
+    };
 
     const visibleNotifications = useMemo(() => {
         const sorted = [...notifications].sort(
@@ -75,6 +93,7 @@ function RouteComponent() {
                         onRead={(id) => {
                             markRead.mutate(id);
                         }}
+                        onOpen={openNotification}
                     />
                 ))}
 

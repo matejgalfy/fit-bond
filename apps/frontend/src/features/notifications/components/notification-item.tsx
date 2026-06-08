@@ -39,11 +39,13 @@ const notificationMeta: Record<
 interface NotificationItemProps {
     notification: Notification;
     onRead: (_: string) => void;
+    onOpen: (_: Notification) => void;
 }
 
 export function NotificationItem({
     notification,
     onRead,
+    onOpen,
 }: NotificationItemProps) {
     const meta = notificationMeta[notification.type];
     const Icon = meta.icon;
@@ -55,6 +57,7 @@ export function NotificationItem({
                 if (!notification.isRead) {
                     onRead(notification.id);
                 }
+                onOpen(notification);
             }}
             className={cn(
                 'relative w-full rounded-xl border bg-surface px-4 py-3.5 text-left transition-colors duration-200 cursor-pointer',

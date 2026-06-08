@@ -188,6 +188,7 @@ describe('notifications subscribers', () => {
             message: 'Alice commented on Run.',
             eventId: 'event-1',
             relatedUserId: 'actor-1',
+            commentId: 'c-1',
         });
     });
 

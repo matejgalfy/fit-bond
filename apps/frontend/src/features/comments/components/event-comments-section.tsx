@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,9 @@ import { CommentItem } from './comment-item';
 
 interface EventCommentsSectionProps {
     eventId: string;
+    // Set when the user arrives from a comment notification: scrolls to and
+    // briefly highlights this comment (falls back to the section if it's gone).
+    focusCommentId?: string;
 }
 
 function groupComments(comments: Comment[]) {
@@ -31,15 +34,44 @@ function groupComments(comments: Comment[]) {
     return { roots, repliesByParentId };
 }
 
-export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
+export function EventCommentsSection({
+    eventId,
+    focusCommentId,
+}: EventCommentsSectionProps) {
     const { data: session } = authClient.useSession();
     const isAdmin = useIsAdmin();
     const { data: comments, isPending, isError } = useComments(eventId);
+    const sectionRef = useRef<HTMLElement>(null);
+    const [highlightedId, setHighlightedId] = useState<string | null>(null);
 
     const { roots, repliesByParentId } = useMemo(
         () => groupComments(comments ?? []),
         [comments]
     );
+
+    useEffect(() => {
+        if (focusCommentId == null || isPending) return;
+
+        const target = document.getElementById(`comment-${focusCommentId}`);
+        if (!target) {
+            // Comment not found (deleted or not loaded) — fall back to showing
+            // the discussion.
+            sectionRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+            return;
+        }
+
+        target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        setHighlightedId(focusCommentId);
+        const timer = setTimeout(() => {
+            setHighlightedId(null);
+        }, 2500);
+        return () => {
+            clearTimeout(timer);
+        };
+    }, [focusCommentId, isPending]);
 
     if (!session?.user) return null;
 
@@ -47,7 +79,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
     const commentCount = comments?.length ?? 0;
 
     return (
-        <section className="mt-8">
+        <section ref={sectionRef} className="mt-8">
             <div className="mb-4 flex items-center gap-2">
                 <MessageCircle size={20} className="text-primary-blue" />
                 <h2 className="m-0 font-heading text-subheading font-semibold text-primary-text">
@@ -103,6 +135,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
                             currentUserName={session.user.name}
                             currentUserImage={userImage}
                             isAdmin={isAdmin}
+                            highlightCommentId={highlightedId}
                         />
                     ))}
                 </div>
