@@ -38,7 +38,7 @@ export function AppShell({
                     sections={sideNavSections}
                     activeNav={activeNav}
                 />
-                <main className="flex-1 px-content-x py-content-y pb-content-bottom">
+                <main className="flex-1 min-w-0 px-content-x py-content-y pb-content-bottom">
                     <div className="mx-auto w-full max-w-280">{children}</div>
                 </main>
             </div>
