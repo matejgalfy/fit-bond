@@ -12,7 +12,7 @@ import { CommentItem } from './comment-item';
 interface EventCommentsSectionProps {
     eventId: string;
     // Set when the user arrives from a comment notification: scrolls to and
-    // briefly highlights this comment (falls back to the section if it's gone).
+    // briefly highlights this comment
     focusCommentId?: string;
 }
 
