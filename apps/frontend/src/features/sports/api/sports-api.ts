@@ -7,7 +7,7 @@ export const sportQueryKeys = {
     all: ['sports'] as const,
     lists: () => [...sportQueryKeys.all, 'list'] as const,
     details: () => [...sportQueryKeys.all, 'detail'] as const,
-    detail: (id: string) => [...sportQueryKeys.details(), id] as const,
+    detail: (id?: string) => [...sportQueryKeys.details(), id] as const,
 };
 
 export async function listSports() {

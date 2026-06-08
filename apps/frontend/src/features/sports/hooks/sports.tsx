@@ -18,12 +18,9 @@ export function useSports() {
 
 export function useSport(id?: string) {
     return useQuery<Sport>({
-        queryKey: sportQueryKeys.detail(id ?? 'missing'),
+        queryKey: sportQueryKeys.detail(id),
         queryFn: () => {
-            if (!id) {
-                throw new Error('Missing sport id');
-            }
-
+            if (!id) throw new Error('Missing sport id');
             return getSport(id);
         },
         enabled: Boolean(id),

@@ -42,11 +42,9 @@ export function useInfiniteAdminUsers(filters?: AdminUserQueryFilters) {
 
 export function useAdminUser(id?: string) {
     return useQuery({
-        queryKey: adminQueryKeys.userDetail(id ?? 'missing'),
+        queryKey: adminQueryKeys.userDetail(id),
         queryFn: () => {
-            if (!id) {
-                throw new Error('Missing user id');
-            }
+            if (!id) throw new Error('Missing user id');
             return getAdminUser(id);
         },
         enabled: Boolean(id),

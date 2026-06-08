@@ -7,7 +7,7 @@ import type {
 
 export const userQueryKeys = {
     all: ['users'] as const,
-    profile: (id: string) => [...userQueryKeys.all, 'profile', id] as const,
+    profile: (id?: string) => [...userQueryKeys.all, 'profile', id] as const,
     search: (name: string) => [...userQueryKeys.all, 'search', name] as const,
 };
 

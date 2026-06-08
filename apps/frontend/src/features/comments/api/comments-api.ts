@@ -11,10 +11,10 @@ export const commentQueryKeys = {
     lists: () => [...commentQueryKeys.all, 'list'] as const,
     list: (filters: CommentQueryFilters) =>
         [...commentQueryKeys.lists(), filters] as const,
-    byEvent: (eventId: string) =>
+    byEvent: (eventId?: string) =>
         [...commentQueryKeys.lists(), { eventId }] as const,
     details: () => [...commentQueryKeys.all, 'detail'] as const,
-    detail: (id: string) => [...commentQueryKeys.details(), id] as const,
+    detail: (id?: string) => [...commentQueryKeys.details(), id] as const,
 };
 
 export async function listComments(filters: CommentQueryFilters) {

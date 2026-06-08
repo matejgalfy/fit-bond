@@ -15,12 +15,9 @@ import {
 
 export function useComments(eventId?: string) {
     return useQuery<Comment[]>({
-        queryKey: commentQueryKeys.byEvent(eventId ?? 'missing'),
+        queryKey: commentQueryKeys.byEvent(eventId),
         queryFn: () => {
-            if (!eventId) {
-                throw new Error('Missing event id');
-            }
-
+            if (!eventId) throw new Error('Missing event id');
             return listComments({ eventId });
         },
         enabled: Boolean(eventId),
@@ -29,12 +26,9 @@ export function useComments(eventId?: string) {
 
 export function useComment(id?: string) {
     return useQuery<Comment>({
-        queryKey: commentQueryKeys.detail(id ?? 'missing'),
+        queryKey: commentQueryKeys.detail(id),
         queryFn: () => {
-            if (!id) {
-                throw new Error('Missing comment id');
-            }
-
+            if (!id) throw new Error('Missing comment id');
             return getComment(id);
         },
         enabled: Boolean(id),
