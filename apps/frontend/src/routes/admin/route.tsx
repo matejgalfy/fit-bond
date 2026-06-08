@@ -18,6 +18,7 @@ export const Route = createFileRoute('/admin')({
 function pathnameToNavId(pathname: string): string {
     if (pathname.includes('/admin/discover')) return 'admin-discover';
     if (pathname.includes('/admin/event-detail-page')) return 'admin-discover';
+    if (pathname.includes('/admin/edit-event')) return 'admin-discover';
     return 'admin-dashboard';
 }
 
