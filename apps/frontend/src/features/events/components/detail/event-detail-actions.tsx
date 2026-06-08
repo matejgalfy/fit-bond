@@ -106,6 +106,13 @@ export function EventDetailActions({
                         className="w-full border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                         onClick={() => {
                             setManagementError('');
+                            if (isAdmin) {
+                                void navigate({
+                                    to: '/admin/edit-event',
+                                    search: { eventId: event.id },
+                                });
+                                return;
+                            }
                             void navigate({
                                 to: '/pages/edit-event',
                                 search: {
