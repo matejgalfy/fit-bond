@@ -117,8 +117,6 @@ export function useCancelEvent(id?: string) {
             return cancelEvent(id, body);
         },
         onSuccess: async () => {
-            // Cancelled events drop out of normal-user lists and gain a
-            // "Cancelled" badge in admin views, so refresh both event feeds.
             await queryClient.invalidateQueries({
                 queryKey: eventQueryKeys.all,
             });
