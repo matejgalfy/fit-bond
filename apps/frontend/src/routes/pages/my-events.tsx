@@ -1,11 +1,15 @@
 import { useState } from 'react';
 import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
+import { Button } from '@/components/ui/button';
 import { EventCard } from '@/features/events/components/event-card';
 import { EventAddButton } from '@/features/events/components/event-add-button';
 import { EventTabFilter } from '@/features/events/components/event-tab-filter';
 import { EventTab, type EventTabValue } from '../../features/events/event-tabs';
-import { useEvents, useEventStats } from '@/features/events/hooks/events';
+import {
+    useInfiniteEvents,
+    useEventStats,
+} from '@/features/events/hooks/events';
 
 export const Route = createFileRoute('/pages/my-events')({
     component: MyEventsPage,
@@ -20,27 +24,33 @@ function MyEventsPage() {
 
     const userId = session?.user.id;
 
-    const { data: organizingEvents } = useEvents({
+    const organizing = useInfiniteEvents({
         userId,
         userRelation: 'organized',
+        limit: 20,
     });
-    const { data: joinedEvents } = useEvents({
+    const joined = useInfiniteEvents({
         userId,
         userRelation: 'joined',
+        limit: 20,
     });
-    const { data: interestedEvents } = useEvents({
+    const interested = useInfiniteEvents({
         userId,
         userRelation: 'interested',
+        limit: 20,
     });
     const { data: stats } = useEventStats(userId);
 
     if (!session?.user) return null;
 
-    const tabEvents: Record<EventTabValue, typeof organizingEvents> = {
-        [EventTab.organizing]: organizingEvents ?? [],
-        [EventTab.joined]: joinedEvents ?? [],
-        [EventTab.interested]: interestedEvents ?? [],
+    const tabQueries = {
+        [EventTab.organizing]: organizing,
+        [EventTab.joined]: joined,
+        [EventTab.interested]: interested,
     };
+
+    const activeQuery = tabQueries[activeTab];
+    const activeEvents = activeQuery.data?.pages.flat() ?? [];
 
     const counts = {
         [EventTab.organizing]: stats?.organized ?? 0,
@@ -63,7 +73,7 @@ function MyEventsPage() {
             />
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 mt-4">
-                {(tabEvents[activeTab] ?? []).map((event) => (
+                {activeEvents.map((event) => (
                     <EventCard
                         key={event.id}
                         event={event}
@@ -71,6 +81,20 @@ function MyEventsPage() {
                     />
                 ))}
             </div>
+
+            {activeQuery.hasNextPage && (
+                <div className="mt-6 flex justify-center">
+                    <Button
+                        variant="secondary"
+                        onClick={() => void activeQuery.fetchNextPage()}
+                        disabled={activeQuery.isFetchingNextPage}
+                    >
+                        {activeQuery.isFetchingNextPage
+                            ? 'Loading…'
+                            : 'Load more'}
+                    </Button>
+                </div>
+            )}
 
             <EventAddButton
                 onClick={() => {
