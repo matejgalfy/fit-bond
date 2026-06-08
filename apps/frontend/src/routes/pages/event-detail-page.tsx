@@ -10,7 +10,7 @@ import { EventDetailDescription } from '@/features/events/components/detail/even
 import { EventDetailActions } from '@/features/events/components/detail/event-detail-actions';
 import { EventEngagementSummary } from '@/features/events/components/detail/event-engagement-summary';
 import { EventCommentsSection } from '@/features/comments/components/event-comments-section';
-import { z } from 'zod';
+import * as z from 'zod';
 import { zodValidator } from '@tanstack/zod-adapter';
 
 const eventDetailSearchSchema = z.object({

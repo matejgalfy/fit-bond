@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import * as z from 'zod';
 import type { LocationSuggestion } from '../../../../../backend/src/modules/locations/locations.schema';
 import type { SkillLevel } from '../../../../../backend/src/modules/events/events.types';
 import type {
