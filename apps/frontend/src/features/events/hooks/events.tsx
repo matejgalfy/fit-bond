@@ -47,12 +47,9 @@ export function useInfiniteEvents(filters?: EventQueryFilters) {
 
 export function useEvent(id?: string) {
     return useQuery<Event>({
-        queryKey: eventQueryKeys.detail(id ?? 'missing'),
+        queryKey: eventQueryKeys.detail(id),
         queryFn: () => {
-            if (!id) {
-                throw new Error('Missing event id');
-            }
-
+            if (!id) throw new Error('Missing event id');
             return getEvent(id);
         },
         enabled: Boolean(id),
@@ -61,12 +58,9 @@ export function useEvent(id?: string) {
 
 export function useEventStats(userId?: string) {
     return useQuery<EventStatsResponse>({
-        queryKey: eventQueryKeys.stats(userId ?? 'missing'),
+        queryKey: eventQueryKeys.stats(userId),
         queryFn: () => {
-            if (!userId) {
-                throw new Error('Missing user id');
-            }
-
+            if (!userId) throw new Error('Missing user id');
             return getEventStats(userId);
         },
         enabled: Boolean(userId),

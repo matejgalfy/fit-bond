@@ -42,11 +42,9 @@ export function useInfiniteReports(filters?: AdminReportQueryFilters) {
 
 export function useReport(id?: string) {
     return useQuery({
-        queryKey: adminQueryKeys.reportDetail(id ?? 'missing'),
+        queryKey: adminQueryKeys.reportDetail(id),
         queryFn: () => {
-            if (!id) {
-                throw new Error('Missing report id');
-            }
+            if (!id) throw new Error('Missing report id');
             return getAdminReport(id);
         },
         enabled: Boolean(id),
