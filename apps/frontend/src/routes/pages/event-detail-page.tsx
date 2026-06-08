@@ -1,4 +1,4 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import { createFileRoute, Link, useLocation } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
@@ -27,6 +27,7 @@ export const Route = createFileRoute('/pages/event-detail-page')({
 
 function EventDetailPage() {
     const { eventId, from }: EventDetailSearch = Route.useSearch();
+    const { hash } = useLocation();
     const { data: event, isPending, isError } = useEvent(eventId);
 
     if (isPending) {
@@ -77,7 +78,10 @@ function EventDetailPage() {
             <EventDetailActions event={event} detailSource={from} />
             <EventDetailDescription event={event} />
             <EventEngagementSummary event={event} />
-            <EventCommentsSection eventId={event.id} />
+            <EventCommentsSection
+                eventId={event.id}
+                focusComments={hash === 'comments'}
+            />
         </div>
     );
 }

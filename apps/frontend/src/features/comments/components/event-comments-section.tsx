@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { EmptyState } from '@/components/empty-state';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -11,6 +11,9 @@ import { CommentItem } from './comment-item';
 
 interface EventCommentsSectionProps {
     eventId: string;
+    // Scroll this section into view once comments have loaded — used when the
+    // user arrives from a comment notification.
+    focusComments?: boolean;
 }
 
 function groupComments(comments: Comment[]) {
@@ -31,15 +34,28 @@ function groupComments(comments: Comment[]) {
     return { roots, repliesByParentId };
 }
 
-export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
+export function EventCommentsSection({
+    eventId,
+    focusComments = false,
+}: EventCommentsSectionProps) {
     const { data: session } = authClient.useSession();
     const isAdmin = useIsAdmin();
     const { data: comments, isPending, isError } = useComments(eventId);
+    const sectionRef = useRef<HTMLElement>(null);
 
     const { roots, repliesByParentId } = useMemo(
         () => groupComments(comments ?? []),
         [comments]
     );
+
+    useEffect(() => {
+        if (focusComments && !isPending) {
+            sectionRef.current?.scrollIntoView({
+                behavior: 'smooth',
+                block: 'start',
+            });
+        }
+    }, [focusComments, isPending]);
 
     if (!session?.user) return null;
 
@@ -47,7 +63,7 @@ export function EventCommentsSection({ eventId }: EventCommentsSectionProps) {
     const commentCount = comments?.length ?? 0;
 
     return (
-        <section className="mt-8">
+        <section ref={sectionRef} className="mt-8">
             <div className="mb-4 flex items-center gap-2">
                 <MessageCircle size={20} className="text-primary-blue" />
                 <h2 className="m-0 font-heading text-subheading font-semibold text-primary-text">
