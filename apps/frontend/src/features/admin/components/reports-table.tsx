@@ -28,7 +28,7 @@ const HEADERS = [
 const STATUS_STYLES: Record<ReportStatus, string> = {
     pending: 'bg-soft-orange text-strong-orange',
     resolved: 'bg-soft-green text-strong-green',
-    rejected: 'bg-muted text-muted-foreground',
+    rejected: 'bg-soft-red text-strong-red',
 };
 
 export function ReportsTable({

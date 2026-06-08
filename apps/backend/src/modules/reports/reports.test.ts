@@ -27,6 +27,7 @@ function makeMockReport(overrides: Partial<ReportEntity> = {}): ReportEntity {
 type AdminReportRow = ReportEntity & {
     reporterName: string | null;
     targetLabel: string | null;
+    targetEventId: string | null;
 };
 
 function makeMockAdminReport(
@@ -36,6 +37,7 @@ function makeMockAdminReport(
         ...makeMockReport(),
         reporterName: 'Reporter Name',
         targetLabel: 'Target Label',
+        targetEventId: 'event-1',
         ...overrides,
     };
 }

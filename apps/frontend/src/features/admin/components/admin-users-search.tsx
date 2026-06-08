@@ -100,6 +100,8 @@ function UserRow({ user }: UserRowProps) {
         <Link
             to="/admin/profile-page"
             search={{ userId: user.id }}
+            target="_blank"
+            rel="noopener noreferrer"
             className="block"
         >
             <Card className="p-4 border-outline bg-surface shadow-sm rounded-2xl cursor-pointer transition hover:bg-muted/30">

@@ -19,6 +19,16 @@ const targetLabelSql = sql<string | null>`
     END
 `;
 
+// The event a report points at, so admins can open it: an event report's target
+// is the event itself; a comment report resolves to the event it lives on.
+const targetEventIdSql = sql<string | null>`
+    CASE ${reports.reportType}::text
+        WHEN 'event' THEN ${reports.targetId}
+        WHEN 'comment' THEN (SELECT c2.event_id::text FROM comments c2 WHERE c2.id::text = ${reports.targetId} LIMIT 1)
+        ELSE NULL
+    END
+`;
+
 const adminReportSelection = {
     id: reports.id,
     reporterId: reports.reporterId,
@@ -32,6 +42,7 @@ const adminReportSelection = {
     deletedAt: reports.deletedAt,
     reporterName: user.name,
     targetLabel: targetLabelSql.as('target_label'),
+    targetEventId: targetEventIdSql.as('target_event_id'),
 };
 
 export const reportsModel = {

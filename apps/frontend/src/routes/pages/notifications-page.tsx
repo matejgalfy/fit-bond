@@ -29,9 +29,6 @@ function RouteComponent() {
 
     const unreadCount = notifications.filter((n) => !n.isRead).length;
 
-    // Every notification references the event it concerns, so opening one
-    // navigates to that event's detail page. Comment notifications also carry
-    // the comment id, so the event page can scroll to and highlight it.
     const openNotification = (notification: Notification) => {
         if (!notification.eventId) return;
         void navigate({
