@@ -1,27 +1,15 @@
-import type { ChangeEventHandler } from 'react';
+import type { ComponentProps } from 'react';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import type { LucideIcon } from 'lucide-react';
 
-interface Props {
-    type?: string;
-    placeholder?: string;
+interface TextInputProps extends ComponentProps<'input'> {
     icon?: LucideIcon;
-    className?: string;
-    value?: string;
-    onChange?: ChangeEventHandler<HTMLInputElement>;
 }
 
-export function TextInput({
-    type = 'text',
-    placeholder,
-    icon: Icon,
-    className,
-    value,
-    onChange,
-}: Props) {
+export function TextInput({ icon: Icon, className, ...props }: TextInputProps) {
     return (
-        <div className={cn('relative mb-3.5', className)}>
+        <div className="relative">
             {Icon && (
                 <Icon
                     size={16}
@@ -29,13 +17,7 @@ export function TextInput({
                 />
             )}
 
-            <Input
-                type={type}
-                placeholder={placeholder}
-                className={Icon ? 'pl-9' : undefined}
-                value={value}
-                onChange={onChange}
-            />
+            <Input className={cn(Icon && 'pl-9', className)} {...props} />
         </div>
     );
 }

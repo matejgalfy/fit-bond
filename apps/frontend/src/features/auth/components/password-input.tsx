@@ -1,23 +1,20 @@
-import type { ChangeEventHandler } from 'react';
+import type { ComponentProps } from 'react';
 import { useState } from 'react';
 import { Eye, EyeOff, Lock } from 'lucide-react';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
-interface PasswordInputProps {
-    placeholder?: string;
-    value?: string;
-    onChange?: ChangeEventHandler<HTMLInputElement>;
-}
+type PasswordInputProps = Omit<ComponentProps<'input'>, 'type'>;
 
 export function PasswordInput({
     placeholder = 'Password',
-    value,
-    onChange,
+    className,
+    ...props
 }: PasswordInputProps) {
     const [show, setShow] = useState(false);
 
     return (
-        <div className="relative mb-2.5">
+        <div className="relative">
             <Lock
                 size={16}
                 className="absolute left-3 top-1/2 -translate-y-1/2 text-secondary-text pointer-events-none"
@@ -26,9 +23,8 @@ export function PasswordInput({
             <Input
                 type={show ? 'text' : 'password'}
                 placeholder={placeholder}
-                className="pl-9 pr-10"
-                value={value}
-                onChange={onChange}
+                className={cn('pl-9 pr-10', className)}
+                {...props}
             />
 
             <button

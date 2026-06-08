@@ -12,7 +12,7 @@ import {
 } from '@/features/users/hooks/use-users';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import { useLogout } from '@/features/auth/hooks/logout';
-import { z } from 'zod';
+import * as z from 'zod';
 import { zodValidator } from '@tanstack/zod-adapter';
 
 const profileSearchSchema = z.object({

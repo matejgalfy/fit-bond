@@ -1,21 +1,21 @@
-import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Button } from '@/components/ui/button';
+import { Form } from '@/components/ui/form';
 import { ApiError } from '@/lib/api-error';
 import type { CreateEventBody } from '../../../../../../backend/src/modules/events/events.schema';
-import type { SkillLevel } from '../../../../../../backend/src/modules/events/events.types';
 import type { LocationSuggestion } from '../../../../../../backend/src/modules/locations/locations.schema';
 import {
     buildCreateEventPayload,
     type CreateEventFormState,
 } from '../../utils/create-event-payload';
-import { validateCreateEventInput } from '../../validation/create-event-validation';
+import {
+    eventFormSchema,
+    type EventFormValues,
+} from '../../validation/event-form-schema';
 import { CreatingEventBasics } from './event-basics';
 import { CreatingEventDetails } from './details/event-details';
-import {
-    CreatingEventTimeLocation,
-    type CustomDurationUnit,
-    type Meridiem,
-} from './time-and-location/event-time-and-location';
+import { CreatingEventTimeLocation } from './time-and-location/event-time-and-location';
 
 const EMPTY_FORM_STATE: CreateEventFormState = {
     eventName: '',
@@ -54,155 +54,67 @@ export function EventForm({
     onSubmit,
     onCancel,
 }: EventFormProps) {
-    const [eventName, setEventName] = useState(initialState.eventName);
-    const [sportId, setSportId] = useState(initialState.sportId);
-    const [description, setDescription] = useState(initialState.description);
-    const [eventDate, setEventDate] = useState(initialState.eventDate);
-    const [startHour, setStartHour] = useState(initialState.startHour);
-    const [startMinute, setStartMinute] = useState(initialState.startMinute);
-    const [location, setLocation] = useState<LocationSuggestion | null>(
-        initialLocation
-    );
-    const [duration, setDuration] = useState(initialState.duration);
-    const [customDuration, setCustomDuration] = useState(
-        initialState.customDuration
-    );
-    const [customDurationUnit, setCustomDurationUnit] =
-        useState<CustomDurationUnit>(initialState.customDurationUnit);
-    const [meridiem, setMeridiem] = useState<Meridiem>(initialState.meridiem);
-    const [skillLevel, setSkillLevel] = useState<SkillLevel>(
-        initialState.skillLevel
-    );
-    const [capacity, setCapacity] = useState(initialState.capacity);
-    const [coverImageUrl, setCoverImageUrl] = useState(
-        initialState.coverImageUrl
-    );
-    const [error, setError] = useState('');
+    const form = useForm<EventFormValues>({
+        resolver: zodResolver(eventFormSchema),
+        defaultValues: { ...initialState, location: initialLocation },
+    });
 
-    const handleSubmit = async () => {
-        setError('');
-
-        const validationError = validateCreateEventInput({
-            eventName,
-            sportId,
-            description,
-            eventDate,
-            startHour,
-            startMinute,
-            location,
-            duration,
-            customDuration,
-            customDurationUnit,
-            meridiem,
-            capacity,
-        });
-
-        if (validationError) {
-            setError(validationError);
-            return;
-        }
-
+    const handleSubmit = async (values: EventFormValues) => {
+        const { location } = values;
         if (!location) {
-            setError('Please select a location.');
             return;
         }
 
         try {
-            const payload = buildCreateEventPayload(
-                {
-                    eventName,
-                    sportId,
-                    description,
-                    eventDate,
-                    startHour,
-                    startMinute,
-                    duration,
-                    customDuration,
-                    customDurationUnit,
-                    meridiem,
-                    skillLevel,
-                    capacity,
-                    coverImageUrl,
-                },
-                location
-            );
-
+            const payload = buildCreateEventPayload(values, location);
             await onSubmit(payload);
         } catch (err) {
-            if (err instanceof ApiError || err instanceof Error) {
-                setError(err.message);
-                return;
-            }
-            setError(fallbackErrorMessage);
+            form.setError('root', {
+                message:
+                    err instanceof ApiError || err instanceof Error
+                        ? err.message
+                        : fallbackErrorMessage,
+            });
         }
     };
 
+    const rootError = form.formState.errors.root?.message;
+
     return (
-        <form
-            className="space-y-6"
-            onSubmit={(e) => {
-                e.preventDefault();
-                void handleSubmit();
-            }}
-        >
-            <CreatingEventBasics
-                eventName={eventName}
-                sportId={sportId}
-                description={description}
-                coverImageUrl={coverImageUrl}
-                onEventNameChange={setEventName}
-                onSportIdChange={setSportId}
-                onDescriptionChange={setDescription}
-                onCoverImageUrlChange={setCoverImageUrl}
-                onCoverImageError={setError}
-            />
+        <Form {...form}>
+            <form
+                className="space-y-6"
+                onSubmit={(e) => {
+                    void form.handleSubmit(handleSubmit)(e);
+                }}
+            >
+                <CreatingEventBasics />
 
-            <CreatingEventTimeLocation
-                eventDate={eventDate}
-                startHour={startHour}
-                startMinute={startMinute}
-                location={location}
-                duration={duration}
-                customDuration={customDuration}
-                customDurationUnit={customDurationUnit}
-                meridiem={meridiem}
-                onEventDateChange={setEventDate}
-                onStartHourChange={setStartHour}
-                onStartMinuteChange={setStartMinute}
-                onLocationChange={setLocation}
-                onDurationChange={setDuration}
-                onCustomDurationChange={setCustomDuration}
-                onCustomDurationUnitChange={setCustomDurationUnit}
-                onMeridiemChange={setMeridiem}
-            />
+                <CreatingEventTimeLocation />
 
-            <CreatingEventDetails
-                capacity={capacity}
-                skillLevel={skillLevel}
-                onCapacityChange={setCapacity}
-                onSkillLevelChange={setSkillLevel}
-            />
+                <CreatingEventDetails />
 
-            {error && (
-                <p className="text-regular text-primary-red text-center">
-                    {error}
-                </p>
-            )}
+                {rootError && (
+                    <p className="text-regular text-primary-red text-center">
+                        {rootError}
+                    </p>
+                )}
 
-            <div className="flex items-center gap-2">
-                <Button type="submit" size="sm" disabled={isPending}>
-                    {isPending ? pendingLabel : submitLabel}
-                </Button>
-                <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    disabled={isPending}
-                    onClick={onCancel}
-                >
-                    Cancel
-                </Button>
-            </div>
-        </form>
+                <div className="flex items-center gap-2">
+                    <Button type="submit" size="sm" disabled={isPending}>
+                        {isPending ? pendingLabel : submitLabel}
+                    </Button>
+                    <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={isPending}
+                        onClick={onCancel}
+                    >
+                        Cancel
+                    </Button>
+                </div>
+            </form>
+        </Form>
     );
 }

@@ -6,7 +6,7 @@ import {
 } from '@/features/users/components/profile-card';
 import { AdminProfileActions } from '@/features/admin/components/admin-profile-actions';
 import { useUserProfile } from '@/features/users/hooks/use-users';
-import { z } from 'zod';
+import * as z from 'zod';
 import { zodValidator } from '@tanstack/zod-adapter';
 
 const adminProfileSearchSchema = z.object({

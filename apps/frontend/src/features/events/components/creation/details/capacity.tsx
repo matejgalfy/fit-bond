@@ -1,38 +1,49 @@
 import { Users } from 'lucide-react';
-import { FormField } from '@/components/ui/form-field';
+import { useFormContext } from 'react-hook-form';
+import {
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import type { EventFormValues } from '../../../validation/event-form-schema';
 
-interface CapacityFieldProps {
-    capacity: string;
-    onCapacityChange: (capacity: string) => void;
-}
+export function CapacityField() {
+    const form = useFormContext<EventFormValues>();
 
-export function CapacityField({
-    capacity,
-    onCapacityChange,
-}: CapacityFieldProps) {
     return (
-        <FormField label="Capacity" htmlFor="event-capacity" required>
-            <div className="flex items-center gap-2">
-                <Users
-                    size={16}
-                    className="text-secondary-text"
-                    aria-hidden="true"
-                />
-                <Input
-                    id="event-capacity"
-                    type="text"
-                    inputMode="numeric"
-                    value={capacity}
-                    onChange={(e) => {
-                        onCapacityChange(e.target.value);
-                    }}
-                    className="h-10 w-20 bg-background"
-                />
-                <span className="text-small text-secondary-text">
-                    players max
-                </span>
-            </div>
-        </FormField>
+        <FormField
+            control={form.control}
+            name="capacity"
+            render={({ field }) => (
+                <FormItem>
+                    <FormLabel htmlFor="event-capacity">
+                        Capacity<span className="text-primary-red">*</span>
+                    </FormLabel>
+                    <div className="flex items-center gap-2">
+                        <Users
+                            size={16}
+                            className="text-secondary-text"
+                            aria-hidden="true"
+                        />
+                        <FormControl>
+                            <Input
+                                id="event-capacity"
+                                type="text"
+                                inputMode="numeric"
+                                className="h-10 w-20 bg-background"
+                                {...field}
+                            />
+                        </FormControl>
+                        <span className="text-small text-secondary-text">
+                            players max
+                        </span>
+                    </div>
+                    <FormMessage />
+                </FormItem>
+            )}
+        />
     );
 }

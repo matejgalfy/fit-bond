@@ -1,7 +1,16 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 import { Button } from '@/components/ui/button';
 import { GoogleButton } from '@/components/ui/google-button';
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormMessage,
+} from '@/components/ui/form';
 
 import { AppNavbar } from '@/components/layout/app-navbar';
 import { AuthCard } from '@/features/auth/components/auth-card';
@@ -14,6 +23,7 @@ import { TextInput } from '@/features/auth/components/text-input';
 import { Mail } from 'lucide-react';
 
 import { authClient } from '@/lib/api';
+import { loginSchema, type LoginValues } from '@/features/auth/auth-schema';
 
 export const Route = createFileRoute('/auth/login')({
     component: Login,
@@ -23,10 +33,13 @@ export function Login() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
 
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
-    const [isLoading, setIsLoading] = useState(false);
+    const form = useForm<LoginValues>({
+        resolver: zodResolver(loginSchema),
+        defaultValues: {
+            email: '',
+            password: '',
+        },
+    });
 
     useEffect(() => {
         if (!isPending && session?.user) {
@@ -34,39 +47,33 @@ export function Login() {
         }
     }, [isPending, navigate, session?.user]);
 
-    const handleSubmit = () => {
-        setError('');
-
-        if (!email || !password) {
-            setError('Please fill in all fields.');
-            return;
-        }
-
-        setIsLoading(true);
-
+    const onSubmit = (values: LoginValues) =>
         authClient.signIn
-            .email({ email, password })
+            .email({ email: values.email, password: values.password })
             .then(({ error: signInError }) => {
                 if (signInError) {
-                    setError(
-                        signInError.message ??
-                            'Sign in failed. Please try again.'
-                    );
-                    setIsLoading(false);
+                    form.setError('root', {
+                        message:
+                            signInError.message ??
+                            'Sign in failed. Please try again.',
+                    });
                     return;
                 }
 
                 void navigate({ to: '/pages/home-page' });
             })
             .catch(() => {
-                setError('Sign in failed. Please try again.');
-                setIsLoading(false);
+                form.setError('root', {
+                    message: 'Sign in failed. Please try again.',
+                });
             });
-    };
 
     if (isPending || session?.user) {
         return null;
     }
+
+    const rootError = form.formState.errors.root?.message;
+    const isSubmitting = form.formState.isSubmitting;
 
     return (
         <div className="min-h-svh bg-background text-primary-text transition-colors duration-300">
@@ -83,45 +90,60 @@ export function Login() {
                         <GoogleButton />
                         <AuthDivider />
 
-                        <form
-                            onSubmit={(e) => {
-                                e.preventDefault();
-                                handleSubmit();
-                            }}
-                        >
-                            <TextInput
-                                type="email"
-                                placeholder="Email address"
-                                icon={Mail}
-                                value={email}
-                                onChange={(e) => {
-                                    setEmail(e.target.value);
+                        <Form {...form}>
+                            <form
+                                onSubmit={(e) => {
+                                    void form.handleSubmit(onSubmit)(e);
                                 }}
-                            />
-
-                            <PasswordInput
-                                value={password}
-                                onChange={(e) => {
-                                    setPassword(e.target.value);
-                                }}
-                            />
-
-                            <div className="mb-5"></div>
-
-                            {error && (
-                                <p className="text-regular text-primary-red text-center mb-3">
-                                    {error}
-                                </p>
-                            )}
-
-                            <Button
-                                type="submit"
-                                disabled={isLoading}
-                                className="w-full h-11 rounded-xl text-regular font-semibold"
                             >
-                                {isLoading ? 'Signing in…' : 'Sign In'}
-                            </Button>
-                        </form>
+                                <div className="space-y-3.5">
+                                    <FormField
+                                        control={form.control}
+                                        name="email"
+                                        render={({ field }) => (
+                                            <FormItem className="gap-1.5">
+                                                <FormControl>
+                                                    <TextInput
+                                                        type="email"
+                                                        placeholder="Email address"
+                                                        icon={Mail}
+                                                        {...field}
+                                                    />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+
+                                    <FormField
+                                        control={form.control}
+                                        name="password"
+                                        render={({ field }) => (
+                                            <FormItem className="gap-1.5">
+                                                <FormControl>
+                                                    <PasswordInput {...field} />
+                                                </FormControl>
+                                                <FormMessage />
+                                            </FormItem>
+                                        )}
+                                    />
+                                </div>
+
+                                {rootError && (
+                                    <p className="text-regular text-primary-red text-center mt-3.5">
+                                        {rootError}
+                                    </p>
+                                )}
+
+                                <Button
+                                    type="submit"
+                                    disabled={isSubmitting}
+                                    className="w-full h-11 rounded-xl text-regular font-semibold mt-5"
+                                >
+                                    {isSubmitting ? 'Signing in…' : 'Sign In'}
+                                </Button>
+                            </form>
+                        </Form>
 
                         <p className="text-center text-small text-secondary-text mt-4">
                             Don't have an account?{' '}

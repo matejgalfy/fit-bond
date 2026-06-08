@@ -1,7 +1,7 @@
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { EditEventView } from '@/features/events/components/edit/edit-event-view';
-import { z } from 'zod';
+import * as z from 'zod';
 import { zodValidator } from '@tanstack/zod-adapter';
 
 const editEventSearchSchema = z.object({
