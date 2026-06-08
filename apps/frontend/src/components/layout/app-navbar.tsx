@@ -1,10 +1,11 @@
-import { Moon, Sun } from 'lucide-react';
+import { Moon, Sun, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 import { Link } from '@tanstack/react-router';
 import { useTheme } from 'next-themes';
 import { UserAvatar } from '@/components/ui/user-avatar';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
+import { useLogout } from '@/features/auth/hooks/logout';
 
 interface AppNavbarProps {
     userName?: string;
@@ -14,6 +15,7 @@ interface AppNavbarProps {
 export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
     const { resolvedTheme, setTheme } = useTheme();
     const isAdmin = useIsAdmin();
+    const { logout, isLoggingOut, logoutError } = useLogout();
     const dark = resolvedTheme === 'dark';
     const toggleDark = () => {
         setTheme(dark ? 'light' : 'dark');
@@ -49,7 +51,20 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
                 {dark ? <Sun size={18} /> : <Moon size={18} />}
             </Button>
 
-            {userName && !isAdmin ? (
+            {isAdmin ? (
+                <Button
+                    variant="outline"
+                    onClick={() => {
+                        void logout();
+                    }}
+                    disabled={isLoggingOut}
+                    title={logoutError || undefined}
+                    className="rounded-lg border-primary-red text-primary-red hover:bg-primary-red/10 hover:text-primary-red"
+                >
+                    <LogOut size={18} className="mr-2" />
+                    {isLoggingOut ? 'Logging out...' : 'Log Out'}
+                </Button>
+            ) : userName ? (
                 <Button
                     variant="ghost"
                     size="icon"
