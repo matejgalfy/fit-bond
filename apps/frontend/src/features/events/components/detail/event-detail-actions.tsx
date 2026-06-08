@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { Heart, LogOut, Pencil, Trash2, UserPlus } from 'lucide-react';
+import { Ban, Heart, LogOut, Pencil, UserPlus } from 'lucide-react';
 import { useNavigate } from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { authClient } from '@/lib/api';
 import { ReportEventDialog } from '@/features/reports/components/report-event-dialog';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import type { Event } from '../../types';
-import { useDeleteEvent } from '../../hooks/events';
+import { useCancelEvent } from '../../hooks/events';
 import {
     useEventInterested,
     useEventParticipants,
@@ -37,7 +37,7 @@ export function EventDetailActions({
     const leave = useLeaveEvent(event.id);
     const mark = useMarkInterest(event.id);
     const unmark = useUnmarkInterest(event.id);
-    const deleteEvent = useDeleteEvent(event.id);
+    const cancelEvent = useCancelEvent(event.id);
 
     const userId = session?.user.id;
     const isOrganizer = userId != null && userId === event.organizer.id;
@@ -61,13 +61,13 @@ export function EventDetailActions({
         leave.isPending ||
         mark.isPending ||
         unmark.isPending ||
-        deleteEvent.isPending;
+        cancelEvent.isPending;
 
-    const handleDeleteEvent = async () => {
+    const handleCancelEvent = async () => {
         setManagementError('');
 
         try {
-            await deleteEvent.mutateAsync();
+            await cancelEvent.mutateAsync({});
             await navigate({
                 to:
                     isAdmin && !isOrganizer
@@ -122,14 +122,14 @@ export function EventDetailActions({
                     </Button>
                     <Button
                         variant="outline"
-                        disabled={anyPending}
+                        disabled={anyPending || isCancelled}
                         className="w-full border-primary-red text-primary-red hover:bg-soft-red hover:text-primary-red sm:w-auto"
                         onClick={() => {
-                            void handleDeleteEvent();
+                            void handleCancelEvent();
                         }}
                     >
-                        <Trash2 />
-                        Cancel Event
+                        <Ban />
+                        {isCancelled ? 'Event Cancelled' : 'Cancel Event'}
                     </Button>
                     {managementError && (
                         <p className="basis-full text-small text-primary-red">

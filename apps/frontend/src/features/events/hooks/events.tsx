@@ -16,7 +16,6 @@ import type { Event } from '../types';
 import {
     cancelEvent,
     createEvent,
-    deleteEvent,
     eventQueryKeys,
     getEvent,
     getEventStats,
@@ -121,35 +120,8 @@ export function useCancelEvent(id?: string) {
             await queryClient.invalidateQueries({
                 queryKey: eventQueryKeys.all,
             });
-        },
-    });
-}
-
-export function useDeleteEvent(id?: string) {
-    const queryClient = useQueryClient();
-
-    return useMutation({
-        mutationFn: () => {
-            if (!id) {
-                throw new Error('Missing event id');
-            }
-
-            return deleteEvent(id);
-        },
-        onSuccess: () => {
-            if (id) {
-                queryClient.removeQueries({
-                    queryKey: eventQueryKeys.detail(id),
-                });
-                queryClient.setQueriesData<Event[]>(
-                    { queryKey: eventQueryKeys.lists() },
-                    (events) =>
-                        events?.filter((event) => event.id !== id) ?? events
-                );
-            }
-
-            void queryClient.invalidateQueries({
-                queryKey: eventQueryKeys.all,
+            await queryClient.invalidateQueries({
+                queryKey: ['admin', 'events'],
             });
         },
     });

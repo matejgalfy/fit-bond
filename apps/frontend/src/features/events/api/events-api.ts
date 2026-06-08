@@ -53,12 +53,6 @@ export async function cancelEvent(id: string, body: CancelEventBody) {
     return data;
 }
 
-export async function deleteEvent(id: string) {
-    const { data, error } = await api.events({ id }).delete();
-    throwIfError(error, 'Failed to delete event');
-    return data;
-}
-
 export async function getEventStats(
     userId: string
 ): Promise<EventStatsResponse> {

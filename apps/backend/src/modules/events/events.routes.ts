@@ -94,19 +94,5 @@ export function createEventsRoutes(eventsService: EventsService) {
                         'Cancel an event with an optional reason. Requires user authentication.',
                 },
             }
-        )
-        .delete(
-            '/:id',
-            ({ params, user }) => eventsService.delete(db, params.id, user),
-            {
-                auth: true,
-                params: eventIdParam,
-                detail: {
-                    tags: ['Events'],
-                    summary: 'Delete event',
-                    description:
-                        'Soft-delete an event. Requires user authentication.',
-                },
-            }
         );
 }
