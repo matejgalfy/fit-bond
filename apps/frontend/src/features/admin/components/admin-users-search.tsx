@@ -119,7 +119,7 @@ function UserRow({ user }: UserRowProps) {
                     </div>
                     <div className="flex flex-wrap gap-1.5 justify-end">
                         {user.role === 'admin' && (
-                            <Badge className="bg-soft-purple text-strong-purple rounded-md">
+                            <Badge className="bg-soft-orange text-strong-orange rounded-md">
                                 Admin
                             </Badge>
                         )}

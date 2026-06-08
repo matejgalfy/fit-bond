@@ -101,7 +101,7 @@ export function AdminProfileActions({ user }: AdminProfileActionsProps) {
 
                     <Button
                         variant="outline"
-                        className="rounded-xl border-primary-purple text-primary-purple hover:bg-primary-purple/10 hover:text-primary-purple px-6 font-semibold"
+                        className="rounded-xl border-primary-orange text-primary-orange hover:bg-primary-orange/10 hover:text-primary-orange px-6 font-semibold"
                         onClick={handleToggleRole}
                         disabled={updateMutation.isPending}
                     >
