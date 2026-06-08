@@ -3,9 +3,9 @@ import { throwIfError } from '@/lib/api-error';
 
 export const participationQueryKeys = {
     all: ['participation'] as const,
-    participants: (eventId: string) =>
+    participants: (eventId?: string) =>
         [...participationQueryKeys.all, 'participants', eventId] as const,
-    interested: (eventId: string) =>
+    interested: (eventId?: string) =>
         [...participationQueryKeys.all, 'interested', eventId] as const,
 };
 

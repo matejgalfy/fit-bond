@@ -18,8 +18,8 @@ export const eventQueryKeys = {
     infiniteList: (filters?: EventQueryFilters) =>
         [...eventQueryKeys.infiniteLists(), filters ?? null] as const,
     details: () => [...eventQueryKeys.all, 'detail'] as const,
-    detail: (id: string) => [...eventQueryKeys.details(), id] as const,
-    stats: (userId: string) =>
+    detail: (id?: string) => [...eventQueryKeys.details(), id] as const,
+    stats: (userId?: string) =>
         [...eventQueryKeys.all, 'stats', userId] as const,
 };
 

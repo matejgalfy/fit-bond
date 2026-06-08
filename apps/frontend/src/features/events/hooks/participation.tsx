@@ -13,12 +13,9 @@ import {
 
 export function useEventParticipants(eventId?: string) {
     return useQuery<Participant[]>({
-        queryKey: participationQueryKeys.participants(eventId ?? 'missing'),
+        queryKey: participationQueryKeys.participants(eventId),
         queryFn: () => {
-            if (!eventId) {
-                throw new Error('Missing event id');
-            }
-
+            if (!eventId) throw new Error('Missing event id');
             return listParticipants(eventId);
         },
         enabled: Boolean(eventId),
@@ -27,12 +24,9 @@ export function useEventParticipants(eventId?: string) {
 
 export function useEventInterested(eventId?: string) {
     return useQuery<Participant[]>({
-        queryKey: participationQueryKeys.interested(eventId ?? 'missing'),
+        queryKey: participationQueryKeys.interested(eventId),
         queryFn: () => {
-            if (!eventId) {
-                throw new Error('Missing event id');
-            }
-
+            if (!eventId) throw new Error('Missing event id');
             return listInterested(eventId);
         },
         enabled: Boolean(eventId),
