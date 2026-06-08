@@ -1,4 +1,8 @@
-import { createFileRoute, Link } from '@tanstack/react-router';
+import {
+    createFileRoute,
+    useCanGoBack,
+    useRouter,
+} from '@tanstack/react-router';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { EmptyState } from '@/components/empty-state';
@@ -28,7 +32,19 @@ export const Route = createFileRoute('/admin/event-detail-page')({
 
 function AdminEventDetailPage() {
     const { eventId, commentId }: AdminEventDetailSearch = Route.useSearch();
+    const router = useRouter();
+    const canGoBack = useCanGoBack();
     const { data: event, isPending, isError } = useEvent(eventId);
+
+    // Go back to wherever the user came from. When there's no in-app history
+    // (e.g. the page was opened in a new tab), close that tab instead.
+    const goBack = () => {
+        if (canGoBack) {
+            router.history.back();
+        } else {
+            window.close();
+        }
+    };
 
     if (isPending) {
         return (
@@ -59,8 +75,8 @@ function AdminEventDetailPage() {
                                 loaded right now.
                             </p>
                         </div>
-                        <Button variant="outline" asChild>
-                            <Link to="/admin/discover">Back to discovery</Link>
+                        <Button variant="outline" onClick={goBack}>
+                            Back
                         </Button>
                     </div>
                 </EmptyState>
