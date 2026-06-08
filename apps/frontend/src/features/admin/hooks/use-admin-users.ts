@@ -1,5 +1,6 @@
 import {
     keepPreviousData,
+    useInfiniteQuery,
     useMutation,
     useQuery,
     useQueryClient,
@@ -21,6 +22,20 @@ export function useAdminUsers(filters?: AdminUserQueryFilters) {
     return useQuery({
         queryKey: adminQueryKeys.users(filters),
         queryFn: () => listAdminUsers(filters),
+        placeholderData: keepPreviousData,
+    });
+}
+
+export function useInfiniteAdminUsers(filters?: AdminUserQueryFilters) {
+    const limit = filters?.limit ?? 25;
+
+    return useInfiniteQuery({
+        queryKey: adminQueryKeys.infiniteUsers(filters),
+        queryFn: ({ pageParam }) =>
+            listAdminUsers({ ...filters, limit, offset: pageParam }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length < limit ? undefined : allPages.length * limit,
         placeholderData: keepPreviousData,
     });
 }

@@ -4,11 +4,12 @@ import { Search } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { UserAvatar } from '@/components/ui/user-avatar';
+import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { IconInput } from '@/components/icon-input';
 import { EmptyState } from '@/components/empty-state';
 import { useDebounce } from '@/hooks/use-debounce';
-import { useAdminUsers } from '../hooks/use-admin-users';
+import { useInfiniteAdminUsers } from '../hooks/use-admin-users';
 
 interface AdminUserRow {
     id: string;
@@ -25,13 +26,20 @@ export function AdminUsersSearch() {
     const debouncedName = useDebounce(name, 300);
     const trimmed = debouncedName.trim();
 
-    const { data, isFetching, isError } = useAdminUsers(
-        trimmed
-            ? { search: trimmed, includeDeleted: true, limit: 25 }
-            : undefined
-    );
+    const {
+        data,
+        isPending,
+        isError,
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+    } = useInfiniteAdminUsers({
+        search: trimmed || undefined,
+        includeDeleted: true,
+        limit: 25,
+    });
 
-    const users = (data ?? []) as AdminUserRow[];
+    const users = (data?.pages.flat() ?? []) as AdminUserRow[];
 
     return (
         <div className="flex flex-col gap-4">
@@ -50,23 +58,33 @@ export function AdminUsersSearch() {
                 />
             </Card>
 
-            {trimmed && isFetching && <Skeleton className="h-20 rounded-2xl" />}
-
-            {trimmed && !isFetching && isError && (
+            {isPending ? (
+                <Skeleton className="h-20 rounded-2xl" />
+            ) : isError ? (
                 <EmptyState>Failed to load users.</EmptyState>
-            )}
-
-            {trimmed && !isFetching && !isError && users.length === 0 && (
+            ) : users.length === 0 ? (
                 <EmptyState>
-                    No users matching &ldquo;{trimmed}&rdquo;.
+                    {trimmed
+                        ? `No users matching “${trimmed}”.`
+                        : 'No users found.'}
                 </EmptyState>
-            )}
-
-            {users.length > 0 && (
+            ) : (
                 <div className="flex flex-col gap-2">
                     {users.map((u) => (
                         <UserRow key={u.id} user={u} />
                     ))}
+                </div>
+            )}
+
+            {hasNextPage && (
+                <div className="mt-2 flex justify-center">
+                    <Button
+                        variant="secondary"
+                        onClick={() => void fetchNextPage()}
+                        disabled={isFetchingNextPage}
+                    >
+                        {isFetchingNextPage ? 'Loading…' : 'Load more'}
+                    </Button>
                 </div>
             )}
         </div>
