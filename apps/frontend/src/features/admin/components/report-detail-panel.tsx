@@ -144,7 +144,7 @@ export function ReportDetailPanel({
                                     Resolve
                                 </Button>
                                 <Button
-                                    variant="outline"
+                                    variant="destructive"
                                     onClick={() => {
                                         setMode('reject');
                                     }}
