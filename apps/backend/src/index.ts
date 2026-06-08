@@ -70,6 +70,7 @@ export const app = new Elysia()
     .use(authLayer)
     .use(
         cors({
+            origin: process.env.FRONTEND_URL,
             credentials: true,
         })
     )
