@@ -250,6 +250,7 @@ export const notifications = pgTable('notifications', {
     message: text('message').notNull(),
     eventId: uuid('event_id').references(() => events.id),
     relatedUserId: text('related_user_id').references(() => user.id),
+    commentId: uuid('comment_id').references(() => comments.id),
     isRead: boolean('is_read').default(false).notNull(),
     readAt: timestamp('read_at'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
@@ -390,6 +391,10 @@ export const notificationsRelations = relations(notifications, ({ one }) => ({
         fields: [notifications.relatedUserId],
         references: [user.id],
         relationName: 'notificationsRelatedUser',
+    }),
+    comment: one(comments, {
+        fields: [notifications.commentId],
+        references: [comments.id],
     }),
 }));
 

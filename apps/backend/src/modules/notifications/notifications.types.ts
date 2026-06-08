@@ -13,5 +13,11 @@ export type UpdateNotificationInput = UpdateNotificationBody;
 
 export type CreateNotificationInput = Pick<
     InferInsertModel<typeof notifications>,
-    'userId' | 'type' | 'title' | 'message' | 'eventId' | 'relatedUserId'
+    | 'userId'
+    | 'type'
+    | 'title'
+    | 'message'
+    | 'eventId'
+    | 'relatedUserId'
+    | 'commentId'
 >;

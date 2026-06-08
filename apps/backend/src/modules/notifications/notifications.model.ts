@@ -17,6 +17,7 @@ const returnColumns = {
     message: notifications.message,
     eventId: notifications.eventId,
     relatedUserId: notifications.relatedUserId,
+    commentId: notifications.commentId,
     isRead: notifications.isRead,
     readAt: notifications.readAt,
     createdAt: notifications.createdAt,

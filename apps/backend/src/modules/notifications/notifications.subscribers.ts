@@ -116,6 +116,7 @@ export function registerNotificationsSubscribers({
             message: `${authorName} commented on ${p.eventName}.`,
             eventId: p.eventId,
             relatedUserId: p.actorId,
+            commentId: p.commentId,
         });
     });
 }

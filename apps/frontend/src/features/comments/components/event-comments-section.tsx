@@ -5,7 +5,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { authClient } from '@/lib/api';
 import { useIsAdmin } from '@/features/admin/hooks/current-user';
 import type { Comment } from '../types';
-import { type FocusComment, findFocusedCommentId } from '../utils';
 import { useComments } from '../hooks/comments';
 import { CommentComposer } from './comment-composer';
 import { CommentItem } from './comment-item';
@@ -13,8 +12,8 @@ import { CommentItem } from './comment-item';
 interface EventCommentsSectionProps {
     eventId: string;
     // Set when the user arrives from a comment notification: scrolls to and
-    // briefly highlights the matching comment (or the section, as a fallback).
-    focusComment?: FocusComment;
+    // briefly highlights this comment (falls back to the section if it's gone).
+    focusCommentId?: string;
 }
 
 function groupComments(comments: Comment[]) {
@@ -37,7 +36,7 @@ function groupComments(comments: Comment[]) {
 
 export function EventCommentsSection({
     eventId,
-    focusComment,
+    focusCommentId,
 }: EventCommentsSectionProps) {
     const { data: session } = authClient.useSession();
     const isAdmin = useIsAdmin();
@@ -50,23 +49,10 @@ export function EventCommentsSection({
         [comments]
     );
 
-    const focusAuthorId = focusComment?.authorId;
-    const focusAtMs = focusComment?.atMs;
-    const targetCommentId = useMemo(() => {
-        if (focusAuthorId == null || focusAtMs == null) return null;
-        return findFocusedCommentId(comments ?? [], {
-            authorId: focusAuthorId,
-            atMs: focusAtMs,
-        });
-    }, [comments, focusAuthorId, focusAtMs]);
-
     useEffect(() => {
-        if (focusAuthorId == null || isPending) return;
+        if (focusCommentId == null || isPending) return;
 
-        const target = targetCommentId
-            ? document.getElementById(`comment-${targetCommentId}`)
-            : null;
-
+        const target = document.getElementById(`comment-${focusCommentId}`);
         if (!target) {
             // Comment not found (deleted or not loaded) — fall back to showing
             // the discussion.
@@ -78,14 +64,14 @@ export function EventCommentsSection({
         }
 
         target.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        setHighlightedId(targetCommentId);
+        setHighlightedId(focusCommentId);
         const timer = setTimeout(() => {
             setHighlightedId(null);
         }, 2500);
         return () => {
             clearTimeout(timer);
         };
-    }, [focusAuthorId, isPending, targetCommentId]);
+    }, [focusCommentId, isPending]);
 
     if (!session?.user) return null;
 
