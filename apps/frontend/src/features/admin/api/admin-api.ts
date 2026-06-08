@@ -15,6 +15,8 @@ export const adminQueryKeys = {
     all: ['admin'] as const,
     users: (filters?: AdminUserQueryFilters) =>
         [...adminQueryKeys.all, 'users', filters ?? null] as const,
+    infiniteUsers: (filters?: AdminUserQueryFilters) =>
+        [...adminQueryKeys.all, 'users', 'infinite', filters ?? null] as const,
     userDetail: (id: string) =>
         [...adminQueryKeys.all, 'users', 'detail', id] as const,
     events: (filters?: AdminEventQueryFilters) =>
@@ -49,12 +51,6 @@ export async function getAdminUser(id: string) {
 export async function updateAdminUser(id: string, body: UpdateUserAdminBody) {
     const { data, error } = await api.admin.users({ id }).patch(body);
     throwIfError(error, 'Failed to update user');
-    return data;
-}
-
-export async function deleteAdminUser(id: string) {
-    const { data, error } = await api.admin.users({ id }).delete();
-    throwIfError(error, 'Failed to delete user');
     return data;
 }
 

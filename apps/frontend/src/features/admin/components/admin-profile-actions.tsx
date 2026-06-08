@@ -2,12 +2,20 @@ import { useState } from 'react';
 import type { UserProfile } from '../../../../../backend/src/modules/users/users.types';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Pencil, Ban, ShieldCheck, Shield } from 'lucide-react';
+import {
+    Pencil,
+    Ban,
+    ShieldCheck,
+    Shield,
+    ShieldPlus,
+    ShieldMinus,
+} from 'lucide-react';
 
 import {
     useAdminUser,
     useBanUser,
     useUnbanUser,
+    useUpdateAdminUser,
 } from '../hooks/use-admin-users';
 import { AdminProfileEditDialog } from './admin-profile-edit-dialog';
 import { BanUserDialog } from './ban-user-dialog';
@@ -20,18 +28,28 @@ export function AdminProfileActions({ user }: AdminProfileActionsProps) {
     const { data: adminUserData } = useAdminUser(user.id);
     const banMutation = useBanUser();
     const unbanMutation = useUnbanUser();
+    const updateMutation = useUpdateAdminUser();
 
     const [editOpen, setEditOpen] = useState(false);
     const [banDialogOpen, setBanDialogOpen] = useState(false);
 
     const isBanned = Boolean(adminUserData?.banned);
+    const isAdmin = adminUserData?.role === 'admin';
     const banReason =
         adminUserData?.banReason ?? adminUserData?.bannedReason ?? null;
 
-    const actionError = banMutation.error ?? unbanMutation.error;
+    const actionError =
+        banMutation.error ?? unbanMutation.error ?? updateMutation.error;
 
     const handleUnban = () => {
         unbanMutation.mutate({ id: user.id });
+    };
+
+    const handleToggleRole = () => {
+        updateMutation.mutate({
+            id: user.id,
+            body: { role: isAdmin ? 'user' : 'admin' },
+        });
     };
 
     return (
@@ -79,6 +97,24 @@ export function AdminProfileActions({ user }: AdminProfileActionsProps) {
                     >
                         <Pencil className="w-4 h-4 mr-2" />
                         Edit Profile
+                    </Button>
+
+                    <Button
+                        variant="outline"
+                        className="rounded-xl border-primary-orange text-primary-orange hover:bg-primary-orange/10 hover:text-primary-orange px-6 font-semibold"
+                        onClick={handleToggleRole}
+                        disabled={updateMutation.isPending}
+                    >
+                        {isAdmin ? (
+                            <ShieldMinus className="w-4 h-4 mr-2" />
+                        ) : (
+                            <ShieldPlus className="w-4 h-4 mr-2" />
+                        )}
+                        {updateMutation.isPending
+                            ? 'Updating...'
+                            : isAdmin
+                              ? 'Demote to User'
+                              : 'Promote to Admin'}
                     </Button>
 
                     {!isBanned ? (

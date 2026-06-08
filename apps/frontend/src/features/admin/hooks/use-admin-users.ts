@@ -1,5 +1,6 @@
 import {
     keepPreviousData,
+    useInfiniteQuery,
     useMutation,
     useQuery,
     useQueryClient,
@@ -10,7 +11,6 @@ import type {
 } from '../../../../../backend/src/modules/admin/admin.schema';
 import {
     adminQueryKeys,
-    deleteAdminUser,
     getAdminUser,
     listAdminUsers,
     updateAdminUser,
@@ -22,6 +22,20 @@ export function useAdminUsers(filters?: AdminUserQueryFilters) {
     return useQuery({
         queryKey: adminQueryKeys.users(filters),
         queryFn: () => listAdminUsers(filters),
+        placeholderData: keepPreviousData,
+    });
+}
+
+export function useInfiniteAdminUsers(filters?: AdminUserQueryFilters) {
+    const limit = filters?.limit ?? 25;
+
+    return useInfiniteQuery({
+        queryKey: adminQueryKeys.infiniteUsers(filters),
+        queryFn: ({ pageParam }) =>
+            listAdminUsers({ ...filters, limit, offset: pageParam }),
+        initialPageParam: 0,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length < limit ? undefined : allPages.length * limit,
         placeholderData: keepPreviousData,
     });
 }
@@ -99,16 +113,6 @@ export function useUpdateAdminUser() {
     return useMutation({
         mutationFn: ({ id, body }: { id: string; body: UpdateUserAdminBody }) =>
             updateAdminUser(id, body),
-        onSuccess: async (_data, variables) => {
-            await invalidate(variables.id);
-        },
-    });
-}
-
-export function useDeleteAdminUser() {
-    const invalidate = useInvalidateAdminUsers();
-    return useMutation({
-        mutationFn: ({ id }: { id: string }) => deleteAdminUser(id),
         onSuccess: async (_data, variables) => {
             await invalidate(variables.id);
         },
