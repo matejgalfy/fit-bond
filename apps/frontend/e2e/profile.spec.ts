@@ -20,7 +20,7 @@ test.describe('Profile (requires running backend)', () => {
         ).toBeVisible();
 
         const bio = `E2E bio ${String(Date.now())}`;
-        await page.locator('#profile-bio').fill(bio);
+        await page.getByLabel('Bio', { exact: true }).fill(bio);
         await page.getByRole('button', { name: /^save$/i }).click();
 
         const bioOnCard = page.locator('p', { hasText: bio });
@@ -43,7 +43,7 @@ test.describe('Profile (requires running backend)', () => {
             ownerPage.getByRole('heading', { name: /edit profile/i })
         ).toBeVisible();
         const bio = `Shared bio ${String(Date.now())}`;
-        await ownerPage.locator('#profile-bio').fill(bio);
+        await ownerPage.getByLabel('Bio', { exact: true }).fill(bio);
         await ownerPage.getByRole('button', { name: /^save$/i }).click();
         await expect(ownerPage.locator('p', { hasText: bio })).toBeVisible({
             timeout: 10_000,

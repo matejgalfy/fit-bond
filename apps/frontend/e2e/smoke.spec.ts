@@ -48,7 +48,7 @@ test.describe('Smoke — public routes (no backend required for these assertions
         await page.goto('/auth/login');
         await page.getByRole('button', { name: /sign in/i }).click();
         await expect(
-            page.getByText(/please fill in all fields/i)
+            page.getByText(/please fill in all fields/i).first()
         ).toBeVisible();
     });
 

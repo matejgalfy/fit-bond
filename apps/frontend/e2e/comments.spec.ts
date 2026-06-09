@@ -62,4 +62,54 @@ test.describe('Event comments (requires running backend)', () => {
         await organizerContext.close();
         await commenterContext.close();
     });
+
+    test("clicking a comment author opens that author's profile", async ({
+        browser,
+    }) => {
+        const organizerContext = await browser.newContext();
+        const organizerPage = await organizerContext.newPage();
+        await registerViaUI(organizerPage, generateTestUser());
+        const eventName = `E2E Comment Author ${String(Date.now())}`;
+        const eventId = await createEventViaUI(organizerPage, {
+            name: eventName,
+        });
+
+        const commenterContext = await browser.newContext();
+        const commenterPage = await commenterContext.newPage();
+        const commenter = generateTestUser();
+        await registerViaUI(commenterPage, commenter);
+        await commenterPage.goto(eventDetailPath(eventId));
+        await commenterPage
+            .getByRole('button', { name: /join event/i })
+            .click();
+        const commentText = `Author link test ${String(Date.now())}`;
+        await commenterPage
+            .getByPlaceholder('Write a comment...')
+            .fill(commentText);
+        await commenterPage
+            .getByRole('button', { name: /post comment/i })
+            .click();
+        await expect(commenterPage.getByText(commentText)).toBeVisible({
+            timeout: 10_000,
+        });
+
+        await organizerPage.reload();
+        await expect(organizerPage.getByText(commentText)).toBeVisible({
+            timeout: 10_000,
+        });
+
+        await organizerPage.getByRole('link', { name: commenter.name }).click();
+
+        await expect(organizerPage).toHaveURL(/profile-page\?.*userId=/, {
+            timeout: 10_000,
+        });
+        await expect(
+            organizerPage.getByRole('heading', {
+                name: new RegExp(`${commenter.name}'s Profile`),
+            })
+        ).toBeVisible({ timeout: 10_000 });
+
+        await organizerContext.close();
+        await commenterContext.close();
+    });
 });
