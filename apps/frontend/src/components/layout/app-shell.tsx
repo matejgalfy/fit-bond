@@ -27,7 +27,7 @@ export function AppShell({
     children,
 }: AppShellProps) {
     return (
-        <div className="font-sans bg-background text-primary-text min-h-screen flex flex-col transition-colors duration-300">
+        <div className="font-sans bg-background text-primary-text min-h-screen flex flex-col transition-colors duration-50">
             <AppNavbar
                 userName={userName}
                 profilePictureUrl={profilePictureUrl}
@@ -39,7 +39,9 @@ export function AppShell({
                     activeNav={activeNav}
                 />
                 <main className="flex-1 min-w-0 px-content-x py-content-y pb-content-bottom">
-                    <div className="mx-auto w-full max-w-280">{children}</div>
+                    <div className="mx-auto w-full max-w-280 *:mx-auto">
+                        {children}
+                    </div>
                 </main>
             </div>
             <MobileBottomNav items={bottomNavItems} activeNav={activeNav} />

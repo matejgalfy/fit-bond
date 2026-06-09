@@ -53,13 +53,13 @@ export function LocationCombobox({
                     type="button"
                     role="combobox"
                     aria-expanded={open}
-                    className="flex h-10 w-full items-center justify-between rounded-md border border-outline bg-background px-3 py-1 text-regular text-primary-text shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
+                    className="flex h-10 min-w-0 w-full items-center justify-between overflow-hidden rounded-md border border-outline bg-background px-3 py-1 text-regular text-primary-text shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-blue focus-visible:ring-offset-2"
                 >
-                    <span className="flex items-center gap-2 truncate">
+                    <span className="flex min-w-0 flex-1 items-center gap-2 overflow-hidden">
                         <MapPin className="size-4 shrink-0 text-secondary-text" />
                         <span
                             className={cn(
-                                'truncate',
+                                'min-w-0 flex-1 truncate text-left',
                                 !value && 'text-secondary-text'
                             )}
                         >
@@ -106,16 +106,17 @@ export function LocationCombobox({
                                             onChange(s);
                                             setOpen(false);
                                         }}
+                                        className="min-w-0 overflow-hidden"
                                     >
                                         <Check
                                             className={cn(
-                                                'mr-2 size-4',
+                                                'mr-2 size-4 shrink-0',
                                                 value?.placeId === s.placeId
                                                     ? 'opacity-100'
                                                     : 'opacity-0'
                                             )}
                                         />
-                                        <span className="truncate">
+                                        <span className="min-w-0 flex-1 truncate">
                                             {s.displayName}
                                         </span>
                                     </CommandItem>
