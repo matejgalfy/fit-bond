@@ -64,7 +64,7 @@ export function EventCard({
         <div
             onClick={openEventDetail}
             className={cn(
-                'bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-200 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]'
+                'bg-surface rounded-2xl overflow-hidden border border-outline transition-[transform,box-shadow] duration-50 cursor-pointer hover:-translate-y-0.5 hover:shadow-[0_8px_24px_rgba(0,0,0,0.1)]'
             )}
         >
             <div className="h-30 flex items-center justify-center relative bg-linear-to-br from-soft-blue to-primary-blue/20 overflow-hidden">

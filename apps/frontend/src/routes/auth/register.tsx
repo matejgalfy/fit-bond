@@ -86,7 +86,7 @@ function Register() {
     const isSubmitting = form.formState.isSubmitting;
 
     return (
-        <div className="min-h-svh bg-background text-primary-text transition-colors duration-300">
+        <div className="min-h-svh bg-background text-primary-text transition-colors duration-50">
             <AppNavbar />
 
             <div className="flex items-center justify-center min-h-[calc(100svh-56px)] p-6">
