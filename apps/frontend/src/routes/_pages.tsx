@@ -12,7 +12,7 @@ import { useUserProfile } from '@/features/users/hooks/use-users';
 import { useCurrentUserRole } from '@/features/admin/hooks/current-user';
 import { useUnreadNotificationsCount } from '@/features/notifications/hooks/notifications';
 
-export const Route = createFileRoute('/pages')({
+export const Route = createFileRoute('/_pages')({
     component: PagesLayout,
 });
 

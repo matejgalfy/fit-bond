@@ -11,7 +11,7 @@ import {
     useEventStats,
 } from '@/features/events/hooks/events';
 
-export const Route = createFileRoute('/pages/my-events')({
+export const Route = createFileRoute('/_pages/my-events')({
     component: MyEventsPage,
 });
 
@@ -98,7 +98,7 @@ function MyEventsPage() {
 
             <EventAddButton
                 onClick={() => {
-                    void navigate({ to: '/pages/create-event' });
+                    void navigate({ to: '/create-event' });
                 }}
             />
         </div>

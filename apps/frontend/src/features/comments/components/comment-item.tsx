@@ -44,7 +44,7 @@ export function CommentItem({
 }: CommentItemProps) {
     const [replyOpen, setReplyOpen] = useState(false);
     const isOwnComment = comment.author.id === currentUserId;
-    const profileTo = isAdmin ? '/admin/profile-page' : '/pages/profile-page';
+    const profileTo = isAdmin ? '/admin/profile-page' : '/profile-page';
 
     return (
         <article

@@ -72,7 +72,7 @@ export function EventDetailActions({
                 to:
                     isAdmin && !isOrganizer
                         ? '/admin/discover'
-                        : '/pages/my-events',
+                        : '/my-events',
             });
         } catch (err) {
             setManagementError(
@@ -114,7 +114,7 @@ export function EventDetailActions({
                                 return;
                             }
                             void navigate({
-                                to: '/pages/edit-event',
+                                to: '/edit-event',
                                 search: {
                                     eventId: event.id,
                                     ...(detailSource

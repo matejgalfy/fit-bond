@@ -14,7 +14,7 @@ import {
     useNotifications,
 } from '@/features/notifications/hooks/notifications';
 
-export const Route = createFileRoute('/pages/notifications-page')({
+export const Route = createFileRoute('/_pages/notifications-page')({
     component: RouteComponent,
 });
 
@@ -32,7 +32,7 @@ function RouteComponent() {
     const openNotification = (notification: Notification) => {
         if (!notification.eventId) return;
         void navigate({
-            to: '/pages/event-detail-page',
+            to: '/event-detail-page',
             search: {
                 eventId: notification.eventId,
                 ...(notification.commentId

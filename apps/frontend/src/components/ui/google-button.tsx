@@ -6,7 +6,7 @@ export function GoogleButton() {
         authClient.signIn
             .social({
                 provider: 'google',
-                callbackURL: `${window.location.origin}/pages/home-page`,
+                callbackURL: `${window.location.origin}/home-page`,
             })
             .catch(console.error);
     };

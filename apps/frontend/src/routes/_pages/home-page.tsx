@@ -7,7 +7,7 @@ import type { Event } from '@/features/events/types';
 import { useInfiniteEvents } from '@/features/events/hooks/events';
 import { useUserProfile } from '@/features/users/hooks/use-users';
 
-export const Route = createFileRoute('/pages/home-page')({
+export const Route = createFileRoute('/_pages/home-page')({
     component: HomePage,
 });
 

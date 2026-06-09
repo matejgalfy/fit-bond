@@ -7,11 +7,11 @@ test.describe('Logout (requires running backend)', () => {
     }) => {
         await registerViaUI(page, generateTestUser());
 
-        await page.goto('/pages/profile-page');
+        await page.goto('/profile-page');
         await page.getByRole('button', { name: /log out/i }).click();
         await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
 
-        await page.goto('/pages/my-events');
+        await page.goto('/my-events');
         await expect(page).toHaveURL(/\/auth\/login/, { timeout: 10_000 });
     });
 });

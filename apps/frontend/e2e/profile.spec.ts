@@ -7,7 +7,7 @@ test.describe('Profile (requires running backend)', () => {
         page,
     }) => {
         await registerViaUI(page, generateTestUser());
-        await page.goto('/pages/profile-page');
+        await page.goto('/profile-page');
 
         await expect(
             page.getByRole('heading', { name: 'My Profile' })
@@ -37,7 +37,7 @@ test.describe('Profile (requires running backend)', () => {
         const owner = generateTestUser();
         await registerViaUI(ownerPage, owner);
 
-        await ownerPage.goto('/pages/profile-page');
+        await ownerPage.goto('/profile-page');
         await ownerPage.getByRole('button', { name: /edit profile/i }).click();
         await expect(
             ownerPage.getByRole('heading', { name: /edit profile/i })

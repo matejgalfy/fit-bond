@@ -56,7 +56,7 @@ export async function createEventViaUI(
 ): Promise<string> {
     await mockLocationSearch(page);
 
-    await page.goto('/pages/create-event');
+    await page.goto('/create-event');
     await expect(
         page.getByRole('heading', { name: /create new event/i })
     ).toBeVisible();
@@ -90,7 +90,7 @@ export async function createEventViaUI(
     await page.locator('#event-capacity').fill(String(capacity));
 
     await page.getByRole('button', { name: /publish event/i }).click();
-    await expect(page).toHaveURL(/\/pages\/my-events/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/my-events/, { timeout: 15_000 });
 
     await page.getByRole('heading', { name }).click();
     await expect(page).toHaveURL(/eventId=/, { timeout: 10_000 });
@@ -105,5 +105,5 @@ export async function createEventViaUI(
 }
 
 export function eventDetailPath(eventId: string): string {
-    return `/pages/event-detail-page?eventId=${eventId}`;
+    return `/event-detail-page?eventId=${eventId}`;
 }

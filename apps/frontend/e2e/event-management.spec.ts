@@ -40,7 +40,7 @@ test.describe('Event management — organizer (requires running backend)', () =>
 
         await page.getByRole('button', { name: /cancel event/i }).click();
 
-        await expect(page).toHaveURL(/\/pages\/my-events/, { timeout: 15_000 });
+        await expect(page).toHaveURL(/\/my-events/, { timeout: 15_000 });
         await expect(page.getByRole('heading', { name })).toHaveCount(0);
     });
 });
