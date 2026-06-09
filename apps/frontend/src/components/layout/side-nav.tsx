@@ -22,7 +22,7 @@ export function SideNav({
     onChange,
 }: SideNavProps) {
     return (
-        <aside className="hidden md:flex sticky top-14 self-start h-[calc(100vh-3.5rem)] w-55 bg-surface border-r border-outline transition-colors duration-300 overflow-y-auto overflow-x-hidden shrink-0 flex-col pt-2">
+        <aside className="hidden md:flex sticky top-14 self-start h-[calc(100vh-3.5rem)] w-55 bg-surface border-r border-outline transition-colors duration-50 overflow-y-auto overflow-x-hidden shrink-0 flex-col pt-2">
             {items && items.length > 0 ? (
                 <div className="px-2 flex flex-col gap-0.5">
                     {items.map((item) => (
@@ -72,7 +72,7 @@ function NavLink({ item, active, accent = 'default', onChange }: NavLinkProps) {
             : 'bg-soft-blue text-primary-blue font-semibold';
 
     const className = cn(
-        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-none cursor-pointer text-regular font-sans w-full text-left transition-[background,color] duration-200',
+        'flex items-center gap-2.5 px-3 py-2.5 rounded-lg border-none cursor-pointer text-regular font-sans w-full text-left transition-[background,color] duration-50',
         active ? activeClass : 'bg-transparent text-secondary-text font-normal'
     );
 
