@@ -69,10 +69,7 @@ export function EventDetailActions({
         try {
             await cancelEvent.mutateAsync({});
             await navigate({
-                to:
-                    isAdmin && !isOrganizer
-                        ? '/admin/discover'
-                        : '/my-events',
+                to: isAdmin && !isOrganizer ? '/admin/discover' : '/my-events',
             });
         } catch (err) {
             setManagementError(
