@@ -179,7 +179,7 @@ export function EventDetailActions({
                             <Button
                                 variant="outline"
                                 disabled={anyPending}
-                                className="w-full border-primary-orange bg-soft-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
+                                className="border-primary-orange bg-soft-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                                 onClick={() => {
                                     unmark.mutate();
                                 }}
@@ -193,7 +193,7 @@ export function EventDetailActions({
                                 disabled={
                                     anyPending || isCancelled || hasStarted
                                 }
-                                className="w-full border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
+                                className="border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                                 onClick={() => {
                                     mark.mutate();
                                 }}
