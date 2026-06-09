@@ -11,7 +11,7 @@ const editEventSearchSchema = z.object({
 
 type EditEventSearch = z.infer<typeof editEventSearchSchema>;
 
-export const Route = createFileRoute('/pages/edit-event')({
+export const Route = createFileRoute('/_pages/edit-event')({
     validateSearch: zodValidator(editEventSearchSchema),
     component: EditEventPage,
 });
@@ -25,7 +25,7 @@ function EditEventPage() {
             eventId={eventId}
             onDone={() =>
                 navigate({
-                    to: '/pages/event-detail-page',
+                    to: '/event-detail-page',
                     search: {
                         eventId,
                         ...(from ? { from } : {}),
@@ -34,7 +34,7 @@ function EditEventPage() {
             }
             errorBackLink={
                 <Button variant="outline" asChild>
-                    <Link to="/pages/my-events">Back to my events</Link>
+                    <Link to="/my-events">Back to my events</Link>
                 </Button>
             }
         />

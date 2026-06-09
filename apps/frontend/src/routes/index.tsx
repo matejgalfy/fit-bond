@@ -17,7 +17,7 @@ function IndexRedirect() {
 
         if (session?.user) {
             void navigate({
-                to: role === 'admin' ? '/admin' : '/pages/home-page',
+                to: role === 'admin' ? '/admin' : '/home-page',
                 replace: true,
             });
             return;

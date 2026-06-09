@@ -24,7 +24,7 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
     return (
         <nav className="sticky top-0 z-50 h-14 bg-surface border-b border-outline flex items-center px-4 gap-3">
             <Link
-                to={isAdmin ? '/admin' : '/pages/home-page'}
+                to={isAdmin ? '/admin' : '/home-page'}
                 className="flex items-center gap-1.5"
                 aria-label="FitBond home"
             >
@@ -72,7 +72,7 @@ export function AppNavbar({ userName, profilePictureUrl }: AppNavbarProps) {
                     aria-label="Open profile menu"
                     asChild
                 >
-                    <Link to="/pages/profile-page">
+                    <Link to="/profile-page">
                         <UserAvatar
                             name={userName}
                             imageUrl={profilePictureUrl}

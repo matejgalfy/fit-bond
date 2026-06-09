@@ -69,10 +69,7 @@ export function EventDetailActions({
         try {
             await cancelEvent.mutateAsync({});
             await navigate({
-                to:
-                    isAdmin && !isOrganizer
-                        ? '/admin/discover'
-                        : '/pages/my-events',
+                to: isAdmin && !isOrganizer ? '/admin/discover' : '/my-events',
             });
         } catch (err) {
             setManagementError(
@@ -114,7 +111,7 @@ export function EventDetailActions({
                                 return;
                             }
                             void navigate({
-                                to: '/pages/edit-event',
+                                to: '/edit-event',
                                 search: {
                                     eventId: event.id,
                                     ...(detailSource
@@ -182,7 +179,7 @@ export function EventDetailActions({
                             <Button
                                 variant="outline"
                                 disabled={anyPending}
-                                className="w-full border-primary-orange bg-soft-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
+                                className="border-primary-orange bg-soft-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                                 onClick={() => {
                                     unmark.mutate();
                                 }}
@@ -196,7 +193,7 @@ export function EventDetailActions({
                                 disabled={
                                     anyPending || isCancelled || hasStarted
                                 }
-                                className="w-full border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
+                                className="border-primary-orange text-primary-orange hover:bg-soft-orange hover:text-primary-orange sm:w-auto"
                                 onClick={() => {
                                     mark.mutate();
                                 }}

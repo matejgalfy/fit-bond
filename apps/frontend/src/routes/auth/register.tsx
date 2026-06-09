@@ -49,7 +49,7 @@ function Register() {
 
     useEffect(() => {
         if (!isPending && session?.user) {
-            void navigate({ to: '/pages/home-page', replace: true });
+            void navigate({ to: '/home-page', replace: true });
         }
     }, [isPending, navigate, session?.user]);
 
@@ -70,7 +70,7 @@ function Register() {
                     return;
                 }
 
-                void navigate({ to: '/pages/home-page' });
+                void navigate({ to: '/home-page' });
             })
             .catch(() => {
                 form.setError('root', {

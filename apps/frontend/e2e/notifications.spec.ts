@@ -23,7 +23,7 @@ test.describe('Notifications (requires running backend)', () => {
             joinerPage.getByRole('button', { name: /leave event/i })
         ).toBeVisible();
 
-        await organizerPage.goto('/pages/notifications-page');
+        await organizerPage.goto('/notifications-page');
         await expect(
             organizerPage.getByText('New participant joined')
         ).toBeVisible({ timeout: 10_000 });

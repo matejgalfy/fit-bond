@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router';
 import { EventForm } from '@/features/events/components/creation/event-form';
 import { useCreateEvent } from '@/features/events/hooks/events';
 
-export const Route = createFileRoute('/pages/create-event')({
+export const Route = createFileRoute('/_pages/create-event')({
     component: CreateEventPage,
 });
 
@@ -25,10 +25,10 @@ function CreateEventPage() {
                 fallbackErrorMessage="Failed to create event. Please try again."
                 onSubmit={async (payload) => {
                     await createEvent(payload);
-                    await navigate({ to: '/pages/my-events' });
+                    await navigate({ to: '/my-events' });
                 }}
                 onCancel={() => {
-                    void navigate({ to: '/pages/my-events' });
+                    void navigate({ to: '/my-events' });
                 }}
             />
         </div>

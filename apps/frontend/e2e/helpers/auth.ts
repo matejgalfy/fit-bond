@@ -25,7 +25,7 @@ export async function registerViaUI(page: Page, user: TestUser): Promise<void> {
         .fill(user.password);
     await page.getByPlaceholder('Confirm password').fill(user.password);
     await page.getByRole('button', { name: /create account/i }).click();
-    await expect(page).toHaveURL(/\/pages\/home-page/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/home-page/, { timeout: 15_000 });
 }
 
 export async function loginViaUI(page: Page, user: TestUser): Promise<void> {
@@ -35,5 +35,5 @@ export async function loginViaUI(page: Page, user: TestUser): Promise<void> {
         .getByPlaceholder('Password', { exact: true })
         .fill(user.password);
     await page.getByRole('button', { name: /sign in/i }).click();
-    await expect(page).toHaveURL(/\/pages\/home-page/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/\/home-page/, { timeout: 15_000 });
 }

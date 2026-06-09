@@ -13,7 +13,7 @@ interface EventDetailHeaderProps {
 export function EventDetailHeader({ event }: EventDetailHeaderProps) {
     const isAdmin = useIsAdmin();
     const isCancelled = Boolean(event.cancelledAt);
-    const profileTo = isAdmin ? '/admin/profile-page' : '/pages/profile-page';
+    const profileTo = isAdmin ? '/admin/profile-page' : '/profile-page';
 
     return (
         <header className="mt-5">

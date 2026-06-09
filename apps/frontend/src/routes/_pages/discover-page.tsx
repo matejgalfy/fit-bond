@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { authClient } from '@/lib/api';
 import { EventsBrowser } from '@/features/events/components/events-browser';
 
-export const Route = createFileRoute('/pages/discover-page')({
+export const Route = createFileRoute('/_pages/discover-page')({
     component: DiscoverPage,
 });
 

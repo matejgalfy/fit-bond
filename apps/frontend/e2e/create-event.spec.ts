@@ -6,7 +6,7 @@ test.describe('Create event page (requires running backend)', () => {
     test.beforeEach(async ({ page }) => {
         const user = generateTestUser();
         await registerViaUI(page, user);
-        await page.goto('/pages/create-event');
+        await page.goto('/create-event');
         await expect(
             page.getByRole('heading', { name: /create new event/i })
         ).toBeVisible();
@@ -32,7 +32,7 @@ test.describe('Create event page (requires running backend)', () => {
 
     test('cancel button returns to my-events', async ({ page }) => {
         await page.getByRole('button', { name: /cancel/i }).click();
-        await expect(page).toHaveURL(/\/pages\/my-events/);
+        await expect(page).toHaveURL(/\/my-events/);
     });
 
     test('publishes a complete event and redirects to my-events with the new card visible', async ({
@@ -73,7 +73,7 @@ test.describe('Create event page (requires running backend)', () => {
 
         await page.getByRole('button', { name: /publish event/i }).click();
 
-        await expect(page).toHaveURL(/\/pages\/my-events/, { timeout: 15_000 });
+        await expect(page).toHaveURL(/\/my-events/, { timeout: 15_000 });
 
         await expect(page.getByText(eventName)).toBeVisible({
             timeout: 10_000,

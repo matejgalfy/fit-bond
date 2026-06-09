@@ -5,7 +5,7 @@ test.describe('Auth flow (requires running backend on localhost:3000)', () => {
     test('user can register and is redirected to home', async ({ page }) => {
         const user = generateTestUser();
         await registerViaUI(page, user);
-        await expect(page).toHaveURL(/\/pages\/home-page/);
+        await expect(page).toHaveURL(/\/home-page/);
     });
 
     test('registered user can log in and is redirected to home', async ({
@@ -17,7 +17,7 @@ test.describe('Auth flow (requires running backend on localhost:3000)', () => {
         await page.context().clearCookies();
 
         await loginViaUI(page, user);
-        await expect(page).toHaveURL(/\/pages\/home-page/);
+        await expect(page).toHaveURL(/\/home-page/);
     });
 
     test('login with wrong password shows an error', async ({ page }) => {
@@ -45,6 +45,6 @@ test.describe('Auth flow (requires running backend on localhost:3000)', () => {
         await registerViaUI(page, user);
 
         await page.goto('/auth/login');
-        await expect(page).toHaveURL(/\/pages\/home-page/, { timeout: 10_000 });
+        await expect(page).toHaveURL(/\/home-page/, { timeout: 10_000 });
     });
 });

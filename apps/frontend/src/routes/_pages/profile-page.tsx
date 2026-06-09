@@ -21,7 +21,7 @@ const profileSearchSchema = z.object({
 
 type ProfileSearch = z.infer<typeof profileSearchSchema>;
 
-export const Route = createFileRoute('/pages/profile-page')({
+export const Route = createFileRoute('/_pages/profile-page')({
     validateSearch: zodValidator(profileSearchSchema),
     component: ProfilePage,
 });

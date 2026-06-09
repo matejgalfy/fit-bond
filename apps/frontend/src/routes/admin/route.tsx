@@ -39,7 +39,7 @@ function AdminLayout() {
     }
 
     if (role !== 'admin') {
-        return <Navigate to="/pages/home-page" replace />;
+        return <Navigate to="/home-page" replace />;
     }
 
     const activeNav = pathnameToNavId(location.pathname);

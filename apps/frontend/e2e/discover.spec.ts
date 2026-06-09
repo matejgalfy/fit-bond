@@ -17,7 +17,7 @@ test.describe('Discover events (requires running backend)', () => {
         const searcherContext = await browser.newContext();
         const searcherPage = await searcherContext.newPage();
         await registerViaUI(searcherPage, generateTestUser());
-        await searcherPage.goto('/pages/discover-page');
+        await searcherPage.goto('/discover-page');
 
         await searcherPage.getByPlaceholder(SEARCH_PLACEHOLDER).fill(eventName);
 
@@ -36,7 +36,7 @@ test.describe('Discover events (requires running backend)', () => {
 
     test('search with no matches shows the empty state', async ({ page }) => {
         await registerViaUI(page, generateTestUser());
-        await page.goto('/pages/discover-page');
+        await page.goto('/discover-page');
 
         await page
             .getByPlaceholder(SEARCH_PLACEHOLDER)

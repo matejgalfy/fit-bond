@@ -16,30 +16,30 @@ export interface NavigationSection {
 }
 
 export const NAV_ITEMS: NavigationItem[] = [
-    { icon: Home, label: 'Home', id: 'home', href: '/pages/home-page' },
+    { icon: Home, label: 'Home', id: 'home', href: '/home-page' },
     {
         icon: Compass,
         label: 'Discover',
         id: 'discover',
-        href: '/pages/discover-page',
+        href: '/discover-page',
     },
     {
         icon: CalendarDays,
         label: 'My Events',
         id: 'events',
-        href: '/pages/my-events',
+        href: '/my-events',
     },
     {
         icon: Bell,
         label: 'Notifications',
         id: 'notifications',
-        href: '/pages/notifications-page',
+        href: '/notifications-page',
     },
     {
         icon: User,
         label: 'Profile',
         id: 'profile',
-        href: '/pages/profile-page',
+        href: '/profile-page',
     },
 ];
 

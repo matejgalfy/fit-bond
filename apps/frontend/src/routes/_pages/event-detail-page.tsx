@@ -26,7 +26,7 @@ const eventDetailSearchSchema = z.object({
 
 type EventDetailSearch = z.infer<typeof eventDetailSearchSchema>;
 
-export const Route = createFileRoute('/pages/event-detail-page')({
+export const Route = createFileRoute('/_pages/event-detail-page')({
     validateSearch: zodValidator(eventDetailSearchSchema),
     component: EventDetailPage,
 });
