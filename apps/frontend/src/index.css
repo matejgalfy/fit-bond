@@ -151,14 +151,10 @@
     --soft-purple: hsl(280, 45%, 22%);
 }
 
-* {
-    border-color: var(--outline);
-    box-sizing: border-box;
-}
-
 @layer base {
     * {
         @apply border-outline outline-primary-blue/50;
+        box-sizing: border-box;
     }
     body {
         @apply m-0 bg-background text-primary-text;
