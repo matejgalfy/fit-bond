@@ -19,7 +19,7 @@ import { canManageEvent } from '../../utils/event-permissions';
 
 interface EventDetailActionsProps {
     event: Event;
-    detailSource?: 'my-events';
+    detailSource?: 'discover' | 'my-events';
 }
 
 export function EventDetailActions({

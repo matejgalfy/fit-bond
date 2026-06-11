@@ -6,7 +6,7 @@ import type { Event } from '../types';
 
 export interface EventCardProps {
     event: Event;
-    detailSource?: 'my-events';
+    detailSource?: 'discover' | 'my-events';
     detailRoute?: '/event-detail-page' | '/admin/event-detail-page';
 }
 

@@ -25,10 +25,18 @@ test.describe('Discover events (requires running backend)', () => {
         await expect(card).toBeVisible({ timeout: 10_000 });
         await card.click();
 
-        await expect(searcherPage).toHaveURL(/event-detail-page/);
+        await expect(searcherPage).toHaveURL(
+            /event-detail-page\?.*from=discover/
+        );
         await expect(
             searcherPage.getByRole('heading', { name: eventName, level: 1 })
         ).toBeVisible();
+        const discoverLinks = searcherPage.getByRole('link', {
+            name: /discover/i,
+        });
+        await expect(discoverLinks).toHaveCount(2);
+        await expect(discoverLinks.nth(0)).toHaveClass(/text-primary-blue/);
+        await expect(discoverLinks.nth(1)).toHaveClass(/text-primary-blue/);
 
         await organizerContext.close();
         await searcherContext.close();
