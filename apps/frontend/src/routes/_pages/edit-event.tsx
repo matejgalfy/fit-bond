@@ -6,7 +6,7 @@ import { zodValidator } from '@tanstack/zod-adapter';
 
 const editEventSearchSchema = z.object({
     eventId: z.string(),
-    from: z.literal('my-events').optional().catch(undefined),
+    from: z.enum(['discover', 'my-events']).optional().catch(undefined),
 });
 
 type EditEventSearch = z.infer<typeof editEventSearchSchema>;

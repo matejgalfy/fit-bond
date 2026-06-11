@@ -19,7 +19,7 @@ import { zodValidator } from '@tanstack/zod-adapter';
 
 const eventDetailSearchSchema = z.object({
     eventId: z.string().optional(),
-    from: z.literal('my-events').optional().catch(undefined),
+    from: z.enum(['discover', 'my-events']).optional().catch(undefined),
     // Set when arriving from a comment notification: the comment to focus.
     commentId: z.string().optional().catch(undefined),
 });

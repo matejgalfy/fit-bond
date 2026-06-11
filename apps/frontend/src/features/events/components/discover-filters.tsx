@@ -83,6 +83,7 @@ export function DiscoverFilters({
                     </label>
                     <DatePicker
                         value={filters.date}
+                        clearable
                         onChange={(value) => {
                             updateFilter('date', value);
                         }}

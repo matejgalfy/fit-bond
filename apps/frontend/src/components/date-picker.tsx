@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     Popover,
@@ -14,6 +14,7 @@ interface DatePickerProps {
     id?: string;
     placeholder?: string;
     required?: boolean;
+    clearable?: boolean;
     className?: string;
 }
 
@@ -80,6 +81,7 @@ export function DatePicker({
     id,
     placeholder = 'Select date',
     required = false,
+    clearable = false,
     className,
 }: DatePickerProps) {
     const selectedDate = parseDateValue(value);
@@ -112,26 +114,42 @@ export function DatePicker({
 
     return (
         <Popover open={open} onOpenChange={setOpen}>
-            <PopoverTrigger asChild>
-                <Button
-                    id={id}
-                    type="button"
-                    variant="outline"
-                    className={cn(
-                        'h-10 w-full justify-start rounded-xl bg-surface text-left font-normal text-primary-text shadow-sm hover:bg-surface hover:text-primary-text',
-                        !selectedDate && 'text-secondary-text',
-                        className
-                    )}
-                    aria-required={required}
-                >
-                    <CalendarDays />
-                    <span className="truncate">
-                        {selectedDate
-                            ? formatDisplayDate(selectedDate)
-                            : placeholder}
-                    </span>
-                </Button>
-            </PopoverTrigger>
+            <div className="relative">
+                <PopoverTrigger asChild>
+                    <Button
+                        id={id}
+                        type="button"
+                        variant="outline"
+                        className={cn(
+                            'h-10 w-full justify-start rounded-xl bg-surface text-left font-normal text-primary-text shadow-sm hover:bg-surface hover:text-primary-text',
+                            !selectedDate && 'text-secondary-text',
+                            clearable && selectedDate && 'pr-10',
+                            className
+                        )}
+                        aria-required={required}
+                    >
+                        <CalendarDays />
+                        <span className="truncate">
+                            {selectedDate
+                                ? formatDisplayDate(selectedDate)
+                                : placeholder}
+                        </span>
+                    </Button>
+                </PopoverTrigger>
+                {clearable && selectedDate && (
+                    <button
+                        type="button"
+                        aria-label="Clear date"
+                        className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-sm p-0.5 text-secondary-text transition-colors hover:text-primary-red"
+                        onClick={() => {
+                            onChange('');
+                            setOpen(false);
+                        }}
+                    >
+                        <X className="size-4" />
+                    </button>
+                )}
+            </div>
             <PopoverContent className="w-auto p-3" align="start">
                 <div className="flex items-center justify-between gap-2">
                     <Button
