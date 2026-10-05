@@ -5,7 +5,7 @@ It was made as a team project for the 'PB138 - Basics of Web Development and Mar
 
 ## Team
 
-* **Matej Gálfy** - Backend Development & Frontend Support
+* **Matej Gálfy** - Backend Development
 * **Samuel Burger** - Backend Development & Deployment
 * **Šimon Jelínek** - Frontend Development
 * **Maroš Mičák** - Frontend Development
