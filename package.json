@@ -1,5 +1,5 @@
 {
-    "name": "pb138-project",
+    "name": "fit-bond",
     "module": "index.ts",
     "devDependencies": {
         "@eslint/js": "^9.39.4",

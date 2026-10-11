@@ -3,7 +3,7 @@
   "configVersion": 1,
   "workspaces": {
     "": {
-      "name": "pb138-project",
+      "name": "fit-bond",
       "dependencies": {
         "resend": "^6.12.3",
       },
