@@ -10,9 +10,9 @@
 #   chmod +x scripts/deploy.sh
 #   crontab -e
 #   # check for new commits every 5 minutes:
-#   */5 * * * * /absolute/path/to/pb138-project/scripts/deploy.sh
+#   */5 * * * * /absolute/path/to/fit-bond/scripts/deploy.sh
 #
-# Watch the log:   tail -f /absolute/path/to/pb138-project/deploy.log
+# Watch the log:   tail -f /absolute/path/to/fit-bond/deploy.log
 
 set -uo pipefail
 
