@@ -5,10 +5,10 @@ It was made as a team project for the 'PB138 - Basics of Web Development and Mar
 
 ## Team
 
-* **Matej Gálfy** - Backend Development
-* **Samuel Burger** - Backend Development & Deployment
-* **Šimon Jelínek** - Frontend Development
-* **Maroš Mičák** - Frontend Development
+- **Matej Gálfy** - Backend Development
+- **Samuel Burger** - Backend Development & Deployment
+- **Šimon Jelínek** - Frontend Development
+- **Maroš Mičák** - Frontend Development
 
 ## Tech Stack
 
@@ -52,16 +52,19 @@ The project was written in TypeScript using the Bun runtime. The backend uses th
 </table>
 
 ## Requirements
-* **Bun (v1.0 or later)**
-* **Docker & Docker Compose:** For running the PostgreSQL database
-* **Git:** For version control
-* **Node.js (v20 LTS or later):** Required only for E2E tests (Playwright)
+
+- **Bun (v1.0 or later)**
+- **Docker & Docker Compose:** For running the PostgreSQL database
+- **Git:** For version control
+- **Node.js (v20 LTS or later):** Required only for E2E tests (Playwright)
 
 ## How to Run
 
 ### Local Development
-For  detailed instructions, API documentation, and deployment guides, please refer to the [Developer Guide](CONTRIBUTING.md).
+
+For detailed instructions, API documentation, and deployment guides, please refer to the [Developer Guide](CONTRIBUTING.md).
 
 ### Website
+
 The application was deployed and hosted on [fit-bond.app](https://fit-bond.app), but currently
 it is unavailable.
