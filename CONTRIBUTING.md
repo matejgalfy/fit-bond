@@ -40,7 +40,7 @@ Verify installations:
 ```bash
 bun --version
 docker --version
-docker compose --version
+docker-compose --version
 git --version
 node --version    # only needed if you run E2E tests
 ```
@@ -59,7 +59,7 @@ This allows `npx` (a `.ps1` script) to run, which is required for E2E tests.
 
 ```bash
 git clone <repository-url>
-cd pb138-project
+cd fit-bond
 bun install
 ```
 
@@ -69,21 +69,23 @@ bun install
 bun run db:setup
 ```
 
-This starts a PostgreSQL database at `localhost:5432` with:
+This starts a PostgreSQL database at `localhost:5432` (defined in [apps/backend/docker-compose.yml](apps/backend/docker-compose.yml)) and applies all migrations. Credentials:
 
 - **Username**: `dev_user`
 - **Password**: `password`
 - **Database**: `fitbound`
 
-Verify the database is running:
+Verify the database is running (run from `apps/backend` — the root `docker-compose.yml` is the production stack):
 
 ```bash
+cd apps/backend
 docker compose ps
 ```
 
 To stop the database:
 
 ```bash
+cd apps/backend
 docker compose down
 ```
 
@@ -125,17 +127,15 @@ VITE_API_URL=http://localhost:3000
 VITE_AUTH_URL=http://localhost:3000
 ```
 
-### 4. Initialize the Database
+### 4. Seed the Database
 
-Run migrations and seed the database with realistic test data:
+`db:setup` already applied the migrations. Fill the database with realistic test data:
 
 ```bash
-# Run pending migrations
-bun --filter backend run db:migrate
-
-# Seed database with test data
 bun --filter backend run db:seed
 ```
+
+Later, after pulling new migrations, apply them with `bun --filter backend run db:migrate`.
 
 ### 5. Start Development Servers
 
@@ -196,7 +196,7 @@ bun run db:clear             # Reset/clear all data
 bun run db:studio            # Open Drizzle Studio DB GUI
 bun run admin:promote        # Promote a user to admin (by email/id)
 bun run sports:create        # Create a sport
-bun test                     # Run backend tests (Vitest)
+bun run test                 # Run backend tests (Vitest)
 bun run lint                 # Run ESLint
 ```
 
@@ -206,14 +206,15 @@ bun run lint                 # Run ESLint
 cd apps/frontend
 
 bun run dev                  # Start Vite dev server
-bun run build               # Build for production
-bun run lint                # Run ESLint
-bun run preview             # Preview production build locally
-bun test                     # Run Vitest unit + component tests
-bun run setup:e2e           # One-time: install Playwright Chromium browser (~150 MB)
-bun run test:e2e            # Run Playwright E2E tests (headless)
-bun run test:e2e:ui         # Run Playwright E2E tests (interactive UI mode)
+bun run build                # Build for production
+bun run lint                 # Run ESLint
+bun run test                 # Run Vitest unit + component tests
+bun run setup:e2e            # One-time: install Playwright Chromium browser (~150 MB)
+bun run test:e2e             # Run Playwright E2E tests (headless)
+bun run test:e2e:ui          # Run Playwright E2E tests (interactive UI mode)
 ```
+
+> Use `bun run test`, not `bun test` — the latter starts Bun's built-in test runner instead of Vitest.
 
 ### E2E Tests (Playwright)
 
@@ -237,18 +238,28 @@ bun run test:e2e -- auth.spec.ts          # only auth flow tests
 
 **Test files in [apps/frontend/e2e/](apps/frontend/e2e/):**
 
-| File                   | What it covers                                                                    | Backend required?                          |
-| ---------------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
-| `smoke.spec.ts`        | Public route rendering, navigation between login/register, form validation errors | No                                         |
-| `auth.spec.ts`         | Register a fresh user, login, wrong password, redirect of authed user             | **Yes** — needs `bun run dev:backend` + DB |
-| `navigation.spec.ts`   | Navigation between Home/Discover/My Events/Notifications/Profile after login      | **Yes**                                    |
-| `create-event.spec.ts` | Create event page render, empty-form validation, cancel button                    | **Yes**                                    |
-| `helpers/auth.ts`      | Shared helpers: `generateTestUser()`, `registerViaUI()`, `loginViaUI()`           | —                                          |
+| File                       | What it covers                                                                    | Backend required?                          |
+| -------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------ |
+| `smoke.spec.ts`            | Public route rendering, navigation between login/register, form validation errors | No                                         |
+| `auth.spec.ts`             | Register a fresh user, login, wrong password, redirect of authed user             | **Yes** — needs `bun run dev:backend` + DB |
+| `logout.spec.ts`           | Logging out, protected pages redirect to login afterwards                         | **Yes**                                    |
+| `route-guards.spec.ts`     | Unauthenticated → login redirect, non-admin kept out of the admin area            | **Yes**                                    |
+| `navigation.spec.ts`       | Navigation between Home/Discover/My Events/Notifications/Profile after login      | **Yes**                                    |
+| `create-event.spec.ts`     | Create event form render, empty-form validation, cancel, publishing an event      | **Yes**                                    |
+| `event-management.spec.ts` | Organizer edits and cancels their event                                           | **Yes**                                    |
+| `discover.spec.ts`         | Searching events by name, empty search state                                      | **Yes**                                    |
+| `participation.spec.ts`    | Joining/leaving an event, marking/unmarking interest                              | **Yes**                                    |
+| `comments.spec.ts`         | Posting comments, visibility to the organizer, opening the author's profile       | **Yes**                                    |
+| `notifications.spec.ts`    | Join notifications, mark all read, navigating from a notification                 | **Yes**                                    |
+| `profile.spec.ts`          | Editing a bio, profile changes visible to other users                             | **Yes**                                    |
+| `reporting.spec.ts`        | Reporting an event                                                                | **Yes**                                    |
+| `admin.spec.ts`            | Admin opens a reported event and resolves the report                              | **Yes**                                    |
+| `helpers/`                 | Shared helpers for auth (`registerViaUI()`, …), admin setup, and event creation   | —                                          |
 
 > **Note on backend dependency:** Tests that exercise authenticated flows register a fresh user via the UI on each run. To run those, start the backend first:
 >
 > ```bash
-> bun run db:setup       # one-time: starts Docker Postgres + migrates + seeds
+> bun run db:setup       # one-time: starts Docker Postgres + runs migrations
 > bun run dev:backend    # in a separate terminal
 > ```
 >
@@ -259,7 +270,7 @@ bun run test:e2e -- auth.spec.ts          # only auth flow tests
 ## Project Structure
 
 ```
-pb138-project/
+fit-bond/
 ├── apps/
 │   ├── backend/                    # Elysia backend API
 │   │   ├── drizzle/                # Generated SQL migrations + meta journal
@@ -279,7 +290,7 @@ pb138-project/
 │   │   │       ├── comments/
 │   │   │       ├── notifications/
 │   │   │       ├── reports/
-│   │   │       ├── admin/  users/  sports/  locations/
+│   │   │       ├── auth/  admin/  users/  sports/  locations/
 │   │   │       ├── email/          #   email service + subscribers
 │   │   │       └── upload/         #   image upload (served from /uploads)
 │   │   ├── Dockerfile
@@ -293,14 +304,15 @@ pb138-project/
 │       │   ├── routes/             # TanStack file-based routes
 │       │   │   ├── __root.tsx      #   root layout
 │       │   │   ├── auth/           #   login, register
-│       │   │   ├── pages/          #   home, discover, my-events, create/edit
+│       │   │   ├── _pages.tsx      #   layout for the signed-in user pages
+│       │   │   ├── _pages/         #   home, discover, my-events, create/edit
 │       │   │   │                   #   event, event detail, notifications, profile
-│       │   │   └── admin/          #   admin dashboard + discover
+│       │   │   └── admin/          #   admin dashboard, discover, event detail/edit,
+│       │   │                       #   profile
 │       │   ├── features/           # feature modules (api / components /
 │       │   │                       #   hooks / utils / validation / types):
-│       │   │                       #   events, participation, comments,
-│       │   │                       #   notifications, reports, admin, auth,
-│       │   │                       #   users, sports, locations
+│       │   │                       #   events, comments, notifications, reports,
+│       │   │                       #   admin, auth, users, sports, locations
 │       │   ├── components/         # shared composites + ui/ (Shadcn primitives)
 │       │   ├── hooks/  lib/        # shared hooks; api client (treaty), utils
 │       │   └── routeTree.gen.ts    # generated by TanStack Router (git-ignored)
@@ -315,7 +327,8 @@ pb138-project/
 ├── .gitlab-ci.yml                  # CI: lint, format-check, backend/frontend tests
 ├── eslint.config.js  .prettierrc   # Shared lint/format config
 ├── package.json  tsconfig.json     # Root workspace config
-└── README.md                       # This file
+├── README.md                       # Project overview + screenshots
+└── CONTRIBUTING.md                 # This file
 ```
 
 ## Database
