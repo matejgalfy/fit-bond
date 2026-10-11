@@ -4,9 +4,6 @@
   "workspaces": {
     "": {
       "name": "fit-bond",
-      "dependencies": {
-        "resend": "^6.12.3",
-      },
       "devDependencies": {
         "@eslint/js": "^9.39.4",
         "@types/bun": "latest",
@@ -25,7 +22,6 @@
     },
     "apps/backend": {
       "name": "backend",
-      "version": "1.0.50",
       "dependencies": {
         "@better-auth/drizzle-adapter": "^1.6.2",
         "@elysiajs/cors": "^1.4.1",
@@ -35,6 +31,7 @@
         "drizzle-orm": "^0.45.1",
         "elysia": "^1.4.28",
         "pg": "^8.20.0",
+        "resend": "^6.12.3",
       },
       "devDependencies": {
         "@eslint/js": "^9.39.4",

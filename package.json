@@ -1,6 +1,5 @@
 {
     "name": "fit-bond",
-    "module": "index.ts",
     "devDependencies": {
         "@eslint/js": "^9.39.4",
         "@types/bun": "latest",
@@ -35,8 +34,5 @@
     "type": "module",
     "workspaces": [
         "apps/*"
-    ],
-    "dependencies": {
-        "resend": "^6.12.3"
-    }
+    ]
 }
