@@ -1,16 +1,16 @@
 # FitBond Project Guidelines
 
-FitBond is a social sports application for discovering, creating, and joining local sports events. See [docs/Requirements.md](../../docs/Requirements.md) for full product requirements.
+FitBond is a social sports application for discovering, creating, and joining local sports events. See [docs/Requirements.md](../docs/Requirements.md) for full product requirements.
 
 ## Stack
 
 - **Monorepo**: Bun workspaces (`apps/backend`, `apps/frontend`)
 - **Backend**: Elysia on Bun, PostgreSQL with Drizzle ORM, `t` from Elysia for validation, better-auth for authentication
 - **Frontend**: React 19 + TypeScript + Vite, `@elysiajs/eden` treaty client
-- **Routing**: TanStack Start in SPA mode — file-based routing under `src/routes/`
+- **Routing**: TanStack Router (SPA, no SSR) — file-based routing under `src/routes/`
 - **Server state**: React Query (`@tanstack/react-query`) — all API calls go through query/mutation hooks
 - **UI components**: Shadcn/ui — components live in `src/components/ui/`, generated via `bunx --bun shadcn@latest add <component>`
-- **Styling**: Tailwind CSS — utility classes only, no custom CSS except in `src/index.css` for global tokens
+- **Styling**: Tailwind CSS v4 — utility classes only, no custom CSS except in `src/index.css` for global tokens
 - **Package manager**: Bun only — do not use npm, yarn, or pnpm
 
 ## Commands
@@ -27,15 +27,16 @@ bun run dev:frontend         # Frontend only
 bun run lint                 # Lint both apps
 bun format                   # Format all code with Prettier
 
-# Backend (from apps/backend/)
-bun test                     # Run all backend tests
-bun test src/modules/events  # Run tests for one module
-bun test --test-name-pattern "cancel"  # Run tests matching a pattern
+# Backend (from apps/backend/) — tests run on Vitest; use `bun run test`, not `bun test`
+bun run test                 # Run all backend tests
+bun run test src/modules/events  # Run tests for one module
+bun run test -t "cancel"     # Run tests matching a pattern
 bun run dev                  # Start with hot-reload
-bun run db:setup             # Docker DB + migrate + seed (first-time setup)
-bun run db:seed              # Re-seed database with test data
-bun run drizzle:push         # Push schema changes (dev only)
-bun run drizzle:migrate      # Create + run migration
+bun run db:setup             # Docker DB + migrate (first-time setup)
+bun run db:seed              # Seed database with test data
+bun run db:push              # Push schema changes (dev only)
+bun run db:generate          # Generate a migration from schema changes
+bun run db:migrate           # Run pending migrations
 
 # Frontend (from apps/frontend/)
 bun run dev                  # Vite dev server
@@ -66,11 +67,12 @@ E2E tests live in `apps/frontend/e2e/` and use Playwright with Chromium. They ru
 
 ### Frontend Architecture
 
-#### Routing (TanStack Start — SPA mode)
+#### Routing (TanStack Router — SPA mode)
 - File-based routes in `src/routes/`
 - Root layout: `src/routes/__root.tsx`
 - Index route: `src/routes/index.tsx`
-- Nested routes: `src/routes/<segment>/route.tsx` (layout) + `src/routes/<segment>/index.tsx`
+- Nested routes: `src/routes/<segment>/route.tsx` (layout) + `src/routes/<segment>/index.tsx` (e.g. `admin/`)
+- Pathless layout: `src/routes/_pages.tsx` wraps the signed-in user pages in `src/routes/_pages/`
 - Use `createFileRoute` / `createRootRoute` from `@tanstack/react-router`
 - SPA mode only — no SSR, no server functions; data loading via React Query in route `loader` or component
 
@@ -78,7 +80,7 @@ E2E tests live in `apps/frontend/e2e/` and use Playwright with Chromium. They ru
 - All backend calls go through React Query hooks (`useQuery`, `useMutation`, `useInfiniteQuery`)
 - Query keys follow the pattern `['resource', { filters }]` — e.g. `['events', { sportId }]`
 - API client (`treaty`) is a singleton exported from `src/lib/api.ts`
-- Keep query/mutation hooks co-located with the feature they serve (e.g. `src/features/events/hooks.ts`)
+- Keep query/mutation hooks co-located with the feature they serve (e.g. `src/features/events/hooks/`)
 
 #### Component Library (Shadcn + shared components)
 - `src/components/ui/` — Shadcn-generated primitives (Button, Card, Input, …); **do not edit these manually**, re-generate if needed
@@ -87,7 +89,7 @@ E2E tests live in `apps/frontend/e2e/` and use Playwright with Chromium. They ru
 
 #### Styling (Tailwind CSS)
 - Use Tailwind utility classes directly in JSX; avoid writing new CSS files
-- Design tokens (colors, spacing) configured in `tailwind.config.ts`, reflected as CSS variables in `src/index.css`
+- Design tokens (colors, spacing) are CSS variables defined in `src/index.css` (Tailwind v4 — there is no `tailwind.config.ts`)
 - Use `cn()` from `src/lib/utils.ts` (Shadcn-provided) for conditional/merged class names
 
 ---
@@ -97,10 +99,10 @@ E2E tests live in `apps/frontend/e2e/` and use Playwright with Chromium. They ru
 The backend exports `type Backend = typeof app` from `apps/backend/src/index.ts`. The frontend imports this type to create a fully typed API client:
 
 ```typescript
-// apps/frontend/src/App.tsx
+// apps/frontend/src/lib/api.ts
 import { treaty } from '@elysiajs/eden';
-import type { Backend } from '../../backend/src/index';
-const client = treaty<Backend>('localhost:3000');
+import type { Backend } from '../../../backend/src/index';
+export const api = treaty<Backend>(apiUrl, { keepDomain: true, fetch: { credentials: 'include' } });
 ```
 
 Changing an endpoint contract requires updating both backend and frontend together.
@@ -116,7 +118,7 @@ Each module in `apps/backend/src/modules/<name>/` follows a layered architecture
 | `<name>.model.ts` | Drizzle ORM queries — all functions accept `db: Database` parameter |
 | `<name>.service.ts` | Business logic — uses factory pattern `createXxxService(model?)` for testable DI |
 | `<name>.routes.ts` | Elysia plugin with route definitions and `onError` hook, injects `db`, calls service|
-| `<name>.test.ts` | Unit tests using `bun:test` with mocked model layer |
+| `<name>.test.ts` | Unit tests using Vitest with mocked model layer |
 
 Routes are registered in `apps/backend/src/index.ts` via `.use(xxxRoutes)`.
 
@@ -147,20 +149,22 @@ Pass schemas to routes via options: `{ body: createEventBody, params: eventIdPar
 
 ### Error Handling Pattern
 
-Services throw typed errors that routes catch:
+Services throw typed errors (`apps/backend/src/utils/errors.ts`) that the routes' `onError` hooks map to HTTP responses:
 
 ```typescript
 export class ServiceError extends Error {
-    public readonly code: 'NOT_FOUND' | 'FORBIDDEN' | 'CONFLICT' | 'BAD_REQUEST';
+    public readonly code: 'NOT_FOUND' | 'FORBIDDEN' | 'UNAUTHORIZED' | 'CONFLICT' | 'BAD_REQUEST' | 'INTERNAL_ERROR';
     public readonly statusCode: number;
 }
+
+throw ServiceError.notFound('Event not found');
 ```
 
 ### Authentication (better-auth)
 
 Auth is implemented with `better-auth` + `drizzleAdapter`:
 
-- Config: `apps/backend/src/auth.ts` — email/password + Google OAuth, trusted origin `http://localhost:5173`
+- Config: `apps/backend/src/auth.ts` — email/password + Google OAuth + `admin` plugin, trusted origin from `FRONTEND_URL`
 - Middleware: `apps/backend/src/auth_middleware.ts` — `authLayer` Elysia plugin that mounts `auth.handler` and exposes an `auth` macro
 - Protected routes declare `auth: true` in their route options; Elysia injects `user` and `session` into the handler context
 - Unauthenticated requests to protected routes receive a 401 automatically
@@ -170,7 +174,7 @@ Auth is implemented with `better-auth` + `drizzleAdapter`:
 app.post('/events', handler, { auth: true, body: createEventBody });
 
 // Access the authenticated user in the handler
-({ body, user }) => eventsController.create(db, body, user)
+({ body, user }) => eventsService.create(db, user.id, body)
 ```
 
 ### Database
@@ -184,7 +188,9 @@ app.post('/events', handler, { auth: true, body: createEventBody });
 Services use factory DI for testability — pass a mock model instead of hitting the DB:
 
 ```typescript
-const mockModel = { findAll: mock(() => Promise.resolve([])), /* ... */ };
+import { vi } from 'vitest';
+
+const mockModel = { findAll: vi.fn(() => Promise.resolve([])), /* ... */ };
 const service = createEventsService(mockModel as unknown as EventsModel);
 ```
 
@@ -196,11 +202,11 @@ Use `expect.assertions(n)` with try/catch for error-throwing tests (avoids ESLin
 - Shadcn components in `src/components/ui/` are auto-generated — do not edit them manually; re-generate if needed
 - All backend data fetching must go through React Query hooks, never direct `await client.xxx.get()` in components
 - Route params and search params must be validated using `zodValidator` from TanStack Router (frontend) or `t` schemas (backend)
-- After every change ensure `bun test` and `bun lint` passes with no errors
+- After every change ensure `bun run test` and `bun run lint` pass with no errors
 - Use `import type { X }` for type-only imports
 - Do not weaken tsconfig strict settings
 - Frontend uses Vite
-- Do not introduce Express, ws, pg, better-sqlite3, ioredis, or dotenv
+- Do not introduce Express, ws, better-sqlite3, ioredis, or dotenv (`pg` is already used as the Drizzle driver)
 - Run `bun format` before committing
 - Soft deletes use `deletedAt` timestamp fields
 - Array results use `results.length === 0 ? null : results[0]` pattern (not `.at(0)` — ESLint can't resolve Drizzle types with `.at()`)
