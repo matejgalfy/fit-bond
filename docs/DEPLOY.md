@@ -25,30 +25,118 @@ Google sign-in is optional: leave `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` em
 
 ## One-time setup
 
-Server: Ubuntu 24.04 x64, 2 vCPU, 4 GB RAM, ports 22, 80 and 443 open (port 6443 stays closed).
+### 1. VM (Azure)
+
+- **Size:** Ubuntu Server 24.04 LTS **x64** (CI builds amd64 images only), 2 vCPU, 4 GB RAM (e.g. B2s / B2als_v2).
+  The whole stack uses about 1.3 GB, so there is room for a second app in the same cluster.
+- **Public IP:** VM → Overview → the public IP → Configuration: set **Assignment = Static** and a **DNS name
+  label** (e.g. `fitbond`). That gives the host `fitbond.<region>.cloudapp.azure.com`; copy the exact name from
+  the portal. Let's Encrypt issues certificates for it, so no own domain is needed. With an own domain, point an
+  `A` record at the IP instead.
+- **Network security group** (VM → Networking → inbound rules): **80** and **443** from Any, **22** only from
+  your own IP. Port **6443** (the k3s API) stays closed.
+
+One public IP has only one Azure DNS label. A second app on the same VM needs another host name: a second
+public IP with its own label, an own domain, or e.g. `<name>.<ip-with-dashes>.sslip.io`.
+
+### 2. Server preparation
 
 ```bash
-# k3s (Traefik included). With ufw on, let pods and services reach the node.
+sudo apt update && sudo apt upgrade -y && sudo apt install -y git curl
+# Firewall: SSH + web, and let k3s pods (10.42/16) and services (10.43/16) reach the node.
+sudo ufw allow OpenSSH && sudo ufw allow 80,443/tcp
 sudo ufw allow from 10.42.0.0/16 to any && sudo ufw allow from 10.43.0.0/16 to any
+sudo ufw enable
+# 2 GB swap as a safety net on a 4 GB VM.
+sudo fallocate -l 2G /swapfile && sudo chmod 600 /swapfile && sudo mkswap /swapfile && sudo swapon /swapfile
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
+```
+
+### 3. k3s
+
+```bash
 curl -sfL https://get.k3s.io | sh -
 mkdir -p ~/.kube && sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config && sudo chown "$USER" ~/.kube/config
 echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc && export KUBECONFIG=~/.kube/config
+kubectl get nodes        # STATUS Ready
+```
 
-# cert-manager + cluster pieces
+`scripts/deploy.sh` uses `~/.kube/config` too (also from cron).
+
+### 4. Cluster pieces (once per cluster)
+
+```bash
 kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.21.3/cert-manager.yaml
 kubectl -n cert-manager rollout status deployment/cert-manager-webhook --timeout=5m
 git clone https://github.com/matejgalfy/fit-bond.git ~/fit-bond && cd ~/fit-bond
 kubectl apply -f infra/k8s/cluster/traefik-config.yaml
+# Your email: Let's Encrypt sends certificate expiry warnings there.
 sed 's/REPLACE_ME_EMAIL/you@example.com/' infra/k8s/cluster/cluster-issuer.yaml | kubectl apply -f -
+```
 
-# config, first deploy, cron
-cp .env.production.example .env.production && nano .env.production
-scripts/deploy.sh
+### 5. Images on GHCR
+
+CI pushes `ghcr.io/matejgalfy/fitbond-backend` and `fitbond-web` on every push to `main` (job `images`, after
+lint and tests). New GHCR packages are **private**: after the first green run, set both to public (GitHub →
+profile → Packages → package → Package settings → Change visibility → Public), or the server can't pull them.
+
+### 6. `.env.production`
+
+Lives only on the server, next to the checkout (gitignored); every variable is described in
+[.env.production.example](../.env.production.example). This writes it with fresh secrets; set `HOST` first:
+
+```bash
+cd ~/fit-bond
+HOST=fitbond.<region>.cloudapp.azure.com
+PGPASS=$(openssl rand -hex 24)
+cat > .env.production <<EOF
+POSTGRES_USER=fitbond
+POSTGRES_PASSWORD=$PGPASS
+POSTGRES_DB=fitbond
+DATABASE_URL=postgres://fitbond:$PGPASS@db:5432/fitbond
+PORT=3000
+BACKEND_URL=https://$HOST
+BETTER_AUTH_URL=https://$HOST
+FRONTEND_URL=https://$HOST
+BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+LOCATIONIQ_API_KEY=
+RESEND_API_KEY=re_dummy_test_key
+EOF
+chmod 600 .env.production
+```
+
+- **`POSTGRES_PASSWORD`** is also part of `DATABASE_URL`, so use URL-safe characters only (`openssl rand -hex`):
+  `/`, `+`, `@` or `:` break the URL. It takes effect only when the database volume is first created.
+- **`LOCATIONIQ_API_KEY`** is effectively required: creating an event needs the location search. Free key at
+  [locationiq.com](https://locationiq.com).
+- **Google sign-in:** leave both `GOOGLE_*` empty to disable it. To enable it, create an OAuth client in the
+  Google Cloud Console (free, any Google account) with the redirect URI `https://<HOST>/api/auth/callback/google`.
+- **`RESEND_API_KEY`** must not be empty; the dummy value works, emails just aren't delivered.
+- No quotes around values: `kubectl --from-env-file` keeps them literally.
+
+### 7. First deploy and cron
+
+```bash
+scripts/deploy.sh                     # deploys origin/main once its images are on GHCR
+kubectl -n fitbond get pods           # db-0, backend-…, web-…: Running, 1/1
+kubectl -n fitbond get certificate    # READY=True after a minute or two
 (crontab -l 2>/dev/null; echo "*/5 * * * * $HOME/fit-bond/scripts/deploy.sh >/dev/null 2>&1") | crontab -
 ```
 
-GHCR packages start private: after the first CI run on `main`, set both `fitbond-backend` and `fitbond-web` to
-public (GitHub → profile → Packages → package → Package settings → Change visibility), or the server can't pull them.
+### 8. First run of the app
+
+The production database starts empty:
+
+1. Open `https://<HOST>` and sign up.
+2. Make yourself admin:
+   `kubectl -n fitbond exec deploy/backend -- bun run admin:promote -- --email <your email>`
+3. Create the sports (**events can't be created without any**). `scripts/create-sports.sh` adds the 15 most
+   popular ones in one go (safe to re-run); a single one:
+   `kubectl -n fitbond exec deploy/backend -- bun run sports:create -- --name Football`
+
+Don't run `db:seed` in production: it inserts fake users and events.
 
 ## Operations
 
@@ -64,8 +152,12 @@ kubectl -n fitbond exec -it db-0 -- psql -U fitbond -d fitbond                  
 kubectl -n fitbond get certificate                # TLS: READY should be True
 ```
 
-Rollback: `git -C ~/fit-bond checkout <older sha>` is not enough (cron moves it forward again); revert the
-commit on `main` instead and let CI + cron deploy it. Migrations don't roll back, so keep them backwards compatible.
+**New version:** push to `main`; CI builds the images and cron deploys them within ~5 minutes. A commit whose
+CI fails is never deployed; the next green one is.
+
+**Rollback:** `git revert` the bad commit on `main` and push; CI and cron deploy the result like any other
+change. (Checking out an older commit on the server doesn't help: cron moves it back to `origin/main`.)
+Migrations don't roll back, so keep them backwards compatible with the previous version.
 
 ## Backups and restore
 
@@ -97,4 +189,5 @@ Replace `fitbond` after `-U` / `-d` with `POSTGRES_USER` / `POSTGRES_DB` if your
 | Pod `CreateContainerConfigError`            | `.env.production` lacks `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`               |
 | Backend `CrashLoopBackOff`                  | `kubectl -n fitbond logs deploy/backend`: usually a missing env var or a wrong `DATABASE_URL` |
 | Browser certificate warning                 | `kubectl -n fitbond get certificate,challenges`; DNS must point at the VM, port 80 open     |
+| Event creation fails / no sports to pick    | Create sports (step 8); set `LOCATIONIQ_API_KEY` for the location search                   |
 | Changed `POSTGRES_PASSWORD`, backend fails  | The password is set only when the volume is created; change it in `psql` too (`ALTER USER`) |

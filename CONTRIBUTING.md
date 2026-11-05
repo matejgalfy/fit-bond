@@ -323,9 +323,11 @@ fit-bond/
 ├── docs/                           # DEPLOY.md runbook, Requirements, ERD, Use Case diagram
 ├── infra/k8s/                      # Kubernetes manifests (k3s production)
 ├── scripts/deploy.sh               # Cron auto-deploy to k3s (docs/DEPLOY.md)
+├── scripts/create-sports.sh        # Seeds the common sports in the k3s deployment
 ├── docker-compose.yml              # Production images without k8s (db + backend + web/Caddy)
 ├── .env.production.example         # Template for the production stack
-├── .gitlab-ci.yml                  # CI: lint, format-check, backend/frontend tests
+├── .github/workflows/ci.yml        # CI: lint, format-check, tests; builds + pushes images to GHCR
+├── .gitlab-ci.yml                  # GitLab CI: lint, format-check, backend/frontend tests
 ├── eslint.config.js  .prettierrc   # Shared lint/format config
 ├── package.json  tsconfig.json     # Root workspace config
 ├── README.md                       # Project overview + screenshots

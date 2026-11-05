@@ -165,6 +165,7 @@ throw ServiceError.notFound('Event not found');
 Auth is implemented with `better-auth` + `drizzleAdapter`:
 
 - Config: `apps/backend/src/auth.ts` — email/password + Google OAuth + `admin` plugin, trusted origin from `FRONTEND_URL`
+- Google OAuth is optional: it is enabled only when `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` are set. `GET /auth-config` returns `{ googleAuthEnabled }`, and the login/register pages (via `useAuthConfig()` in `src/features/auth/hooks/auth-config.ts`) show the Google button only when it is true
 - Middleware: `apps/backend/src/auth_middleware.ts` — `authLayer` Elysia plugin that mounts `auth.handler` and exposes an `auth` macro
 - Protected routes declare `auth: true` in their route options; Elysia injects `user` and `session` into the handler context
 - Unauthenticated requests to protected routes receive a 401 automatically
@@ -182,6 +183,17 @@ app.post('/events', handler, { auth: true, body: createEventBody });
 - Schema: `apps/backend/src/db/schema.ts` — tables include `user`, `session`, `account` (better-auth) plus domain tables
 - Connection: `apps/backend/src/db/index.ts` — exports `db` instance and `Database` type
 - Seeding: `apps/backend/src/db/seed.ts` — uses `drizzle-seed` + `@faker-js/faker`
+
+### Deployment
+
+Production runs on k3s (single VM); runbook in [docs/DEPLOY.md](../docs/DEPLOY.md).
+
+- CI (`.github/workflows/ci.yml`, job `images`) builds `apps/backend/Dockerfile` and `apps/frontend/Dockerfile` and, on `main`, pushes `ghcr.io/matejgalfy/fitbond-{backend,web}:<commit sha>` + `:latest`
+- Manifests: `infra/k8s/` (Kustomize; namespace `fitbond`: `db` Postgres StatefulSet, `backend`, `web` = Caddy serving the SPA and proxying `/api` + `/uploads`, Traefik Ingress with cert-manager TLS, nightly `pg_dump` CronJob). `infra/k8s/cluster/` is applied once per cluster
+- `scripts/deploy.sh` (cron on the server) deploys `origin/main` once its images exist; it creates the `fitbond-env` Secret from the server's `.env.production` and fills in the `FITBOND_HOST` / `ENV_CHECKSUM` / image-tag placeholders
+- The backend runs migrations on start (`docker-entrypoint.sh`), so it stays at 1 replica with the `Recreate` strategy; migrations must stay backwards compatible
+- A new env var: add it to `.env.production.example` (and document it there); it reaches the pods through the Secret
+- `docker-compose.yml` runs the same images without Kubernetes (local production test)
 
 ### Testing Pattern
 
