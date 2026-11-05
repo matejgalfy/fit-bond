@@ -66,5 +66,5 @@ For detailed instructions, API documentation, and deployment guides, please refe
 
 ### Website
 
-The application was deployed and hosted on [fit-bond.app](https://fit-bond.app), but currently
-it is unavailable.
+The application is deployed at [fitbond.me](https://fitbond.me). Deployment details are in
+[docs/DEPLOY.md](docs/DEPLOY.md).

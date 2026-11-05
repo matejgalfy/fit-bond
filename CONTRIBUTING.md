@@ -1,6 +1,6 @@
 # FitBond - Developer Guide
 
-[FitBond](https://fit-bond.app) - currently down
+[FitBond](https://fitbond.me)
 
 FitBond is a social sports application that helps people find others to exercise with, create sport events, and build a local activity community.
 

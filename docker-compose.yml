@@ -1,7 +1,7 @@
 # Production stack: PostgreSQL + Bun/Elysia backend + Caddy-served SPA (auto-HTTPS).
 #   cp .env.production.example .env.production   # fill in secrets + SITE_ADDRESS
 #   docker compose up --build
-# Served at $SITE_ADDRESS (e.g. https://fit-bond.dev; http://localhost locally).
+# Served at $SITE_ADDRESS (e.g. https://fitbond.me; http://localhost locally).
 services:
     db:
         image: postgres:18

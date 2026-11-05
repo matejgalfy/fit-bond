@@ -1,5 +1,5 @@
 # Site address comes from $SITE_ADDRESS:
-#   prod:  fit-bond.dev          -> Caddy auto-provisions HTTPS via Let's Encrypt
+#   prod:  fitbond.me            -> Caddy auto-provisions HTTPS via Let's Encrypt
 #   local: http://localhost      -> plain HTTP on :80 (no cert needed)
 #   k3s:   :80                   -> plain HTTP; the ingress terminates TLS
 # To register a Let's Encrypt account email, add a `tls you@example.com` line

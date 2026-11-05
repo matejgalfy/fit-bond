@@ -1,7 +1,8 @@
 # Deployment (k3s)
 
 FitBond runs on a single Linux VM with [k3s](https://k3s.io) (lightweight Kubernetes). CI builds the images,
-a cron job on the server deploys them.
+a cron job on the server deploys them. Production: **[fitbond.me](https://fitbond.me)** (Azure VM, domain from
+Namecheap, see [Domain](#domain-fitbondme)).
 
 ```
 git push main ─▶ GitHub Actions (lint, tests) ─▶ images ghcr.io/matejgalfy/fitbond-{backend,web}:<sha>
@@ -32,7 +33,7 @@ Google sign-in is optional: leave `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` em
 - **Public IP:** VM → Overview → the public IP → Configuration: set **Assignment = Static** and a **DNS name
   label** (e.g. `fitbond`). That gives the host `fitbond.<region>.cloudapp.azure.com`; copy the exact name from
   the portal. Let's Encrypt issues certificates for it, so no own domain is needed. With an own domain, point an
-  `A` record at the IP instead.
+  `A` record at the IP instead (see [Domain](#domain-fitbondme)).
 - **Network security group** (VM → Networking → inbound rules): **80** and **443** from Any, **22** only from
   your own IP. Port **6443** (the k3s API) stays closed.
 
@@ -87,7 +88,7 @@ Lives only on the server, next to the checkout (gitignored); every variable is d
 
 ```bash
 cd ~/fit-bond
-HOST=fitbond.<region>.cloudapp.azure.com
+HOST=fitbond.me    # or fitbond.<region>.cloudapp.azure.com without an own domain
 PGPASS=$(openssl rand -hex 24)
 cat > .env.production <<EOF
 POSTGRES_USER=fitbond
@@ -137,6 +138,59 @@ The production database starts empty:
    `kubectl -n fitbond exec deploy/backend -- bun run sports:create -- --name Football`
 
 Don't run `db:seed` in production: it inserts fake users and events.
+
+## Domain (fitbond.me)
+
+`fitbond.me` is registered at [Namecheap](https://www.namecheap.com) through the
+[GitHub Student Developer Pack](https://education.github.com/pack) (a free `.me` domain for one year; after that
+it renews at the normal price, so keep an eye on auto-renew in Namecheap → Domain List).
+The SSL certificate offered with the pack isn't needed: cert-manager gets one from Let's Encrypt and renews it.
+
+### DNS records
+
+Namecheap → Domain List → `fitbond.me` → Manage. Nameservers: **Namecheap BasicDNS**. Advanced DNS:
+
+| Type     | Host | Value                         | TTL   |
+| -------- | ---- | ----------------------------- | ----- |
+| A Record | `@`  | public IP of the VM (static!) | 5 min |
+
+This must be the **only** `A` record for `@`. The student offer sets the domain up for GitHub Pages, so delete
+the four `A` records `185.199.108–111.153` and a `CNAME www → *.github.io` if present. Otherwise visitors and
+Let's Encrypt land on GitHub most of the time and the certificate is never issued. Add an `AAAA` record only if
+the VM really serves IPv6; Let's Encrypt prefers it, and a dead one fails the validation.
+
+```bash
+dig +short fitbond.me A @dns1.registrar-servers.com   # Namecheap itself: only the VM's IP
+dig +short fitbond.me A @1.1.1.1                       # what the internet sees
+```
+
+`www.fitbond.me` isn't set up: the Ingress serves exactly one host (the one in `FRONTEND_URL`).
+
+### Changing the domain
+
+Set DNS first and wait until `dig` shows the VM's IP. A certificate requested before that keeps failing and
+retries with a growing backoff. Then, on the server:
+
+```bash
+cd ~/fit-bond && nano .env.production   # FRONTEND_URL, BACKEND_URL, BETTER_AUTH_URL = https://<new host>
+scripts/deploy.sh --force               # rewrites the Ingress host; cert-manager requests a new certificate
+kubectl -n fitbond get certificate      # READY=True after a minute or two
+```
+
+Then update the services that know the domain:
+
+- **Google sign-in** (Google Cloud Console → APIs & Services → Credentials → the OAuth client): authorized
+  JavaScript origin `https://<host>`, redirect URI `https://<host>/api/auth/callback/google`; on the OAuth consent
+  screen add the domain to the authorized domains.
+- **Resend** (only with a real `RESEND_API_KEY`): emails can only be sent from a domain verified in Resend. Add
+  the domain there and create the DNS records it lists (DKIM `TXT resend._domainkey`, `MX` + SPF `TXT` on
+  `send`) in Namecheap Advanced DNS. In the Host field, write only the part before `.fitbond.me`. MX records need
+  Mail Settings → Custom MX. The sender address is set in `apps/backend/src/modules/email/email.service.ts`.
+
+**"Could not resolve host" right after adding the record**, while `dig @1.1.1.1` already returns the IP: your
+machine cached the earlier "no such domain" answer (Namecheap allows caching it for up to an hour). Flush it:
+`sudo resolvectl flush-caches` (Linux, also on the VM), `ipconfig /flushdns` (Windows),
+`chrome://net-internals/#dns` → Clear host cache (Chrome/Edge).
 
 ## Operations
 
@@ -189,5 +243,7 @@ Replace `fitbond` after `-U` / `-d` with `POSTGRES_USER` / `POSTGRES_DB` if your
 | Pod `CreateContainerConfigError`            | `.env.production` lacks `POSTGRES_USER` / `POSTGRES_PASSWORD` / `POSTGRES_DB`               |
 | Backend `CrashLoopBackOff`                  | `kubectl -n fitbond logs deploy/backend`: usually a missing env var or a wrong `DATABASE_URL` |
 | Browser certificate warning                 | `kubectl -n fitbond get certificate,challenges`; DNS must point at the VM, port 80 open     |
+| Certificate `READY=False`, challenge `pending` | `dig +short <host> A @1.1.1.1` must return only the VM's IP (delete GitHub Pages records); `kubectl -n fitbond describe challenges` |
+| `Could not resolve host`, public DNS is fine | Cached negative answer: `sudo resolvectl flush-caches` or wait up to an hour ([Domain](#domain-fitbondme)) |
 | Event creation fails / no sports to pick    | Create sports (step 8); set `LOCATIONIQ_API_KEY` for the location search                   |
 | Changed `POSTGRES_PASSWORD`, backend fails  | The password is set only when the volume is created; change it in `psql` too (`ALTER USER`) |
