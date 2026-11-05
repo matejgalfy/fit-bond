@@ -1,11 +1,11 @@
-# FitBond
+# [FitBond](https://fitbond.me)
 
 A social sports application where users can find workout partners, organize local sports events, and build an active community.
 It was made as a team project for the 'PB138 - Basics of Web Development and Markup Languages' course at the Faculty of Informatics of Masaryk University.
 
 ## Team
 
-- **Matej Gálfy** - Backend Development
+- **Matej Gálfy** - Backend & Frontend Development
 - **Samuel Burger** - Backend Development & Deployment
 - **Šimon Jelínek** - Frontend Development
 - **Maroš Mičák** - Frontend Development
