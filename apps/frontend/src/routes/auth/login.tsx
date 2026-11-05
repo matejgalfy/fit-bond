@@ -16,6 +16,7 @@ import { AppNavbar } from '@/components/layout/app-navbar';
 import { AuthCard } from '@/features/auth/components/auth-card';
 import { AuthHeader } from '@/features/auth/components/auth-header';
 import { AuthDivider } from '@/features/auth/components/auth-divider';
+import { useAuthConfig } from '@/features/auth/hooks/auth-config';
 import { PasswordInput } from '@/features/auth/components/password-input';
 
 import { createFileRoute, Link, useNavigate } from '@tanstack/react-router';
@@ -32,6 +33,7 @@ export const Route = createFileRoute('/auth/login')({
 export function Login() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
+    const { data: authConfig } = useAuthConfig();
 
     const form = useForm<LoginValues>({
         resolver: zodResolver(loginSchema),
@@ -87,8 +89,12 @@ export function Login() {
                     />
 
                     <AuthCard>
-                        <GoogleButton />
-                        <AuthDivider />
+                        {authConfig?.googleAuthEnabled && (
+                            <>
+                                <GoogleButton />
+                                <AuthDivider />
+                            </>
+                        )}
 
                         <Form {...form}>
                             <form

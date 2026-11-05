@@ -106,7 +106,7 @@ BACKEND_URL=http://localhost:3000
 BETTER_AUTH_URL=http://localhost:3000
 FRONTEND_URL=http://localhost:5173
 
-# REQUIRED — the backend refuses to boot without these (auth.ts).
+# Optional — leave empty to turn Google sign-in off (the button is hidden).
 # Create OAuth credentials in the Google Cloud Console and add the callback
 # http://localhost:3000/api/auth/callback/google
 GOOGLE_CLIENT_ID=
@@ -118,7 +118,7 @@ GOOGLE_CLIENT_SECRET=
 LOCATIONIQ_API_KEY=
 ```
 
-> **Heads-up:** `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, and `FRONTEND_URL` are validated at startup — if any is missing the backend throws and exits. `RESEND_API_KEY` is optional in dev (a dummy key is used and emails simply aren't delivered).
+> **Heads-up:** `FRONTEND_URL` is validated at startup — if it is missing the backend throws and exits. Without `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET` Google sign-in is disabled (the frontend asks `GET /auth-config` and hides the button). `RESEND_API_KEY` is optional in dev (a dummy key is used and emails simply aren't delivered).
 
 **Frontend** (`apps/frontend/.env`) — points the SPA at the dev backend:
 
@@ -320,9 +320,10 @@ fit-bond/
 │       ├── vite.config.ts  playwright.config.ts
 │       └── package.json
 │
-├── docs/                           # Requirements, ERD, Use Case diagram
-├── scripts/deploy.sh               # Cron-friendly auto-deploy for the Docker stack
-├── docker-compose.yml              # Production stack (db + backend + web/Caddy)
+├── docs/                           # DEPLOY.md runbook, Requirements, ERD, Use Case diagram
+├── infra/k8s/                      # Kubernetes manifests (k3s production)
+├── scripts/deploy.sh               # Cron auto-deploy to k3s (docs/DEPLOY.md)
+├── docker-compose.yml              # Production images without k8s (db + backend + web/Caddy)
 ├── .env.production.example         # Template for the production stack
 ├── .gitlab-ci.yml                  # CI: lint, format-check, backend/frontend tests
 ├── eslint.config.js  .prettierrc   # Shared lint/format config
@@ -398,7 +399,9 @@ const { data } = await api.events.get({ query: { sportIds: [id] } });
 
 ## Deployment
 
-The production stack is defined in [docker-compose.yml](docker-compose.yml) and builds three services:
+Production runs on **k3s** (lightweight Kubernetes) on one VM: GitHub Actions builds the images and pushes them to GHCR, and a cron job on the server ([scripts/deploy.sh](scripts/deploy.sh)) applies [infra/k8s/](infra/k8s/) with them. The runbook — server setup, deploys, backups and restore — is [docs/DEPLOY.md](docs/DEPLOY.md).
+
+The same images also run without Kubernetes via [docker-compose.yml](docker-compose.yml), handy for trying the production build locally:
 
 - **db** — PostgreSQL 18 (data persisted in the `pgdata` volume)
 - **backend** — the Bun/Elysia API ([apps/backend/Dockerfile](apps/backend/Dockerfile)); uploaded images persist in the `uploads` volume
@@ -406,12 +409,10 @@ The production stack is defined in [docker-compose.yml](docker-compose.yml) and 
 
 ```bash
 cp .env.production.example .env.production   # fill in secrets + SITE_ADDRESS
-docker compose up --build                    # served at $SITE_ADDRESS
+docker compose --env-file .env.production up --build   # served at $SITE_ADDRESS
 ```
 
-`.env.production` must provide `SITE_ADDRESS`, the `POSTGRES_*` credentials, a matching `DATABASE_URL`, the public `BACKEND_URL` / `BETTER_AUTH_URL` / `FRONTEND_URL`, a generated `BETTER_AUTH_SECRET` (required in production), and the Google OAuth credentials. See [.env.production.example](.env.production.example) for the full annotated list.
-
-For continuous deployment, [scripts/deploy.sh](scripts/deploy.sh) is a cron-friendly helper that pulls `origin/main` and rebuilds the stack only when something changed (logging to `deploy.log`).
+See [.env.production.example](.env.production.example) for every variable; the same file configures the k3s deployment.
 
 ## Troubleshooting
 

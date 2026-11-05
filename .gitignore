@@ -17,6 +17,8 @@ logs
 _.log
 deploy.log
 .deploy.lock
+.deployed-sha
+.deploy-waiting
 report.[0-9]_.[0-9]_.[0-9]_.[0-9]_.json
 
 # dotenv environment variable files

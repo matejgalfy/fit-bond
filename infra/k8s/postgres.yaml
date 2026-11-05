@@ -1,0 +1,81 @@
+# One PostgreSQL instance with its data on a k3s local-path volume (a folder
+# under /var/lib/rancher/k3s/storage on the VM). The Service is called `db`,
+# so DATABASE_URL is the same as with docker compose.
+# Credentials come from the `fitbond-env` Secret (made from .env.production by
+# scripts/deploy.sh); they only take effect when the volume is first created.
+apiVersion: v1
+kind: Service
+metadata:
+    name: db
+spec:
+    selector:
+        app.kubernetes.io/name: db
+    ports:
+        - name: postgres
+          port: 5432
+          targetPort: postgres
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+    name: db
+spec:
+    serviceName: db
+    replicas: 1
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: db
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: db
+        spec:
+            containers:
+                - name: postgres
+                  image: postgres:18
+                  ports:
+                      - name: postgres
+                        containerPort: 5432
+                  env:
+                      - name: POSTGRES_USER
+                        valueFrom:
+                            secretKeyRef:
+                                name: fitbond-env
+                                key: POSTGRES_USER
+                      - name: POSTGRES_PASSWORD
+                        valueFrom:
+                            secretKeyRef:
+                                name: fitbond-env
+                                key: POSTGRES_PASSWORD
+                      - name: POSTGRES_DB
+                        valueFrom:
+                            secretKeyRef:
+                                name: fitbond-env
+                                key: POSTGRES_DB
+                  readinessProbe:
+                      exec:
+                          command:
+                              [
+                                  'sh',
+                                  '-c',
+                                  'pg_isready -U "$POSTGRES_USER" -d "$POSTGRES_DB"',
+                              ]
+                      periodSeconds: 10
+                  resources:
+                      requests:
+                          cpu: 50m
+                          memory: 128Mi
+                      limits:
+                          memory: 512Mi
+                  volumeMounts:
+                      # postgres:18 keeps PGDATA in a versioned subfolder: mount the parent.
+                      - name: data
+                        mountPath: /var/lib/postgresql
+    volumeClaimTemplates:
+        - metadata:
+              name: data
+          spec:
+              accessModes: [ReadWriteOnce]
+              resources:
+                  requests:
+                      storage: 5Gi

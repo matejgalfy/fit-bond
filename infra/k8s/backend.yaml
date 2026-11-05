@@ -1,0 +1,95 @@
+# The Elysia backend. It runs the Drizzle migrations on start
+# (docker-entrypoint.sh), so it stays at one replica, and `Recreate` makes sure
+# an old and a new pod never migrate or write the uploads volume at once.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: uploads
+spec:
+    accessModes: [ReadWriteOnce]
+    resources:
+        requests:
+            storage: 5Gi
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: backend
+spec:
+    replicas: 1
+    strategy:
+        type: Recreate
+    selector:
+        matchLabels:
+            app.kubernetes.io/name: backend
+    template:
+        metadata:
+            labels:
+                app.kubernetes.io/name: backend
+            annotations:
+                # Changes when .env.production changes, which restarts the pod
+                # so it reads the new values.
+                fitbond/env-checksum: ENV_CHECKSUM
+        spec:
+            initContainers:
+                # Migrations need the database: wait for it instead of crash-looping.
+                - name: wait-for-db
+                  image: postgres:18
+                  command:
+                      [
+                          'sh',
+                          '-c',
+                          'until pg_isready -h db -p 5432; do echo waiting for db; sleep 2; done',
+                      ]
+            containers:
+                - name: backend
+                  image: ghcr.io/matejgalfy/fitbond-backend:latest
+                  envFrom:
+                      - secretRef:
+                            name: fitbond-env
+                  ports:
+                      - name: http
+                        containerPort: 3000
+                  # Generous: migrations run before the server listens.
+                  startupProbe:
+                      httpGet:
+                          path: /health
+                          port: http
+                      periodSeconds: 5
+                      failureThreshold: 60
+                  readinessProbe:
+                      httpGet:
+                          path: /health
+                          port: http
+                      periodSeconds: 10
+                  livenessProbe:
+                      httpGet:
+                          path: /health
+                          port: http
+                      periodSeconds: 30
+                      timeoutSeconds: 5
+                  resources:
+                      requests:
+                          cpu: 50m
+                          memory: 128Mi
+                      limits:
+                          memory: 512Mi
+                  volumeMounts:
+                      - name: uploads
+                        mountPath: /app/apps/backend/uploads
+            volumes:
+                - name: uploads
+                  persistentVolumeClaim:
+                      claimName: uploads
+---
+apiVersion: v1
+kind: Service
+metadata:
+    name: backend
+spec:
+    selector:
+        app.kubernetes.io/name: backend
+    ports:
+        - name: http
+          port: 3000
+          targetPort: http

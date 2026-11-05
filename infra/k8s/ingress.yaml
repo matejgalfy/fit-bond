@@ -1,0 +1,36 @@
+# Public entry through k3s's Traefik. cert-manager gets the certificate from
+# Let's Encrypt (ClusterIssuer `letsencrypt`, infra/k8s/cluster/), HTTP
+# redirects to HTTPS. FITBOND_HOST is filled in by scripts/deploy.sh.
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+    name: https-redirect
+spec:
+    redirectScheme:
+        scheme: https
+        permanent: true
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: fitbond
+    annotations:
+        cert-manager.io/cluster-issuer: letsencrypt
+        # <namespace>-<middleware name>@kubernetescrd
+        traefik.ingress.kubernetes.io/router.middlewares: fitbond-https-redirect@kubernetescrd
+spec:
+    ingressClassName: traefik
+    tls:
+        - hosts: [FITBOND_HOST]
+          secretName: fitbond-tls
+    rules:
+        - host: FITBOND_HOST
+          http:
+              paths:
+                  - path: /
+                    pathType: Prefix
+                    backend:
+                        service:
+                            name: web
+                            port:
+                                name: http

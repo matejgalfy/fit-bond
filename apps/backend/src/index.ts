@@ -3,6 +3,7 @@ import { cors } from '@elysiajs/cors';
 import { openapi } from '@elysiajs/openapi';
 import { staticPlugin } from '@elysiajs/static';
 import { authLayer } from './auth_middleware';
+import { googleAuthEnabled } from './auth';
 import { eventBus } from './lib/eventBus';
 import { openapiConfig } from './openapi.config';
 
@@ -86,6 +87,7 @@ export const app = new Elysia()
         })
     )
     .get('/health', () => ({ ok: true }))
+    .get('/auth-config', () => ({ googleAuthEnabled }))
     .use(uploadRoutes)
     .use(createEventsRoutes(eventsService))
     .use(createParticipationRoutes(participationService))

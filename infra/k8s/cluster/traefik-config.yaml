@@ -1,0 +1,13 @@
+# Once per cluster: k3s's bundled Traefik keeps the client's IP. With the
+# default `Cluster` policy the node rewrites the source address, so
+# X-Forwarded-For (and better-auth's per-IP rate limit) would only see the node.
+apiVersion: helm.cattle.io/v1
+kind: HelmChartConfig
+metadata:
+    name: traefik
+    namespace: kube-system
+spec:
+    valuesContent: |-
+        service:
+          spec:
+            externalTrafficPolicy: Local

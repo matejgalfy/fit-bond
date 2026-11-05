@@ -1,0 +1,19 @@
+# Once per cluster: Let's Encrypt certificates for any Ingress with the
+# annotation cert-manager.io/cluster-issuer: letsencrypt (HTTP-01 through
+# Traefik, so DNS only needs to point at the VM and port 80 must be open).
+# Apply with your email filled in (expiry warnings go there):
+#   sed 's/REPLACE_ME_EMAIL/you@example.com/' infra/k8s/cluster/cluster-issuer.yaml | kubectl apply -f -
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+    name: letsencrypt
+spec:
+    acme:
+        server: https://acme-v02.api.letsencrypt.org/directory
+        email: REPLACE_ME_EMAIL
+        privateKeySecretRef:
+            name: letsencrypt-account
+        solvers:
+            - http01:
+                  ingress:
+                      ingressClassName: traefik

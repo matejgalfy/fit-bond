@@ -1,0 +1,68 @@
+# Nightly pg_dump into the `backups` volume (a folder under
+# /var/lib/rancher/k3s/storage on the VM), kept 14 days. The volume lives on
+# the same disk as the database: copy the files off the VM now and then
+# (docs/DEPLOY.md).
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+    name: backups
+spec:
+    accessModes: [ReadWriteOnce]
+    resources:
+        requests:
+            storage: 5Gi
+---
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+    name: db-backup
+spec:
+    schedule: '30 2 * * *'
+    timeZone: Europe/Bratislava
+    concurrencyPolicy: Forbid
+    successfulJobsHistoryLimit: 3
+    failedJobsHistoryLimit: 3
+    jobTemplate:
+        spec:
+            backoffLimit: 2
+            template:
+                spec:
+                    restartPolicy: Never
+                    containers:
+                        - name: pg-dump
+                          image: postgres:18
+                          env:
+                              - name: PGHOST
+                                value: db
+                              - name: PGUSER
+                                valueFrom:
+                                    secretKeyRef:
+                                        name: fitbond-env
+                                        key: POSTGRES_USER
+                              - name: PGPASSWORD
+                                valueFrom:
+                                    secretKeyRef:
+                                        name: fitbond-env
+                                        key: POSTGRES_PASSWORD
+                              - name: PGDATABASE
+                                valueFrom:
+                                    secretKeyRef:
+                                        name: fitbond-env
+                                        key: POSTGRES_DB
+                          command:
+                              - bash
+                              - -c
+                              - |
+                                  set -euo pipefail
+                                  f="/backups/fitbond-$(date +%Y-%m-%d-%H%M).sql.gz"
+                                  pg_dump --no-owner | gzip > "$f.tmp"
+                                  mv "$f.tmp" "$f"
+                                  find /backups -name 'fitbond-*.sql.gz' -mtime +14 -delete
+                                  ls -lh /backups
+                          volumeMounts:
+                              - name: backups
+                                mountPath: /backups
+                    volumes:
+                        - name: backups
+                          persistentVolumeClaim:
+                              claimName: backups

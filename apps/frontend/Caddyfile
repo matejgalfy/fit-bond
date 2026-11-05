@@ -1,8 +1,18 @@
 # Site address comes from $SITE_ADDRESS:
 #   prod:  fit-bond.dev          -> Caddy auto-provisions HTTPS via Let's Encrypt
 #   local: http://localhost      -> plain HTTP on :80 (no cert needed)
+#   k3s:   :80                   -> plain HTTP; the ingress terminates TLS
 # To register a Let's Encrypt account email, add a `tls you@example.com` line
 # inside the site block below.
+{
+	servers {
+		# Behind the k3s ingress (Traefik), keep the client's IP in
+		# X-Forwarded-For instead of replacing it with the ingress pod's
+		# address: better-auth rate-limits sign-ins per IP.
+		trusted_proxies static private_ranges
+	}
+}
+
 {$SITE_ADDRESS:http://localhost} {
 	encode gzip
 

@@ -18,6 +18,7 @@ import { AppNavbar } from '@/components/layout/app-navbar';
 import { AuthCard } from '@/features/auth/components/auth-card';
 import { AuthHeader } from '@/features/auth/components/auth-header';
 import { AuthDivider } from '@/features/auth/components/auth-divider';
+import { useAuthConfig } from '@/features/auth/hooks/auth-config';
 import { PasswordInput } from '@/features/auth/components/password-input';
 
 import { TextInput } from '@/features/auth/components/text-input';
@@ -36,6 +37,7 @@ export const Route = createFileRoute('/auth/register')({
 function Register() {
     const navigate = useNavigate();
     const { data: session, isPending } = authClient.useSession();
+    const { data: authConfig } = useAuthConfig();
 
     const form = useForm<RegisterValues>({
         resolver: zodResolver(registerSchema),
@@ -97,8 +99,12 @@ function Register() {
                     />
 
                     <AuthCard>
-                        <GoogleButton />
-                        <AuthDivider />
+                        {authConfig?.googleAuthEnabled && (
+                            <>
+                                <GoogleButton />
+                                <AuthDivider />
+                            </>
+                        )}
 
                         <Form {...form}>
                             <form

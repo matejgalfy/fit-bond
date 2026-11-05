@@ -1,0 +1,23 @@
+# FitBond on k3s: Postgres, backend, web (Caddy serving the SPA and proxying
+# /api to the backend), an Ingress with Let's Encrypt TLS and a nightly backup.
+# Deploy with scripts/deploy.sh, which also fills in the placeholders:
+#   FITBOND_HOST  -> host from FRONTEND_URL in .env.production
+#   ENV_CHECKSUM  -> hash of .env.production (restarts the backend on change)
+#   :latest       -> the commit SHA of the images CI pushed to GHCR
+# Runbook: docs/DEPLOY.md
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: fitbond
+
+labels:
+    - pairs:
+          app.kubernetes.io/part-of: fitbond
+
+resources:
+    - namespace.yaml
+    - postgres.yaml
+    - backend.yaml
+    - web.yaml
+    - ingress.yaml
+    - backup.yaml

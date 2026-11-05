@@ -8,9 +8,16 @@ const clientId = process.env.GOOGLE_CLIENT_ID;
 const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
 const frontendOrigin = process.env.FRONTEND_URL;
 
-if (!clientId || !clientSecret || !frontendOrigin) {
-    throw new Error(
-        'Google client ID, secret, and frontend origin must be set in environment variables.'
+if (!frontendOrigin) {
+    throw new Error('FRONTEND_URL must be set in environment variables.');
+}
+
+// Google sign-in is optional: without credentials only email/password works,
+// and the frontend hides the Google button (it reads GET /auth-config).
+export const googleAuthEnabled = Boolean(clientId && clientSecret);
+if (!googleAuthEnabled) {
+    console.warn(
+        'GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET not set: Google sign-in is disabled.'
     );
 }
 
@@ -20,12 +27,8 @@ export const auth = betterAuth({
         enabled: true,
         requireEmailVerification: false,
     },
-    socialProviders: {
-        google: {
-            clientId: clientId,
-            clientSecret: clientSecret,
-        },
-    },
+    socialProviders:
+        clientId && clientSecret ? { google: { clientId, clientSecret } } : {},
     plugins: [admin()],
     onAPIError: {
         errorURL: `${frontendOrigin}/auth/login`,

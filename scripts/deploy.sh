@@ -1,115 +1,158 @@
 #!/usr/bin/env bash
 #
-# Auto-deploy for the FitBond Docker stack.
+# Auto-deploy FitBond to the k3s cluster on this server (runbook: docs/DEPLOY.md).
 #
-# Pulls the latest commits from origin/<BRANCH> and, only when something
-# changed, rebuilds and restarts the compose stack. Designed to be run from
-# cron; every run appends a timestamped entry to deploy.log.
+# When origin/<BRANCH> has a commit that isn't deployed yet AND CI has already
+# pushed its images to GHCR, this fast-forwards the checkout and applies
+# infra/k8s with those images. A commit whose images never appear (failed CI)
+# is skipped as soon as a newer one has images. Every run that does something
+# appends to deploy.log; idle runs stay quiet.
 #
-# Install (on the server, as a user in the `docker` group):
+# Install (on the server):
 #   chmod +x scripts/deploy.sh
 #   crontab -e
-#   # check for new commits every 5 minutes:
-#   */5 * * * * /absolute/path/to/fit-bond/scripts/deploy.sh
+#   */5 * * * * /absolute/path/to/fit-bond/scripts/deploy.sh >/dev/null 2>&1
+#
+# Deploy right now, even if nothing changed (e.g. after editing .env.production):
+#   scripts/deploy.sh --force
 #
 # Watch the log:   tail -f /absolute/path/to/fit-bond/deploy.log
 
 set -uo pipefail
 
-# cron runs with a minimal PATH; make sure git/docker/flock are findable.
+# cron runs with a minimal PATH; k3s puts kubectl in /usr/local/bin.
 export PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:$PATH"
+export KUBECONFIG="${KUBECONFIG:-$HOME/.kube/config}"
 
 # --- Config -----------------------------------------------------------------
 BRANCH="main"
 ENV_FILE=".env.production"
+NAMESPACE="fitbond"
+# GHCR repositories are <prefix>-backend and <prefix>-web (see .github/workflows/ci.yml).
+IMAGE_PREFIX="${IMAGE_PREFIX:-ghcr.io/matejgalfy/fitbond}"
 
-# Repo root = parent of this script's directory, so there's no hardcoded path.
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 LOG_FILE="$REPO_DIR/deploy.log"
 LOCK_FILE="$REPO_DIR/.deploy.lock"
+DEPLOYED_FILE="$REPO_DIR/.deployed-sha"
+WAITING_FILE="$REPO_DIR/.deploy-waiting"
 
-log() { echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" >>"$LOG_FILE"; }
+FORCE=0
+[ "${1:-}" = "--force" ] && FORCE=1
+
+# Log to the file, and to the terminal when run by hand.
+log() {
+    local line
+    line="[$(date '+%Y-%m-%d %H:%M:%S')] $*"
+    echo "$line" >>"$LOG_FILE"
+    [ -t 1 ] && echo "$line"
+    return 0
+}
 
 cd "$REPO_DIR" || { echo "deploy.sh: repo dir not found: $REPO_DIR" >&2; exit 1; }
 
-log "=== Deploy started ==="
-log "Repo: $REPO_DIR | Branch: $BRANCH | ENV: $ENV_FILE"
-log "Current HEAD: $(git rev-parse --short HEAD 2>/dev/null || echo 'unknown')"
-
 # --- Single-runner lock -----------------------------------------------------
-# A rebuild can take minutes; skip this tick if a previous one is still going.
 exec 9>"$LOCK_FILE"
 if ! flock -n 9; then
-    log "Another deploy is already running; skipping this run."
+    [ -t 1 ] && echo "Another deploy is already running."
     exit 0
 fi
-log "Lock acquired; proceeding with deploy."
 
-# --- Is there anything new on origin/$BRANCH? -------------------------------
-log "Fetching from origin/$BRANCH..."
+# --- Anything new on origin/$BRANCH? ----------------------------------------
 if ! git fetch --quiet origin "$BRANCH" 2>>"$LOG_FILE"; then
-    log "ERROR: git fetch failed. Checking git status..."
-    git status >>"$LOG_FILE" 2>&1
-    git remote -v >>"$LOG_FILE" 2>&1
+    log "ERROR: git fetch failed."
     exit 1
 fi
-log "git fetch completed successfully."
 
-LOCAL="$(git rev-parse HEAD)"
-REMOTE="$(git rev-parse "origin/$BRANCH")"
+SHA="$(git rev-parse "origin/$BRANCH")"
+SHORT="${SHA:0:7}"
+DEPLOYED="$(cat "$DEPLOYED_FILE" 2>/dev/null || echo none)"
 
-log "Local HEAD: $LOCAL | Remote origin/$BRANCH: $REMOTE"
-
-if [ "$LOCAL" = "$REMOTE" ]; then
-    # Up to date — exit quietly so the log isn't spammed on every cron tick.
-    log "Already up-to-date with origin/$BRANCH. No deploy needed."
+if [ "$SHA" = "$DEPLOYED" ] && [ "$FORCE" = 0 ]; then
+    [ -t 1 ] && echo "Already deployed: $SHORT (use --force to redeploy)."
     exit 0
 fi
 
-log "New commits detected. Local: $(git rev-parse --short HEAD) → Remote: $(git rev-parse --short "origin/$BRANCH")"
+# --- Are the images for this commit on GHCR yet? ----------------------------
+# Asks the registry's HTTP API directly (anonymous pull token, public packages).
+image_exists() {
+    local repo="${1#ghcr.io/}" tag="$2" token
+    token="$(curl -fsS "https://ghcr.io/token?scope=repository:${repo}:pull" |
+        sed -E 's/.*"token":"([^"]+)".*/\1/')" || return 1
+    curl -fsS -o /dev/null \
+        -H "Authorization: Bearer $token" \
+        -H 'Accept: application/vnd.oci.image.index.v1+json, application/vnd.oci.image.manifest.v1+json, application/vnd.docker.distribution.manifest.list.v2+json, application/vnd.docker.distribution.manifest.v2+json' \
+        "https://ghcr.io/v2/${repo}/manifests/${tag}"
+}
 
-# --- Pull (fast-forward only; never rewrite local history) ------------------
-log "Checking out branch $BRANCH..."
-if ! git checkout "$BRANCH" >>"$LOG_FILE" 2>&1; then
-    log "ERROR: could not checkout $BRANCH."
-    git branch -v >>"$LOG_FILE" 2>&1
+for image in backend web; do
+    if ! image_exists "${IMAGE_PREFIX}-${image}" "$SHA"; then
+        # Log once per commit, not on every cron tick.
+        if [ "$(cat "$WAITING_FILE" 2>/dev/null)" != "$SHA" ]; then
+            log "New commit $SHORT, but ${IMAGE_PREFIX}-${image}:${SHA} isn't on GHCR yet (CI running, failed, or package private). Retrying on the next run."
+            echo "$SHA" >"$WAITING_FILE"
+        fi
+        [ -t 1 ] && echo "Images for $SHORT not on GHCR yet."
+        exit 0
+    fi
+done
+rm -f "$WAITING_FILE"
+
+log "=== Deploying $SHORT (previously: ${DEPLOYED:0:7}) ==="
+
+# --- Fast-forward the checkout (manifests come from the same commit) ---------
+if ! git checkout --quiet "$BRANCH" >>"$LOG_FILE" 2>&1 ||
+    ! git merge --quiet --ff-only "origin/$BRANCH" >>"$LOG_FILE" 2>&1; then
+    log "ERROR: could not fast-forward $BRANCH to origin/$BRANCH (local changes on the server?)."
+    git status --short >>"$LOG_FILE" 2>&1
     exit 1
 fi
-log "Checkout completed. Attempting fast-forward merge..."
 
-if ! git merge --ff-only "origin/$BRANCH" >>"$LOG_FILE" 2>&1; then
-    log "ERROR: fast-forward merge failed (local history diverged?)."
-    log "Git log diff:"
-    git log --oneline -5 >>"$LOG_FILE" 2>&1
-    git log --oneline -5 "origin/$BRANCH" >>"$LOG_FILE" 2>&1
-    log "Git status:"
-    git status >>"$LOG_FILE" 2>&1
-    exit 1
-fi
-log "Merge completed. Now at $(git rev-parse --short HEAD)."
-
-# --- Rebuild + restart ------------------------------------------------------
-log "Checking prerequisites for docker compose..."
+# --- Configuration from .env.production -------------------------------------
 if [ ! -f "$ENV_FILE" ]; then
-    log "ERROR: ENV_FILE not found: $ENV_FILE"
-    ls -la .env* >>"$LOG_FILE" 2>&1
+    log "ERROR: $ENV_FILE not found in $REPO_DIR."
     exit 1
 fi
-log "ENV_FILE exists: $ENV_FILE"
+# The public host for the Ingress = host part of FRONTEND_URL.
+HOST="$(sed -n -E 's#^FRONTEND_URL=https?://([^/:]+).*#\1#p' "$ENV_FILE" | tail -n 1)"
+if [ -z "$HOST" ]; then
+    log "ERROR: FRONTEND_URL in $ENV_FILE must look like https://your.host"
+    exit 1
+fi
+ENV_CHECKSUM="$(sha256sum "$ENV_FILE" | cut -c1-16)"
 
-log "Starting docker compose up -d --build..."
-if docker compose --env-file "$ENV_FILE" up -d --build >>"$LOG_FILE" 2>&1; then
-    log "Deploy succeeded — now at $(git rev-parse --short HEAD)."
-    log "Running docker image prune to clean up dangling images..."
-    docker image prune -f >>"$LOG_FILE" 2>&1
-    log "Prune completed."
-    log "=== Deploy finished successfully ==="
-else
-    log "ERROR: 'docker compose up -d --build' failed."
-    log "Docker status:"
-    docker compose --env-file "$ENV_FILE" ps >>"$LOG_FILE" 2>&1
-    docker compose --env-file "$ENV_FILE" logs --tail=50 >>"$LOG_FILE" 2>&1
-    log "Stack may be unchanged or in a broken state."
+# --- Apply ------------------------------------------------------------------
+manifest="$(mktemp)"
+trap 'rm -f "$manifest"' EXIT
+if ! kubectl kustomize infra/k8s >"$manifest" 2>>"$LOG_FILE"; then
+    log "ERROR: kubectl kustomize infra/k8s failed."
     exit 1
 fi
+sed -i -E \
+    -e "s#FITBOND_HOST#${HOST}#g" \
+    -e "s#ENV_CHECKSUM#${ENV_CHECKSUM}#g" \
+    -e "s#(image: ${IMAGE_PREFIX}-(backend|web)):latest#\1:${SHA}#" \
+    "$manifest"
+
+# The namespace must exist before the Secret, the Secret before the pods.
+if ! kubectl apply -f infra/k8s/namespace.yaml >>"$LOG_FILE" 2>&1 ||
+    ! kubectl -n "$NAMESPACE" create secret generic fitbond-env \
+        --from-env-file="$ENV_FILE" --dry-run=client -o yaml |
+    kubectl apply -f - >>"$LOG_FILE" 2>&1 ||
+    ! kubectl apply -f "$manifest" >>"$LOG_FILE" 2>&1; then
+    log "ERROR: kubectl apply failed (see above)."
+    exit 1
+fi
+
+for deployment in backend web; do
+    if ! kubectl -n "$NAMESPACE" rollout status "deployment/$deployment" --timeout=10m >>"$LOG_FILE" 2>&1; then
+        log "ERROR: deployment/$deployment did not become ready. Check: kubectl -n $NAMESPACE get pods; kubectl -n $NAMESPACE logs deploy/$deployment"
+        kubectl -n "$NAMESPACE" get pods >>"$LOG_FILE" 2>&1
+        kubectl -n "$NAMESPACE" logs "deploy/$deployment" --tail=50 >>"$LOG_FILE" 2>&1
+        exit 1
+    fi
+done
+
+echo "$SHA" >"$DEPLOYED_FILE"
+log "=== Deployed $SHORT to https://$HOST ==="
